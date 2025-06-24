@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './components/auth/LoginPage';
 import PasswordResetPage from './components/auth/PasswordResetPage';
 import AdminDashboard from './components/AdminDashboard';
+import Watermark from './components/Watermark'; // 👈 Import the watermark
 
 function AppContent() {
   const { isAuthenticated, currentView } = useAuth();
@@ -22,7 +23,11 @@ function App() {
   return (
     <AuthProvider>
       <AppProvider>
-        <AppContent />
+        {/* 🔒 Watermark shown globally behind all content */}
+        <Watermark />
+        <div className="relative z-10">
+          <AppContent />
+        </div>
       </AppProvider>
     </AuthProvider>
   );
