@@ -38,15 +38,17 @@ const LoginPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          {/* Logo and Title */}
-           <img
-        src="https://i.postimg.cc/dVZqjS4c/cropped-DSC-2567.jpg"
-        alt="Vermi-Farm Logo"
-        className="w-10 h-10 rounded-full object-cover"
-      />
-            <h1 className="text-2xl font-bold text-gray-800">Vermi-Farm Admin</h1>
-            <p className="text-gray-600 mt-2">Sign in to your account</p>
-          </div>
+         {/* Logo and Title */}
+<div className="text-center mb-8">
+  <img
+    src="https://i.postimg.cc/dVZqjS4c/cropped-DSC-2567.jpg"
+    alt="Vermi-Farm Logo"
+    className="w-16 h-16 rounded-full object-cover mx-auto mb-4"
+  />
+  <h1 className="text-2xl font-bold text-gray-800">Vermi-Farm Admin</h1>
+  <p className="text-gray-600 mt-2">Sign in to your account</p>
+</div>
+
 
           {/* Error Message */}
           {error && (
@@ -126,7 +128,14 @@ const LoginPage: React.FC = () => {
             </button>
           </div>
 
-         
+          {/* Demo Credentials */}
+          <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+            <p className="text-sm text-gray-600 text-center mb-2">Demo Credentials:</p>
+            <p className="text-sm text-gray-800 text-center">
+              Phone: <span className="font-mono">0712345678</span><br />
+              Password: <span className="font-mono">admin123</span>
+            </p>
+          </div>
         </div>
       </div>
     </div>
