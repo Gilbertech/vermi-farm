@@ -198,41 +198,37 @@ const Portfolio: React.FC = () => {
               })}
             </nav>
 
-          {/* Transfer Dropdown */}
-<div className="relative">
-  <button
-    onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
-    className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
-  >
-    <span>Transfer</span>
-    <ChevronDown className="w-4 h-4" />
-  </button>
+            {/* Transfer Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
+                className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
+              >
+                <span>Transfer</span>
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {transferDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                  <div className="py-1">
+                    {portfolioTabs.filter(tab => tab.id !== activeTab).map(tab => (
+                      <button
+                        key={tab.id}
+                        onClick={() => handleTransfer(tab.label)}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                      >
+                        Transfer to {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-  {transferDropdownOpen && (
-    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-      <div className="py-1">
-        {portfolioTabs
-          .filter(tab => tab.id !== activeTab)
-          .map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setSelectedToPortfolio(tab.id as PortfolioType);
-                setFromPortfolio(activeTab as PortfolioType);
-                setTransferDropdownOpen(false);
-                setShowTransferModal(true);
-              }}
-              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-            >
-              Transfer to {tab.label}
-            </button>
-          ))}
-      </div>
-    </div>
-  )}
-</div>
-  );
-};
+        <div className="p-6">
+          {renderTabContent()}
 
           {/* Search and Filters */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
