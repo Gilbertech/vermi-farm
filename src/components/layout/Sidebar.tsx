@@ -55,28 +55,28 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
         fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg border-r border-gray-200 transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-[#2d8e41] rounded-full flex items-center justify-center">
-                <Sprout className="w-6 h-6 text-white" />
-              </div>
-              <h1 className="text-xl font-bold text-gray-800">Vermi-Farm</h1>
-            </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="lg:hidden text-gray-500 hover:text-gray-700"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
-        <img
+       {/* Header */}
+<div className="p-6 border-b border-gray-200">
+  <div className="flex items-center justify-between">
+    <div className="flex items-center space-x-3">
+      {/* Logo Image Only */}
+      <img
         src="https://i.postimg.cc/dVZqjS4c/cropped-DSC-2567.jpg"
         alt="Vermi-Farm Logo"
         className="w-10 h-10 rounded-full object-cover"
       />
+
+      <h1 className="text-xl font-bold text-gray-800">Vermi-Farm</h1>
+    </div>
+    <button
+      onClick={() => setIsOpen(false)}
+      className="lg:hidden text-gray-500 hover:text-gray-700"
+    >
+      <X className="w-6 h-6" />
+    </button>
+  </div>
+</div>
+
         {/* Navigation */}
         <nav className="mt-6">
           {menuItems.map((item) => {
