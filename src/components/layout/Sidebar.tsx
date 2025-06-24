@@ -76,16 +76,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
     </button>
   </div>
 </div>
- {/* Bottom Section: Logout */}
-  <div>
-    <button
-      onClick={handleLogout}
-      className="flex items-center space-x-2 text-red-600 hover:text-red-800 transition-colors duration-200"
-    >
-      <LogOut className="w-5 h-5" />
-      <span className="hidden sm:inline">Logout</span>
-    </button>
-  </div>
+
         {/* Navigation */}
         <nav className="mt-6">
           {menuItems.map((item) => {
