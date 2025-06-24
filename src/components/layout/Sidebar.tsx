@@ -101,8 +101,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
         </nav>
       </div>
       <div className="h-screen flex flex-col justify-between p-4 bg-white shadow-md w-64">
- 
-
+  
     </>
   );
 };
