@@ -186,6 +186,7 @@ const EnhancedTransactions: React.FC = () => {
       <table className="w-full">
         <thead className="bg-gray-50">
           <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Code</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Cost</th>
@@ -198,6 +199,9 @@ const EnhancedTransactions: React.FC = () => {
         <tbody className="bg-white divide-y divide-gray-200">
           {filteredTransactions.map((transaction, index) => (
             <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#f9fafb]'}>
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {transaction.txCode}
+              </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {transaction.from}
               </td>

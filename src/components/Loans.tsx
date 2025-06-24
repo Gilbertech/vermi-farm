@@ -48,10 +48,10 @@ const Loans: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Loans</h1>
+        <h1 className="text-3xl font-bold text-gray-800">Payments</h1>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors duration-200"
+          className="bg-[#2d8e41] text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium"
         >
           <Plus className="w-5 h-5" />
           <span>Disburse Loan</span>
@@ -67,7 +67,7 @@ const Loans: React.FC = () => {
               placeholder="Search loans..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent w-full max-w-md"
+              className="pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent w-full max-w-md transition-colors duration-200"
             />
           </div>
         </div>
@@ -125,7 +125,7 @@ const Loans: React.FC = () => {
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
-                    className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                    className="bg-[#2d8e41] h-2 rounded-full transition-all duration-300"
                     style={{ width: `${calculateProgress(loan.repaidAmount, loan.amount)}%` }}
                   ></div>
                 </div>
@@ -140,7 +140,7 @@ const Loans: React.FC = () => {
                   <span className="text-xs text-gray-500">
                     Created {new Date(loan.createdAt).toLocaleDateString()}
                   </span>
-                  <button className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-200">
+                  <button className="text-[#2d8e41] hover:text-[#246b35] text-sm font-medium transition-colors duration-200">
                     View Details
                   </button>
                 </div>

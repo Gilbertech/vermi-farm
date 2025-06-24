@@ -10,7 +10,8 @@ import {
   FileText,
   Briefcase,
   Sprout,
-  X
+  X,
+  Wallet
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -28,7 +29,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
     { id: 'account', icon: CreditCard, label: 'Accounts' },
     { id: 'transactions', icon: ArrowLeftRight, label: 'Transactions' },
     { id: 'reversal', icon: RotateCcw, label: 'Reversals' },
-    { id: 'loans', icon: Banknote, label: 'Payments' },
+    { id: 'loans', icon: Banknote, label: 'Loans' },
+    { id: 'payments', icon: Wallet, label: 'Payments' },
     { id: 'statements', icon: FileText, label: 'Statements' },
     { id: 'portfolio', icon: Briefcase, label: 'Portfolio' },
   ];

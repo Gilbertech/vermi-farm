@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Download, Search, Filter, Calendar } from 'lucide-react';
+import { Download, Search, Filter, Calendar, Plus } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import Modal from './Modal';
+import GenerateStatementForm from './forms/GenerateStatementForm';
 
 const Statements: React.FC = () => {
   const { groups, users } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Mock statements data
   const statements = [
@@ -67,7 +70,16 @@ const Statements: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Available Statements</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-800">Available Statements</h1>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="bg-[#2d8e41] text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Generate Statement</span>
+        </button>
+      </div>
 
       {/* Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -169,6 +181,15 @@ const Statements: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Generate Statement Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Generate Statement"
+      >
+        <GenerateStatementForm onClose={() => setIsModalOpen(false)} />
+      </Modal>
     </div>
   );
 };

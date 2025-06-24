@@ -10,6 +10,7 @@ import Portfolio from './Portfolio';
 import Statements from './Statements';
 import Accounts from './Accounts';
 import Reversals from './Reversals';
+import Payments from './Payments';
 
 const AdminDashboard: React.FC = () => {
   const [activeView, setActiveView] = useState('dashboard');
@@ -31,6 +32,8 @@ const AdminDashboard: React.FC = () => {
         return <Reversals />;
       case 'loans':
         return <Loans />;
+      case 'payments':
+        return <Payments />;
       case 'statements':
         return <Statements />;
       case 'portfolio':
@@ -55,6 +58,8 @@ const AdminDashboard: React.FC = () => {
       case 'reversal':
         return 'Reversals';
       case 'loans':
+        return 'Loans';
+      case 'payments':
         return 'Payments';
       case 'statements':
         return 'Statements';

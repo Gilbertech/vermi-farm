@@ -1,0 +1,196 @@
+import React, { useState } from 'react';
+import { Upload, Download, CheckCircle, AlertCircle } from 'lucide-react';
+
+interface BulkPaymentsFormProps {
+  onClose: () => void;
+}
+
+const BulkPaymentsForm: React.FC<BulkPaymentsFormProps> = ({ onClose }) => {
+  const [formData, setFormData] = useState({
+    referenceLabel: '',
+    scheduledDate: ''
+  });
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    setIsSubmitting(false);
+    onClose();
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
+      // Mock preview data
+      setPreviewData([
+        { recipientName: 'John Doe', msisdn: '+254712345678', amount: 5000, paymentType: 'Single' },
+        { recipientName: 'Jane Smith', msisdn: '+254787654321', amount: 3500, paymentType: 'Single' },
+        { recipientName: 'Mike Johnson', msisdn: '+254798765432', amount: 7200, paymentType: 'Single' },
+        { recipientName: 'Sarah Wilson', msisdn: '+254756789123', amount: 4200, paymentType: 'Single' },
+        { recipientName: 'David Brown', msisdn: '+254723456789', amount: 6800, paymentType: 'Single' }
+      ]);
+    }
+  };
+
+  const totalAmount = previewData.reduce((sum, item) => sum + item.amount, 0);
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="text-center">
+        <h3 className="text-lg font-medium text-gray-800 mb-2">Upload and schedule multiple payments easily.</h3>
+      </div>
+
+      {/* File Upload */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Upload File
+        </label>
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#2d8e41] transition-colors duration-200">
+          <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+          <input
+            type="file"
+            accept=".csv,.xlsx"
+            onChange={handleFileUpload}
+            className="hidden"
+            id="file-upload"
+          />
+          <label htmlFor="file-upload" className="cursor-pointer">
+            <span className="text-sm text-gray-600">
+              Click to upload or drag and drop
+            </span>
+            <br />
+            <span className="text-xs text-gray-500">CSV or XLSX files only</span>
+          </label>
+          {uploadedFile && (
+            <div className="mt-2 flex items-center justify-center space-x-2">
+              <CheckCircle className="w-4 h-4 text-green-600" />
+              <span className="text-sm text-green-600">{uploadedFile.name}</span>
+            </div>
+          )}
+        </div>
+        <div className="mt-2">
+          <button
+            type="button"
+            className="text-sm text-[#2d8e41] hover:text-[#246b35] flex items-center space-x-1"
+          >
+            <Download className="w-4 h-4" />
+            <span>Download sample template</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Optional Fields */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Reference Label (Optional)
+          </label>
+          <input
+            type="text"
+            name="referenceLabel"
+            value={formData.referenceLabel}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+            placeholder="Enter reference label"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Scheduled Date (Optional)
+          </label>
+          <input
+            type="date"
+            name="scheduledDate"
+            value={formData.scheduledDate}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+          />
+        </div>
+      </div>
+
+      {/* Preview Table */}
+      {previewData.length > 0 && (
+        <div>
+          <h4 className="text-sm font-medium text-gray-700 mb-3">Preview (First 5 entries)</h4>
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Recipient Name</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">MSISDN</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Payment Type</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {previewData.map((item, index) => (
+                  <tr key={index}>
+                    <td className="px-4 py-2 text-gray-900">{item.recipientName}</td>
+                    <td className="px-4 py-2 text-gray-900">{item.msisdn}</td>
+                    <td className="px-4 py-2 text-gray-900">KES {item.amount.toLocaleString()}</td>
+                    <td className="px-4 py-2 text-gray-900">{item.paymentType}</td>
+                    <td className="px-4 py-2">
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        Valid
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Total Amount:</span>
+              <span className="text-lg font-semibold text-gray-800">KES {totalAmount.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex space-x-3 pt-4">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+        >
+          Back
+        </button>
+        <button
+          type="submit"
+          disabled={isSubmitting || !uploadedFile}
+          className="flex-1 px-4 py-2 bg-[#2d8e41] text-white rounded-lg hover:bg-[#246b35] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? (
+            <div className="flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              Processing...
+            </div>
+          ) : (
+            'Submit Bulk Payment'
+          )}
+        </button>
+      </div>
+    </form>
+  );
+};
+
+export default BulkPaymentsForm;
