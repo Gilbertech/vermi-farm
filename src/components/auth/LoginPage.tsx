@@ -128,5 +128,12 @@ const LoginPage: React.FC = () => {
             </button>
           </div>
 
+          {/* Demo Credentials */}
         
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default LoginPage;
