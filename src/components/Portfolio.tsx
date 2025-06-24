@@ -328,7 +328,7 @@ const Portfolio: React.FC = () => {
         </form>
       </div>
     </div>
-  );
+  
 
           {/* Search and Filters */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
