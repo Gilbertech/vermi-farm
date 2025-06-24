@@ -100,6 +100,29 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
           })}
         </nav>
       </div>
+      <div className="h-screen flex flex-col justify-between p-4 bg-white shadow-md w-64">
+  {/* Top Section: Navigation Links */}
+  <div className="space-y-4">
+    {/* Add your nav links here */}
+    <Link to="/dashboard" className="flex items-center space-x-2 text-gray-700 hover:text-[#2d8e41]">
+      <Home className="w-5 h-5" />
+      <span className="hidden sm:inline">Dashboard</span>
+    </Link>
+    {/* ... other links */}
+  </div>
+
+  {/* Bottom Section: Logout */}
+  <div>
+    <button
+      onClick={handleLogout}
+      className="flex items-center space-x-2 text-red-600 hover:text-red-800 transition-colors duration-200"
+    >
+      <LogOut className="w-5 h-5" />
+      <span className="hidden sm:inline">Logout</span>
+    </button>
+  </div>
+</div>
+
     </>
   );
 };
