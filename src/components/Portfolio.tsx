@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, Piggy, ChevronDown, Search, Filter, Calendar, Download } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, PiggyBank as Piggy, ChevronDown, Search, Filter, Calendar, Download } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const Portfolio: React.FC = () => {
