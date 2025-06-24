@@ -41,7 +41,7 @@ const LoginPage: React.FC = () => {
          {/* Logo and Title */}
 <div className="text-center mb-8">
   <img
-    src="https://i.postimg.cc/dVZqjS4c/cropped-DSC-2567.jpg"
+    src="https://www.vermi-farm.org/images/logo1.png"
     alt="Vermi-Farm Logo"
     className="w-16 h-16 rounded-full object-cover mx-auto mb-4"
   />
