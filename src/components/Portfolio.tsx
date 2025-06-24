@@ -198,37 +198,137 @@ const Portfolio: React.FC = () => {
               })}
             </nav>
 
-            {/* Transfer Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
-                className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
-              >
-                <span>Transfer</span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              
-              {transferDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                  <div className="py-1">
-                    {portfolioTabs.filter(tab => tab.id !== activeTab).map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => handleTransfer(tab.label)}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
-                      >
-                        Transfer to {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+
+
+            
+           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-900">Portfolio Transfer</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
-        <div className="p-6">
-          {renderTabContent()}
+        <form onSubmit={handleSubmit} className="p-6">
+          <div className="space-y-6">
+            {/* Transfer Direction */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">From</p>
+                  <p className="font-medium text-gray-900">{portfolioLabels[fromPortfolio]}</p>
+                </div>
+                <ArrowRightLeft className="w-5 h-5 text-green-600" />
+                <div className="text-center">
+                  <p className="text-sm text-gray-600">To</p>
+                  <p className="font-medium text-gray-900">
+                    {selectedToPortfolio ? portfolioLabels[selectedToPortfolio] : 'Select Portfolio'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Warning */}
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start space-x-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
+              <p className="text-amber-800 text-sm">
+                Please ensure you have sufficient balance and correct portfolio selection before proceeding.
+              </p>
+            </div>
+
+            {/* To Portfolio Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Transfer To Portfolio
+              </label>
+              <select
+                value={selectedToPortfolio}
+                onChange={(e) => setSelectedToPortfolio(e.target.value as PortfolioType)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                required
+              >
+                <option value="">Select destination portfolio</option>
+                {availablePortfolios.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Amount */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Transfer Amount
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-gray-500">KES</span>
+                <input
+                  type="number"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Reference */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Reference Number (Optional)
+              </label>
+              <input
+                type="text"
+                value={reference}
+                onChange={(e) => setReference(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                placeholder="Enter reference number"
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Description
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                placeholder="Enter transfer description"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="flex space-x-3 mt-8">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Transfer Funds
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 
           {/* Search and Filters */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
