@@ -28,8 +28,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
           className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
           title="Logout"
         >
-          <LogOut className="w-5 h-5" />
-          <span className="hidden sm:inline">Logout</span>
+         
         </button>
       </div>
     </header>
