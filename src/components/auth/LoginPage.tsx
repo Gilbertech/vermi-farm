@@ -39,10 +39,11 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Logo and Title */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-[#2d8e41] rounded-full flex items-center justify-center mx-auto mb-4">
-              <Sprout className="w-8 h-8 text-white" />
-            </div>
+           <img
+        src="https://i.postimg.cc/dVZqjS4c/cropped-DSC-2567.jpg"
+        alt="Vermi-Farm Logo"
+        className="w-10 h-10 rounded-full object-cover"
+      />
             <h1 className="text-2xl font-bold text-gray-800">Vermi-Farm Admin</h1>
             <p className="text-gray-600 mt-2">Sign in to your account</p>
           </div>
