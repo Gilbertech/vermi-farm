@@ -73,15 +73,15 @@ const Users: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Add User Button */}
-      <div className="flex justify-start">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-[#2d8e41] text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium"
-        >
-          <Plus className="w-5 h-5" />
-          <span>Add User</span>
-        </button>
-      </div>
+      <div className="flex justify-end mb-4">
+  <button
+    onClick={() => setIsModalOpen(true)}
+    className="bg-[#2d8e41] text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium"
+  >
+    <Plus className="w-5 h-5" />
+    <span>Add User</span>
+  </button>
+</div>
 
       {/* Filters and Search */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
