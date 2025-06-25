@@ -324,7 +324,7 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
           {/* Search and Filters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div> {/* Transfer Dropdown */}
-            <div className="relative">
+<div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <button
                 onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
                 className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
