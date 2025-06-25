@@ -317,37 +317,7 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
         </div>
       </div>
 
-            {/* Transfer Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
-                className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
-              >
-                <ArrowUpRight className="w-4 h-4" />
-                <span>Transfer</span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              
-              {transferDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                  <div className="py-1">
-                    {portfolioTabs.filter(tab => tab.id !== activeTab).map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => handleTransfer(tab.label)}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center space-x-2"
-                      >
-                        <tab.icon className="w-4 h-4" />
-                        <span>Transfer to {tab.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
+            
         <div className="p-6">
           {/* Portfolio Stats */}
           {renderPortfolioStats()}
