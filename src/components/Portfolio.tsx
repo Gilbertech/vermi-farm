@@ -271,38 +271,97 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
               })}
             </nav>
  
+{/* Transfer Dropdown */}
+<div className="relative">
+  <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <button
+      onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
+      className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
+    >
+      <ArrowUpRight className="w-4 h-4" />
+      <span>Transfer</span>
+      <ChevronDown className="w-4 h-4" />
+    </button>
+  </div>
+  {transferDropdownOpen && (
+    <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+      <div className="py-1">
+        {portfolioTabs.filter(tab => tab.id !== activeTab).map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => {
+              setTransferTarget(tab.label);
+              setShowTransferModal(true);
+              setTransferDropdownOpen(false);
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center space-x-2"
+          >
+            <tab.icon className="w-4 h-4" />
+            <span>Transfer to {tab.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )}
+</div>
 
-            {/* Transfer Dropdown */}
-            <div className="relative">
-               <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <button
-                onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
-                className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
-              >
-                <ArrowUpRight className="w-4 h-4" />
-                <span>Transfer</span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
-               </div> 
-              {transferDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                  <div className="py-1">
-                    {portfolioTabs.filter(tab => tab.id !== activeTab).map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => handleTransfer(tab.label)}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center space-x-2"
-                      >
-                        <tab.icon className="w-4 h-4" />
-                        <span>Transfer to {tab.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+{/* Transfer Modal */}
+{showTransferModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg space-y-4">
+      <h2 className="text-xl font-bold text-gray-800">Transfer to {transferTarget}</h2>
+      <div className="grid gap-4">
+        <input
+          type="number"
+          placeholder="Amount (KES)"
+          value={transferAmount}
+          onChange={(e) => setTransferAmount(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+        />
+        <input
+          type="text"
+          placeholder="Reference"
+          value={transferReference}
+          onChange={(e) => setTransferReference(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+        />
+        <textarea
+          placeholder="Description"
+          value={transferDescription}
+          onChange={(e) => setTransferDescription(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+        />
+      </div>
+      <div className="flex justify-end space-x-3 pt-4">
+        <button
+          onClick={() => setShowTransferModal(false)}
+          className="px-4 py-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => {
+            console.log({
+              from: activeTab,
+              to: transferTarget,
+              amount: transferAmount,
+              reference: transferReference,
+              description: transferDescription
+            });
+            setShowTransferModal(false);
+            setTransferAmount('');
+            setTransferReference('');
+            setTransferDescription('');
+          }}
+          className="px-4 py-2 rounded-lg bg-[#2d8e41] text-white hover:bg-[#246b35]"
+        >
+          Make Transfer
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
         <div className="p-6">
           {/* Portfolio Stats */}
