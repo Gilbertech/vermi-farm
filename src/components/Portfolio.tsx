@@ -313,7 +313,8 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
           )}
         </div>
       </div>
-
+        </div>
+        
 
         <div className="p-6">
           {/* Portfolio Stats */}
