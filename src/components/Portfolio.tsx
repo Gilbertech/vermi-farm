@@ -359,7 +359,7 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
         </button>
       </div>
     </div>
-  </div>
+  
 )}
 
 
