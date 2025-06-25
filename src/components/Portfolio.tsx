@@ -363,7 +363,7 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
   
 
 
-       
+        <div className="p-6">
           {/* Portfolio Stats */}
           {renderPortfolioStats()}
 
