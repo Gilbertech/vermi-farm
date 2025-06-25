@@ -271,38 +271,53 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
               })}
             </nav>
 
-            {/* Transfer Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
-                className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
-              >
-                <ArrowUpRight className="w-4 h-4" />
-                <span>Transfer</span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              
-              {transferDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                  <div className="py-1">
-                    {portfolioTabs.filter(tab => tab.id !== activeTab).map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => handleTransfer(tab.label)}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center space-x-2"
-                      >
-                        <tab.icon className="w-4 h-4" />
-                        <span>Transfer to {tab.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+             {/* Header with Transfer Button */}
+      <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4 sm:mb-0">
+          {currentPortfolioLabel} Transactions
+        </h3>
+        
+        <div className="relative">
+          <button
+            onClick={() => setIsTransferOpen(!isTransferOpen)}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+          >
+            <ArrowRightLeft className="w-4 h-4" />
+            <span>Transfer</span>
+            <ChevronDown className={`w-4 h-4 transition-transform ${isTransferOpen ? 'rotate-180' : ''}`} />
+          </button>
 
-        <div className="p-6">
+          {isTransferOpen && (
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+              <div className="py-2">
+                <div className="px-4 py-2 text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                  Transfer to Portfolio
+                </div>
+                {portfolioOptions
+                  .filter(option => option.value !== portfolioType)
+                  .map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => handleTransferTo(option.value)}
+                      className="w-full px-4 py-3 text-left hover:bg-green-50 hover:text-green-600 flex items-center space-x-3 transition-colors text-sm"
+                    >
+                      <ArrowRightLeft className="w-4 h-4" />
+                      <span>{option.label}</span>
+                    </button>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {isTransferOpen && (
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setIsTransferOpen(false)}
+            />
+          )}
+        </div>
+      </div>
+
           {/* Portfolio Stats */}
           {renderPortfolioStats()}
 
