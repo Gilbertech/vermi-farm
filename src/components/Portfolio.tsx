@@ -359,8 +359,8 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
         </button>
       </div>
     </div>
+  </div>
   
-)}
 
 
         <div className="p-6">
