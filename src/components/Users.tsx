@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Search, Eye, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search, Eye, EyeOff, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import Modal from './Modal';
 import UserForm from './UserForm';
@@ -14,6 +14,7 @@ const Users: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showSensitiveData, setShowSensitiveData] = useState(true);
   
   const itemsPerPage = 10;
 
@@ -21,8 +22,7 @@ const Users: React.FC = () => {
   const filteredUsers = users.filter(user => {
     const matchesSearch = 
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.phone.includes(searchTerm) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      user.phone.includes(searchTerm);
     
     const matchesCreatedAt = createdAtFilter === 'all' || 
       (createdAtFilter === 'today' && new Date(user.createdAt).toDateString() === new Date().toDateString()) ||
@@ -38,12 +38,6 @@ const Users: React.FC = () => {
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
-
-  const getGroupName = (groupId?: string) => {
-    if (!groupId) return 'No Group';
-    const group = groups.find(g => g.id === groupId);
-    return group ? group.name : 'Unknown Group';
-  };
 
   const handleViewUser = (userId: string) => {
     setSelectedUserId(userId);
@@ -72,16 +66,26 @@ const Users: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Add User Button */}
-      <div className="flex justify-end mb-4">
-  <button
-    onClick={() => setIsModalOpen(true)}
-    className="bg-[#2d8e41] text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium"
-  >
-    <Plus className="w-5 h-5" />
-    <span>Add User</span>
-  </button>
-</div>
+      {/* Header with Add User Button */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-800">Users</h1>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => setShowSensitiveData(!showSensitiveData)}
+            className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+          >
+            {showSensitiveData ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            <span>{showSensitiveData ? 'Hide Data' : 'Show Data'}</span>
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-[#2d8e41] text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add User</span>
+          </button>
+        </div>
+      </div>
 
       {/* Filters and Search */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -160,14 +164,18 @@ const Users: React.FC = () => {
                     <td className="px-6 py-4 text-sm text-gray-900">{rowNumber}</td>
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{firstName}</td>
                     <td className="px-6 py-4 text-sm text-gray-900 font-medium">{lastName}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{user.phone}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">KES {user.balance.toLocaleString()}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {showSensitiveData ? user.phone : '****'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">
+                      {showSensitiveData ? `KES ${user.balance.toLocaleString()}` : '****'}
+                    </td>
                     <td className="px-6 py-4">
                       <button
                         onClick={() => handleViewUser(user.id)}
                         disabled={isLoading}
                         className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200 disabled:opacity-50"
-                        title="View User"
+                        title="View User Details"
                       >
                         <Eye className="w-5 h-5" />
                       </button>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, PiggyBank as Piggy, ChevronDown, Search, Filter, Calendar, Download } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, PiggyBank as Piggy, ChevronDown, Search, Filter, Calendar, Download, Eye, EyeOff, ArrowUpRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const Portfolio: React.FC = () => {
@@ -9,6 +9,7 @@ const Portfolio: React.FC = () => {
   const [amountFilter, setAmountFilter] = useState('');
   const [timeFilter, setTimeFilter] = useState('all');
   const [transferDropdownOpen, setTransferDropdownOpen] = useState(false);
+  const [showAmounts, setShowAmounts] = useState(true);
 
   const portfolioTabs = [
     { id: 'loan', label: 'Loan Portfolio', icon: TrendingUp },
@@ -20,38 +21,117 @@ const Portfolio: React.FC = () => {
     { id: 'savings', label: 'Savings Portfolio', icon: Piggy }
   ];
 
-  // Mock portfolio transaction data
-  const portfolioTransactions = [
-    {
-      id: '1',
-      txCode: 'TXN001234567',
-      from: 'John Doe',
-      to: 'Loan Portfolio',
-      amount: 15000,
-      fees: 50,
-      time: '2024-01-20T10:30:00Z'
-    },
-    {
-      id: '2',
-      txCode: 'TXN001234568',
-      from: 'Revenue Portfolio',
-      to: 'Jane Smith',
-      amount: 3500,
-      fees: 25,
-      time: '2024-01-20T14:15:00Z'
-    },
-    {
-      id: '3',
-      txCode: 'TXN001234569',
-      from: 'Investment Portfolio',
-      to: 'Working Account',
-      amount: 7200,
-      fees: 35,
-      time: '2024-01-19T09:45:00Z'
-    }
-  ];
+  // Mock portfolio-specific transaction data for each portfolio
+  const portfolioTransactions = {
+    loan: [
+      {
+        id: '1',
+        txCode: 'LN001234567',
+        from: 'John Doe',
+        to: 'Loan Portfolio',
+        amount: 15000,
+        fees: 50,
+        time: '2024-01-20T10:30:00Z',
+        status: 'completed'
+      },
+      {
+        id: '2',
+        txCode: 'LN001234568',
+        from: 'Loan Portfolio',
+        to: 'Jane Smith',
+        amount: 12000,
+        fees: 40,
+        time: '2024-01-19T14:15:00Z',
+        status: 'completed'
+      }
+    ],
+    revenue: [
+      {
+        id: '3',
+        txCode: 'RV001234569',
+        from: 'Interest Collection',
+        to: 'Revenue Portfolio',
+        amount: 2500,
+        fees: 15,
+        time: '2024-01-20T16:30:00Z',
+        status: 'completed'
+      },
+      {
+        id: '4',
+        txCode: 'RV001234570',
+        from: 'Service Fees',
+        to: 'Revenue Portfolio',
+        amount: 800,
+        fees: 10,
+        time: '2024-01-19T11:20:00Z',
+        status: 'completed'
+      }
+    ],
+    investment: [
+      {
+        id: '5',
+        txCode: 'IV001234571',
+        from: 'Investment Portfolio',
+        to: 'Stock Purchase',
+        amount: 25000,
+        fees: 100,
+        time: '2024-01-18T09:45:00Z',
+        status: 'completed'
+      }
+    ],
+    expense: [
+      {
+        id: '6',
+        txCode: 'EX001234572',
+        from: 'Expense Portfolio',
+        to: 'Office Rent',
+        amount: 8000,
+        fees: 30,
+        time: '2024-01-17T08:00:00Z',
+        status: 'completed'
+      }
+    ],
+    working: [
+      {
+        id: '7',
+        txCode: 'WA001234573',
+        from: 'Working Account',
+        to: 'Daily Operations',
+        amount: 5000,
+        fees: 25,
+        time: '2024-01-20T12:00:00Z',
+        status: 'completed'
+      }
+    ],
+    b2b: [
+      {
+        id: '8',
+        txCode: 'B2B001234574',
+        from: 'B2B Holding',
+        to: 'Partner Payment',
+        amount: 18000,
+        fees: 75,
+        time: '2024-01-19T15:30:00Z',
+        status: 'completed'
+      }
+    ],
+    savings: [
+      {
+        id: '9',
+        txCode: 'SV001234575',
+        from: 'Monthly Savings',
+        to: 'Savings Portfolio',
+        amount: 10000,
+        fees: 0,
+        time: '2024-01-20T18:00:00Z',
+        status: 'completed'
+      }
+    ]
+  };
 
-  const filteredTransactions = portfolioTransactions.filter(transaction => {
+  const currentPortfolioTransactions = portfolioTransactions[activeTab] || [];
+
+  const filteredTransactions = currentPortfolioTransactions.filter(transaction => {
     const matchesSearch = 
       transaction.txCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
       transaction.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -66,113 +146,106 @@ const Portfolio: React.FC = () => {
   });
 
   const handleTransfer = (targetPortfolio: string) => {
-    console.log(`Transferring to ${targetPortfolio}`);
+    console.log(`Transferring from ${activeTab} to ${targetPortfolio}`);
+    // In real app, this would open a transfer modal
     setTransferDropdownOpen(false);
   };
 
   const handleDownload = (transactionId: string) => {
-    console.log(`Downloading statement for transaction ${transactionId}`);
+    // Create a mock CSV content
+    const transaction = filteredTransactions.find(t => t.id === transactionId);
+    if (!transaction) return;
+
+    const csvContent = `Transaction Code,From,To,Amount,Fees,Time,Status
+${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount},${transaction.fees},${transaction.time},${transaction.status}`;
+
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `transaction_${transaction.txCode}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   };
 
-  const renderLoanPortfolio = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  const getPortfolioStats = (portfolioType: string) => {
+    const transactions = portfolioTransactions[portfolioType as keyof typeof portfolioTransactions] || [];
+    const totalAmount = transactions.reduce((sum, t) => sum + t.amount, 0);
+    const totalFees = transactions.reduce((sum, t) => sum + t.fees, 0);
+    const transactionCount = transactions.length;
+
+    switch (portfolioType) {
+      case 'loan':
+        return {
+          primary: { label: 'Total Disbursed', value: `KES ${stats.totalLoanDisbursed.toLocaleString()}`, trend: '+15%' },
+          secondary: { label: 'Total Repaid', value: `KES ${stats.totalLoanRepaid.toLocaleString()}`, trend: '+8%' },
+          tertiary: { label: 'Active Loans', value: loans.filter(l => l.status === 'active').length.toString(), trend: '-2%' }
+        };
+      case 'revenue':
+        return {
+          primary: { label: 'Total Revenue', value: `KES ${stats.totalEarned.toLocaleString()}`, trend: '+25%' },
+          secondary: { label: 'Interest Income', value: `KES ${(stats.totalEarned * 0.3).toLocaleString()}`, trend: '+18%' },
+          tertiary: { label: 'Service Fees', value: `KES ${(stats.totalEarned * 0.1).toLocaleString()}`, trend: '+12%' }
+        };
+      default:
+        return {
+          primary: { label: `Total ${portfolioType.charAt(0).toUpperCase() + portfolioType.slice(1)}`, value: `KES ${totalAmount.toLocaleString()}`, trend: '+5%' },
+          secondary: { label: 'Total Fees', value: `KES ${totalFees.toLocaleString()}`, trend: '+3%' },
+          tertiary: { label: 'Transactions', value: transactionCount.toString(), trend: '+10%' }
+        };
+    }
+  };
+
+  const renderPortfolioStats = () => {
+    const stats = getPortfolioStats(activeTab);
+    
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-blue-50 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <TrendingUp className="w-8 h-8 text-blue-600" />
-            <span className="text-sm text-green-600 font-medium">+15%</span>
+            <span className="text-sm text-green-600 font-medium">{stats.primary.trend}</span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">KES {stats.totalLoanDisbursed.toLocaleString()}</h3>
-          <p className="text-gray-600">Total Disbursed</p>
+          <h3 className="text-2xl font-bold text-gray-800">{stats.primary.value}</h3>
+          <p className="text-gray-600">{stats.primary.label}</p>
         </div>
         
         <div className="bg-green-50 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <DollarSign className="w-8 h-8 text-green-600" />
-            <span className="text-sm text-green-600 font-medium">+8%</span>
+            <span className="text-sm text-green-600 font-medium">{stats.secondary.trend}</span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">KES {stats.totalLoanRepaid.toLocaleString()}</h3>
-          <p className="text-gray-600">Total Repaid</p>
+          <h3 className="text-2xl font-bold text-gray-800">{stats.secondary.value}</h3>
+          <p className="text-gray-600">{stats.secondary.label}</p>
         </div>
         
         <div className="bg-orange-50 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <Wallet className="w-8 h-8 text-orange-600" />
-            <span className="text-sm text-red-600 font-medium">-2%</span>
+            <span className="text-sm text-red-600 font-medium">{stats.tertiary.trend}</span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">{loans.filter(l => l.status === 'active').length}</h3>
-          <p className="text-gray-600">Active Loans</p>
+          <h3 className="text-2xl font-bold text-gray-800">{stats.tertiary.value}</h3>
+          <p className="text-gray-600">{stats.tertiary.label}</p>
         </div>
       </div>
-    </div>
-  );
-
-  const renderRevenuePortfolio = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-green-50 rounded-lg p-6">
-          <h3 className="text-2xl font-bold text-gray-800">KES {stats.totalEarned.toLocaleString()}</h3>
-          <p className="text-gray-600">Total Revenue</p>
-        </div>
-        <div className="bg-blue-50 rounded-lg p-6">
-          <h3 className="text-2xl font-bold text-gray-800">KES {(stats.totalEarned * 0.3).toLocaleString()}</h3>
-          <p className="text-gray-600">Interest Income</p>
-        </div>
-        <div className="bg-purple-50 rounded-lg p-6">
-          <h3 className="text-2xl font-bold text-gray-800">KES {(stats.totalEarned * 0.1).toLocaleString()}</h3>
-          <p className="text-gray-600">Service Fees</p>
-        </div>
-        <div className="bg-orange-50 rounded-lg p-6">
-          <h3 className="text-2xl font-bold text-gray-800">KES {(stats.totalEarned * 0.05).toLocaleString()}</h3>
-          <p className="text-gray-600">Other Income</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderGenericPortfolio = (title: string) => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-2xl font-bold text-gray-800">KES 0</h3>
-          <p className="text-gray-600">Total {title}</p>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-2xl font-bold text-gray-800">0</h3>
-          <p className="text-gray-600">Active Items</p>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-6">
-          <h3 className="text-2xl font-bold text-gray-800">0%</h3>
-          <p className="text-gray-600">Growth Rate</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'loan':
-        return renderLoanPortfolio();
-      case 'revenue':
-        return renderRevenuePortfolio();
-      case 'investment':
-        return renderGenericPortfolio('Investment');
-      case 'expense':
-        return renderGenericPortfolio('Expense');
-      case 'working':
-        return renderGenericPortfolio('Working Account');
-      case 'b2b':
-        return renderGenericPortfolio('B2B Holding');
-      case 'savings':
-        return renderGenericPortfolio('Savings');
-      default:
-        return renderLoanPortfolio();
-    }
+    );
   };
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Portfolio</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-800">Portfolio</h1>
+        <button
+          onClick={() => setShowAmounts(!showAmounts)}
+          className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+        >
+          {showAmounts ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          <span>{showAmounts ? 'Hide Amounts' : 'Show Amounts'}</span>
+        </button>
+      </div>
 
       {/* Tab Navigation */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -204,20 +277,22 @@ const Portfolio: React.FC = () => {
                 onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
                 className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
               >
+                <ArrowUpRight className="w-4 h-4" />
                 <span>Transfer</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
               
               {transferDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                   <div className="py-1">
                     {portfolioTabs.filter(tab => tab.id !== activeTab).map(tab => (
                       <button
                         key={tab.id}
                         onClick={() => handleTransfer(tab.label)}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center space-x-2"
                       >
-                        Transfer to {tab.label}
+                        <tab.icon className="w-4 h-4" />
+                        <span>Transfer to {tab.label}</span>
                       </button>
                     ))}
                   </div>
@@ -228,10 +303,11 @@ const Portfolio: React.FC = () => {
         </div>
 
         <div className="p-6">
-          {renderTabContent()}
+          {/* Portfolio Stats */}
+          {renderPortfolioStats()}
 
           {/* Search and Filters */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
               <div className="relative">
                 <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -273,7 +349,7 @@ const Portfolio: React.FC = () => {
           </div>
 
           {/* Portfolio Transactions Table */}
-          <div className="mt-6 bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
@@ -299,10 +375,10 @@ const Portfolio: React.FC = () => {
                       {transaction.to}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                      KES {transaction.amount.toLocaleString()}
+                      {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      KES {transaction.fees}
+                      {showAmounts ? `KES ${transaction.fees}` : '****'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {new Date(transaction.time).toLocaleString()}
@@ -311,7 +387,7 @@ const Portfolio: React.FC = () => {
                       <button
                         onClick={() => handleDownload(transaction.id)}
                         className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
-                        title="Download Statement"
+                        title="Download Transaction Statement"
                       >
                         <Download className="w-4 h-4" />
                       </button>

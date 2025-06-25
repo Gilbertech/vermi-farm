@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, Download, ArrowUpRight, ArrowDownLeft, Clock } from 'lucide-react';
+import { Search, Filter, Download, ArrowUpRight, ArrowDownLeft, Clock, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const EnhancedTransactions: React.FC = () => {
@@ -8,6 +8,7 @@ const EnhancedTransactions: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [amountFilter, setAmountFilter] = useState('');
   const [timeFilter, setTimeFilter] = useState('all');
+  const [showAmounts, setShowAmounts] = useState(true);
 
   // Mock enhanced transaction data
   const enhancedTransactions = [
@@ -85,8 +86,33 @@ const EnhancedTransactions: React.FC = () => {
   };
 
   const handleDownload = (transactionId: string) => {
-    console.log(`Downloading receipt for transaction ${transactionId}`);
-    // In real app, this would trigger a file download
+    const transaction = filteredTransactions.find(t => t.id === transactionId);
+    if (!transaction) return;
+
+    // Create CSV content based on transaction type
+    let csvContent = '';
+    
+    if (activeTab === 'inwallet') {
+      csvContent = `Tx Code,From,To,Amount,Fees,Time
+${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount},${transaction.fees},${transaction.time}`;
+    } else if (activeTab === 'outwallet') {
+      csvContent = `Tx Code,From,Recipient,MSISDN,Amount,Tx Cost,Time,Status
+${transaction.txCode},${transaction.from},${transaction.recipient},${transaction.msisdn},${transaction.amount},${transaction.txCost},${transaction.time},${transaction.status}`;
+    } else {
+      csvContent = `Tx Code,From,Amount,Tx Cost,Mpesa Receipt,Time,Status
+${transaction.txCode},${transaction.from},${transaction.amount},${transaction.txCost},${transaction.mpesaReceipt},${transaction.time},${transaction.status}`;
+    }
+
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${activeTab}_transaction_${transaction.txCode}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   };
 
   const renderInwalletTable = () => (
@@ -100,6 +126,7 @@ const EnhancedTransactions: React.FC = () => {
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fees</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -115,13 +142,22 @@ const EnhancedTransactions: React.FC = () => {
                 {transaction.to}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                KES {transaction.amount.toLocaleString()}
+                {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                KES {transaction.fees}
+                {showAmounts ? `KES ${transaction.fees}` : '****'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {new Date(transaction.time).toLocaleString()}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <button
+                  onClick={() => handleDownload(transaction.id)}
+                  className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
+                  title="Download Transaction"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
               </td>
             </tr>
           ))}
@@ -143,6 +179,7 @@ const EnhancedTransactions: React.FC = () => {
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Cost</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -158,13 +195,13 @@ const EnhancedTransactions: React.FC = () => {
                 {transaction.recipient}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {transaction.msisdn}
+                {showAmounts ? transaction.msisdn : '****'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                KES {transaction.amount.toLocaleString()}
+                {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                KES {transaction.txCost}
+                {showAmounts ? `KES ${transaction.txCost}` : '****'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {new Date(transaction.time).toLocaleString()}
@@ -173,6 +210,15 @@ const EnhancedTransactions: React.FC = () => {
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}>
                   {transaction.status}
                 </span>
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap">
+                <button
+                  onClick={() => handleDownload(transaction.id)}
+                  className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
+                  title="Download Transaction"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
               </td>
             </tr>
           ))}
@@ -193,7 +239,7 @@ const EnhancedTransactions: React.FC = () => {
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mpesa Receipt</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -206,10 +252,10 @@ const EnhancedTransactions: React.FC = () => {
                 {transaction.from}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                KES {transaction.amount.toLocaleString()}
+                {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                KES {transaction.txCost}
+                {showAmounts ? `KES ${transaction.txCost}` : '****'}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 {transaction.mpesaReceipt}
@@ -240,7 +286,16 @@ const EnhancedTransactions: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Transactions</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-800">Transactions</h1>
+        <button
+          onClick={() => setShowAmounts(!showAmounts)}
+          className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+        >
+          {showAmounts ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          <span>{showAmounts ? 'Hide Amounts' : 'Show Amounts'}</span>
+        </button>
+      </div>
 
       {/* Global Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
