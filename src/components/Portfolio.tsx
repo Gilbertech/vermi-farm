@@ -274,6 +274,7 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
 
             {/* Transfer Dropdown */}
             <div className="relative">
+               <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <button
                 onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
                 className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
@@ -282,7 +283,7 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
                 <span>Transfer</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
-              
+               </div> 
               {transferDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                   <div className="py-1">
