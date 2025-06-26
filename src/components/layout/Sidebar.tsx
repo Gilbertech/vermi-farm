@@ -66,11 +66,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
         className="w-10 h-10 rounded-full object-cover"
       />
 
-      <h1 className="text-xl font-bold text--800">Vermi-Farm</h1>
+      <h1 className="text-xl font-bold text-gray-800">Vermi-Farm</h1>
     </div>
     <button
       onClick={() => setIsOpen(false)}
-      className="lg:hidden text-gray-500 hover:text-gray-700"
+      className="lg:hidden text-gray-500 hover:text-#983F21-700"
     >
       <X className="w-6 h-6" />
     </button>
