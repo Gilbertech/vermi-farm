@@ -37,18 +37,17 @@ const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-         {/* Logo and Title */}
-<div className="text-center mb-8">
-  <img
-    src="https://www.vermi-farm.org/images/logo1.png"
-    alt="Vermi-Farm Logo"
-    className="w-16 h-16 rounded-full object-cover mx-auto mb-4"
-  />
-  <h1 className="text-2xl font-bold text-gray-800">Vermi-Farm Admin</h1>
-  <p className="text-gray-600 mt-2">Sign in to your account</p>
-</div>
-
+        <div className="bg-white rounded-2xl shadow-xl p-6 lg:p-8">
+          {/* Logo and Title */}
+          <div className="text-center mb-8">
+            <img
+              src="https://www.vermi-farm.org/images/logo1.png"
+              alt="Vermi-Farm Logo"
+              className="w-16 h-16 rounded-full object-cover mx-auto mb-4"
+            />
+            <h1 className="text-2xl font-bold text-gray-800">Vermi-Farm Admin</h1>
+            <p className="text-gray-600 mt-2">Sign in to your account</p>
+          </div>
 
           {/* Error Message */}
           {error && (
@@ -129,7 +128,14 @@ const LoginPage: React.FC = () => {
           </div>
 
           {/* Demo Credentials */}
-        
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <h4 className="text-sm font-medium text-gray-800 mb-2">Demo Credentials:</h4>
+            <div className="space-y-1 text-xs text-gray-600">
+              <p><strong>Super Admin:</strong> 0712345678 / admin123</p>
+              <p><strong>Admin Initiator:</strong> 0712345679 / admin123</p>
+              <p><strong>Admin Initiator:</strong> 0712345680 / admin123</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, PiggyBank as Piggy, ChevronDown, Search, Filter, Calendar, Download, Eye, EyeOff, ArrowUpRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, PiggyBank as Piggy, ChevronDown, Search, Filter, Calendar, Download, Eye, EyeOff, ArrowUpRight, Check, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
+import { generateReceipt } from '../utils/receiptGenerator';
+import Modal from './Modal';
+import TransferForm from './forms/TransferForm';
 
 const Portfolio: React.FC = () => {
-  const { stats, loans, transactions } = useApp();
+  const { stats, loans, transactions, users } = useApp();
+  const { canInitiate, canApprove, currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'loan' | 'revenue' | 'investment' | 'expense' | 'working' | 'b2b' | 'savings'>('loan');
   const [searchTerm, setSearchTerm] = useState('');
   const [amountFilter, setAmountFilter] = useState('');
   const [timeFilter, setTimeFilter] = useState('all');
   const [transferDropdownOpen, setTransferDropdownOpen] = useState(false);
   const [showAmounts, setShowAmounts] = useState(true);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [targetPortfolio, setTargetPortfolio] = useState('');
+  const [pendingTransfers, setPendingTransfers] = useState<any[]>([]);
 
   const portfolioTabs = [
     { id: 'loan', label: 'Loan Portfolio', icon: TrendingUp },
@@ -145,30 +153,87 @@ const Portfolio: React.FC = () => {
     return matchesSearch && matchesAmount && matchesTime;
   });
 
-  const handleTransfer = (targetPortfolio: string) => {
-    console.log(`Transferring from ${activeTab} to ${targetPortfolio}`);
-    // In real app, this would open a transfer modal
+  const handleTransfer = (targetPortfolioId: string) => {
+    if (!canInitiate()) {
+      alert('You do not have permission to initiate transfers');
+      return;
+    }
+    
+    setTargetPortfolio(targetPortfolioId);
+    setIsTransferModalOpen(true);
     setTransferDropdownOpen(false);
   };
 
+  const handleTransferSubmit = (transferData: any) => {
+    const newTransfer = {
+      id: Date.now().toString(),
+      ...transferData,
+      fromPortfolio: activeTab,
+      toPortfolio: targetPortfolio,
+      initiatedBy: currentUser?.name,
+      status: canApprove() ? 'approved' : 'pending',
+      createdAt: new Date().toISOString()
+    };
+
+    if (canApprove()) {
+      // Auto-approve if super admin
+      console.log('Transfer approved and executed:', newTransfer);
+    } else {
+      // Add to pending transfers
+      setPendingTransfers(prev => [...prev, newTransfer]);
+      console.log('Transfer submitted for approval:', newTransfer);
+    }
+
+    setIsTransferModalOpen(false);
+  };
+
+  const handleApproveTransfer = (transferId: string) => {
+    if (!canApprove()) {
+      alert('You do not have permission to approve transfers');
+      return;
+    }
+
+    setPendingTransfers(prev => 
+      prev.map(transfer => 
+        transfer.id === transferId 
+          ? { ...transfer, status: 'approved', approvedBy: currentUser?.name }
+          : transfer
+      )
+    );
+  };
+
+  const handleRejectTransfer = (transferId: string) => {
+    if (!canApprove()) {
+      alert('You do not have permission to reject transfers');
+      return;
+    }
+
+    setPendingTransfers(prev => 
+      prev.map(transfer => 
+        transfer.id === transferId 
+          ? { ...transfer, status: 'rejected', rejectedBy: currentUser?.name }
+          : transfer
+      )
+    );
+  };
+
   const handleDownload = (transactionId: string) => {
-    // Create a mock CSV content
     const transaction = filteredTransactions.find(t => t.id === transactionId);
     if (!transaction) return;
 
-    const csvContent = `Transaction Code,From,To,Amount,Fees,Time,Status
-${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount},${transaction.fees},${transaction.time},${transaction.status}`;
+    const receiptData = {
+      transactionId: transaction.txCode,
+      date: transaction.time,
+      userName: transaction.from,
+      userPhone: '+254712345678', // Mock phone
+      amount: transaction.amount,
+      type: `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Portfolio Transaction`,
+      status: transaction.status,
+      from: transaction.from,
+      to: transaction.to
+    };
 
-    // Create and download the file
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `transaction_${transaction.txCode}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    generateReceipt(receiptData);
   };
 
   const getPortfolioStats = (portfolioType: string) => {
@@ -203,108 +268,144 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
     const stats = getPortfolioStats(activeTab);
     
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-blue-50 rounded-lg p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
+        <div className="bg-blue-50 rounded-lg p-4 lg:p-6">
           <div className="flex items-center justify-between mb-4">
-            <TrendingUp className="w-8 h-8 text-blue-600" />
-            <span className="text-sm text-green-600 font-medium">{stats.primary.trend}</span>
+            <TrendingUp className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600" />
+            <span className="text-xs lg:text-sm text-green-600 font-medium">{stats.primary.trend}</span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">{stats.primary.value}</h3>
-          <p className="text-gray-600">{stats.primary.label}</p>
+          <h3 className="text-lg lg:text-2xl font-bold text-gray-800">{stats.primary.value}</h3>
+          <p className="text-sm lg:text-base text-gray-600">{stats.primary.label}</p>
         </div>
         
-        <div className="bg-green-50 rounded-lg p-6">
+        <div className="bg-green-50 rounded-lg p-4 lg:p-6">
           <div className="flex items-center justify-between mb-4">
-            <DollarSign className="w-8 h-8 text-green-600" />
-            <span className="text-sm text-green-600 font-medium">{stats.secondary.trend}</span>
+            <DollarSign className="w-6 h-6 lg:w-8 lg:h-8 text-green-600" />
+            <span className="text-xs lg:text-sm text-green-600 font-medium">{stats.secondary.trend}</span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">{stats.secondary.value}</h3>
-          <p className="text-gray-600">{stats.secondary.label}</p>
+          <h3 className="text-lg lg:text-2xl font-bold text-gray-800">{stats.secondary.value}</h3>
+          <p className="text-sm lg:text-base text-gray-600">{stats.secondary.label}</p>
         </div>
         
-        <div className="bg-orange-50 rounded-lg p-6">
+        <div className="bg-orange-50 rounded-lg p-4 lg:p-6">
           <div className="flex items-center justify-between mb-4">
-            <Wallet className="w-8 h-8 text-orange-600" />
-            <span className="text-sm text-red-600 font-medium">{stats.tertiary.trend}</span>
+            <Wallet className="w-6 h-6 lg:w-8 lg:h-8 text-[#983F21]" />
+            <span className="text-xs lg:text-sm text-red-600 font-medium">{stats.tertiary.trend}</span>
           </div>
-          <h3 className="text-2xl font-bold text-gray-800">{stats.tertiary.value}</h3>
-          <p className="text-gray-600">{stats.tertiary.label}</p>
+          <h3 className="text-lg lg:text-2xl font-bold text-gray-800">{stats.tertiary.value}</h3>
+          <p className="text-sm lg:text-base text-gray-600">{stats.tertiary.label}</p>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Portfolio</h1>
+    <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Portfolio</h1>
         <button
           onClick={() => setShowAmounts(!showAmounts)}
-          className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+          className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 self-start sm:self-auto"
         >
           {showAmounts ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           <span>{showAmounts ? 'Hide Amounts' : 'Show Amounts'}</span>
         </button>
       </div>
 
+      {/* Pending Transfers Section */}
+      {canApprove() && pendingTransfers.filter(t => t.status === 'pending').length > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 lg:p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Pending Transfer Approvals</h3>
+          <div className="space-y-3">
+            {pendingTransfers.filter(t => t.status === 'pending').map(transfer => (
+              <div key={transfer.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white p-4 rounded-lg gap-4">
+                <div className="flex-1">
+                  <p className="font-medium text-gray-800">
+                    KES {transfer.amount?.toLocaleString()} from {transfer.fromPortfolio} to {transfer.toPortfolio}
+                  </p>
+                  <p className="text-sm text-gray-600">Initiated by: {transfer.initiatedBy}</p>
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleApproveTransfer(transfer.id)}
+                    className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-700 transition-colors duration-200"
+                  >
+                    <Check className="w-4 h-4" />
+                    <span>Approve</span>
+                  </button>
+                  <button
+                    onClick={() => handleRejectTransfer(transfer.id)}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-red-700 transition-colors duration-200"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Reject</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Tab Navigation */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="border-b border-gray-200">
-          <div className="flex items-center justify-between px-6 py-4">
-            <nav className="flex space-x-8 overflow-x-auto">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between px-4 lg:px-6 py-4 gap-4">
+            <nav className="flex space-x-2 lg:space-x-8 overflow-x-auto pb-2 lg:pb-0">
               {portfolioTabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 whitespace-nowrap flex items-center space-x-2 ${
+                    className={`py-2 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-xs lg:text-sm transition-colors duration-200 whitespace-nowrap flex items-center space-x-1 lg:space-x-2 ${
                       activeTab === tab.id
                         ? 'border-[#2d8e41] text-[#2d8e41]'
                         : 'border-transparent text-gray-500 hover:text-gray-700'
                     }`}
                   >
-                    <Icon className="w-4 h-4" />
-                    <span>{tab.label}</span>
+                    <Icon className="w-3 h-3 lg:w-4 lg:h-4" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="sm:hidden">{tab.id.charAt(0).toUpperCase() + tab.id.slice(1)}</span>
                   </button>
                 );
               })}
             </nav>
- 
 
             {/* Transfer Dropdown */}
-            <div className="relative">
-               <div className="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <button
-                onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
-                className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
-              >
-                <ArrowUpRight className="w-4 h-4" />
-                <span>Transfer</span>
-                <ChevronDown className="w-4 h-4" />
-              </button>
-               </div> 
-              {transferDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                  <div className="py-1">
-                    {portfolioTabs.filter(tab => tab.id !== activeTab).map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => handleTransfer(tab.label)}
-                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center space-x-2"
-                      >
-                        <tab.icon className="w-4 h-4" />
-                        <span>Transfer to {tab.label}</span>
-                      </button>
-                    ))}
+            {canInitiate() && (
+              <div className="relative">
+                <button
+                  onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
+                  className="bg-[#983F21] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#7a3219] transition-colors duration-200 w-full sm:w-auto justify-center"
+                >
+                  <ArrowUpRight className="w-4 h-4" />
+                  <span>Transfer</span>
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+                
+                {transferDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                    <div className="py-1">
+                      {portfolioTabs.filter(tab => tab.id !== activeTab).map(tab => (
+                        <button
+                          key={tab.id}
+                          onClick={() => handleTransfer(tab.id)}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center space-x-2"
+                        >
+                          <tab.icon className="w-4 h-4" />
+                          <span>Transfer to {tab.label}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           {/* Portfolio Stats */}
           {renderPortfolioStats()}
 
@@ -352,61 +453,77 @@ ${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount
 
           {/* Portfolio Transactions Table */}
           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Code</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fees</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredTransactions.map((transaction, index) => (
-                  <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#f9fafb]'}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {transaction.txCode}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {transaction.from}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {transaction.to}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                      {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {showAmounts ? `KES ${transaction.fees}` : '****'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(transaction.time).toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <button
-                        onClick={() => handleDownload(transaction.id)}
-                        className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
-                        title="Download Transaction Statement"
-                      >
-                        <Download className="w-4 h-4" />
-                      </button>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[600px]">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Code</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fees</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {filteredTransactions.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500">No transactions found for this portfolio</p>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredTransactions.map((transaction, index) => (
+                    <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#f9fafb]'}>
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {transaction.txCode}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {transaction.from}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {transaction.to}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                        {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {showAmounts ? `KES ${transaction.fees}` : '****'}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {new Date(transaction.time).toLocaleString()}
+                      </td>
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                        <button
+                          onClick={() => handleDownload(transaction.id)}
+                          className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
+                          title="Download Transaction Receipt"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
+
+            {filteredTransactions.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No transactions found for this portfolio</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Transfer Modal */}
+      <Modal
+        isOpen={isTransferModalOpen}
+        onClose={() => setIsTransferModalOpen(false)}
+        title={`Transfer from ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Portfolio`}
+      >
+        <TransferForm 
+          fromPortfolio={activeTab}
+          toPortfolio={targetPortfolio}
+          onSubmit={handleTransferSubmit}
+          onClose={() => setIsTransferModalOpen(false)}
+        />
+      </Modal>
     </div>
   );
 };

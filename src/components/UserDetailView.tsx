@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Phone, Users, DollarSign, MapPin, Edit, Save, X } from 'lucide-react';
+import { ArrowLeft, Phone, Users, DollarSign, MapPin, Edit, Save, X, RotateCcw, Eye, History } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import Modal from './Modal';
+import UserTransactionsModal from './modals/UserTransactionsModal';
+import UserLoanHistoryModal from './modals/UserLoanHistoryModal';
 
 interface UserDetailViewProps {
   userId: string;
@@ -11,6 +14,9 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
   const { users, groups, updateUser } = useApp();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>({});
+  const [showTransactions, setShowTransactions] = useState(false);
+  const [showLoanHistory, setShowLoanHistory] = useState(false);
+  const [isResettingPin, setIsResettingPin] = useState(false);
 
   const user = users.find(u => u.id === userId);
   const userGroup = user?.groupId ? groups.find(g => g.id === user.groupId) : null;
@@ -46,6 +52,14 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
     setEditData({});
   };
 
+  const handleResetPin = async () => {
+    setIsResettingPin(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    alert(`PIN reset successfully for ${user.name}. New PIN sent via SMS.`);
+    setIsResettingPin(false);
+  };
+
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'admin':
@@ -55,16 +69,16 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
       case 'chairperson':
         return 'bg-purple-100 text-purple-800';
       case 'treasurer':
-        return 'bg-green-100 text-green-800';
+        return 'bg-[#983F21] bg-opacity-10 text-[#983F21]';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center space-x-4">
           <button
             onClick={onBack}
@@ -72,13 +86,13 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
-          <h1 className="text-3xl font-bold text-gray-800">User Details</h1>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">User Details</h1>
         </div>
         
         {!isEditing ? (
           <button
             onClick={handleEdit}
-            className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200"
+            className="bg-[#2d8e41] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 self-start sm:self-auto"
           >
             <Edit className="w-4 h-4" />
             <span>Edit</span>
@@ -104,7 +118,7 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
       </div>
 
       {/* User Profile Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             <div>
@@ -203,24 +217,64 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
         </div>
       </div>
 
-      {/* Additional Actions */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      {/* Quick Actions */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-left">
-            <h4 className="font-medium text-gray-800">Reset PIN</h4>
-            <p className="text-sm text-gray-500">Reset user's PIN for security</p>
+          <button 
+            onClick={handleResetPin}
+            disabled={isResettingPin}
+            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div className="flex items-center space-x-3 mb-2">
+              <RotateCcw className="w-5 h-5 text-[#983F21]" />
+              <h4 className="font-medium text-gray-800">Reset PIN</h4>
+            </div>
+            <p className="text-sm text-gray-500">
+              {isResettingPin ? 'Resetting PIN...' : 'Reset user\'s PIN for security'}
+            </p>
           </button>
-          <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-left">
-            <h4 className="font-medium text-gray-800">View Transactions</h4>
+          
+          <button 
+            onClick={() => setShowTransactions(true)}
+            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-left"
+          >
+            <div className="flex items-center space-x-3 mb-2">
+              <Eye className="w-5 h-5 text-[#2d8e41]" />
+              <h4 className="font-medium text-gray-800">View Transactions</h4>
+            </div>
             <p className="text-sm text-gray-500">See all user transactions</p>
           </button>
-          <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-left">
-            <h4 className="font-medium text-gray-800">Loan History</h4>
+          
+          <button 
+            onClick={() => setShowLoanHistory(true)}
+            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-left"
+          >
+            <div className="flex items-center space-x-3 mb-2">
+              <History className="w-5 h-5 text-[#983F21]" />
+              <h4 className="font-medium text-gray-800">Loan History</h4>
+            </div>
             <p className="text-sm text-gray-500">View loan applications</p>
           </button>
         </div>
       </div>
+
+      {/* Modals */}
+      <Modal
+        isOpen={showTransactions}
+        onClose={() => setShowTransactions(false)}
+        title={`${user.name}'s Transactions`}
+      >
+        <UserTransactionsModal userId={user.id} />
+      </Modal>
+
+      <Modal
+        isOpen={showLoanHistory}
+        onClose={() => setShowLoanHistory(false)}
+        title={`${user.name}'s Loan History`}
+      >
+        <UserLoanHistoryModal userId={user.id} />
+      </Modal>
     </div>
   );
 };

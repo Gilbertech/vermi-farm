@@ -1,12 +1,22 @@
 import React, { createContext, useContext, useState } from 'react';
 
+interface User {
+  id: string;
+  name: string;
+  phone: string;
+  role: 'super_admin' | 'admin_initiator' | 'admin_approver';
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   currentView: 'login' | 'reset-password';
+  currentUser: User | null;
   login: (phone: string, password: string) => Promise<boolean>;
   logout: () => void;
   resetPassword: (phone: string) => Promise<boolean>;
   setCurrentView: (view: 'login' | 'reset-password') => void;
+  canInitiate: () => boolean;
+  canApprove: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +32,14 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentView, setCurrentView] = useState<'login' | 'reset-password'>('login');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  // Mock admin users
+  const adminUsers: User[] = [
+    { id: '1', name: 'Super Admin', phone: '0712345678', role: 'super_admin' },
+    { id: '2', name: 'Admin Initiator 1', phone: '0712345679', role: 'admin_initiator' },
+    { id: '3', name: 'Admin Initiator 2', phone: '0712345680', role: 'admin_initiator' },
+  ];
 
   const validateKenyanPhone = (phone: string): boolean => {
     const kenyanPhoneRegex = /^(07|01)\d{8}$/;
@@ -36,9 +54,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Mock authentication - in real app, this would be an API call
-    if (phone === '0712345678' && password === 'admin123') {
+    // Mock authentication
+    const user = adminUsers.find(u => u.phone === phone);
+    if (user && password === 'admin123') {
       setIsAuthenticated(true);
+      setCurrentUser(user);
       return true;
     }
     
@@ -47,6 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setIsAuthenticated(false);
+    setCurrentUser(null);
     setCurrentView('login');
   };
 
@@ -60,14 +81,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return true;
   };
 
+  const canInitiate = (): boolean => {
+    return currentUser?.role === 'super_admin' || currentUser?.role === 'admin_initiator';
+  };
+
+  const canApprove = (): boolean => {
+    return currentUser?.role === 'super_admin';
+  };
+
   return (
     <AuthContext.Provider value={{
       isAuthenticated,
       currentView,
+      currentUser,
       login,
       logout,
       resetPassword,
-      setCurrentView
+      setCurrentView,
+      canInitiate,
+      canApprove
     }}>
       {children}
     </AuthContext.Provider>
