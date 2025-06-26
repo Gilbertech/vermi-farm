@@ -66,7 +66,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
         className="w-10 h-10 rounded-full object-cover"
       />
 
-      <h1 className="text-xl font-bold text-gray-800">Vermi-Farm</h1>
+      <h1 className="text-xl font-bold bg-[#7a3219]-800">Vermi-Farm</h1>
     </div>
     <button
       onClick={() => setIsOpen(false)}
