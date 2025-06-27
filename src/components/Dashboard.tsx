@@ -53,7 +53,7 @@ const Dashboard: React.FC = () => {
     {title: 'Transactions failed ',
       value: stats.totalGroups.toString(),
       icon: XCircle ,
-      color: '#983F21',
+      color: 'red',
       trend: '-100%'
     }
 
