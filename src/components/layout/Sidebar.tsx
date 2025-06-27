@@ -82,12 +82,13 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
               <X className="w-5 h-5" />
             </button>
           </div>
-        </div>
-<div><h1 className="text-xs" style={{ color: '#983F21', fontSize: '10px' }}>
+          <div><h1 className="text-xs" style={{ color: '#983F21', fontSize: '10px' }}>
   Changing Lives, One Farm at a Time
 </h1>
 
 </div>
+        </div>
+
         {/* Navigation - Scrollable */}
         <nav className="flex-1 overflow-y-auto py-4">
           <div className="space-y-1 px-2">
