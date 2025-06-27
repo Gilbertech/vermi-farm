@@ -57,14 +57,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
       `}>
         {/* Header */}
 <div className="p-4 lg:p-6 border-b border-gray-200 flex-shrink-0">
-  <div className="flex flex-col items-center justify-center space-y-2">
+  <div className="flex flex-col items-center justify-center space-y-2">21
     <img
       src="https://i.postimg.cc/MTpyCg68/logo.png"
       alt="Vermi-Farm Logo"
      className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28 rounded-full object-cover"
 
     />
-    <h1 className="text-xs font-bold" style={{ color: '#2d8e41' }}>
+    <h1 className="text-xs font-bold" style={{ color: '#983f' }}>
       Changing Lives, One Farm at a Time
     </h1>
   </div>
