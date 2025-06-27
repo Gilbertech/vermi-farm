@@ -46,9 +46,13 @@ const Dashboard: React.FC = () => {
       title: 'Total Loan Repaid',
       value: `KES ${stats.totalLoanRepaid.toLocaleString()}`,
       icon: TrendingDown,
-      color: 'red',
+      color: 'black',
       trend: '+7%'
     },
+    <h1 className="text-xs" style={{ color: '#983F21' }}>
+  Changing Lives, One Farm at a Time
+</h1>
+
     {
       title: 'Total Amount Earned',
       value: `KES ${stats.totalEarned.toLocaleString()}`,
