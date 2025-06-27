@@ -67,7 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
 
               />
             <h1 className="text-sm sm:text-base md:text-lg font-semibold" style={{ color: '#983F21' }}>
-  Vermi-Farm yetu
+  Vermi-Farm 
 </h1>
 
 
