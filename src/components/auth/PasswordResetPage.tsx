@@ -58,7 +58,7 @@ const PasswordResetPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Logo and Title */}
-          <img
+  <img
               src="https://i.postimg.cc/MTpyCg68/logo.png"
               alt="Vermi-Farm Logo"
               className="w-16 h-16 rounded-full object-cover mx-auto mb-4"
