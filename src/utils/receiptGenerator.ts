@@ -47,7 +47,7 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     
     // Load and add logo watermark
     try {
-      const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/dVZqjS4c/cropped-DSC-2567.jpg');
+      const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
       
       // Add watermark logo (semi-transparent, centered)
       pdf.setGState(pdf.GState({ opacity: 0.1 }));
