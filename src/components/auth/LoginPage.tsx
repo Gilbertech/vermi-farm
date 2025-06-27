@@ -129,7 +129,7 @@ const LoginPage: React.FC = () => {
 
           {/* Demo Credentials */}
          
-  );
+  
 };
 
 export default LoginPage;
