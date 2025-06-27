@@ -61,7 +61,7 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     }
     
     // Header
-    pdf.setFontSize(24);
+    pdf.setFontSize(20);
     pdf.setTextColor(45, 142, 65); // #2d8e41
     pdf.setFont('helvetica', 'bold');
     pdf.text('VERMI-FARM INITIATIVE', 50, 20);
