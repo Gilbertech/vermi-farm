@@ -52,7 +52,7 @@ const Dashboard: React.FC = () => {
     },
     {title: 'Total Amount Earned',
       value: `KES ${stats.totalEarned.toLocaleString()}`,
-      icon: Wallet,
+      icon: XCircle ,
       color: 'emerald',
       trend: '+25%'
     }
