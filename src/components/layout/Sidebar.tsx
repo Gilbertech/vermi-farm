@@ -67,7 +67,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
 
               />
            
-</h1>
 
 
 
