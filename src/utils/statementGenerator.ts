@@ -62,7 +62,33 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     } catch (logoError) {
       console.warn('Could not load logo, proceeding without watermark:', logoError);
     }
-    
+     // Load and add logo watermark
+    try {
+      const logoBase64 = await loadImageAsBase64('https://www.vermi-farm.org/images/logo1.png');
+      
+      // Add watermark logo (semi-transparent, centered)
+      pdf.setGState(pdf.GState({ opacity: 0.08 }));
+      pdf.addImage(logoBase64, 'PNG', 50, 70, 110, 110);
+      pdf.setGState(pdf.GState({ opacity: 1 }));
+      
+      // Add small logo at top left
+      pdf.addImage(logoBase64, 'PNG', 15, 10, 30, 30);
+    } catch (logoError) {
+      console.warn('Could not load primary logo, trying secondary logo:', logoError);
+      try {
+        const secondaryLogoBase64 = await loadImageAsBase64('https://www.vermi-farm.org/images/logo4.png');
+        
+        // Add watermark logo (semi-transparent, centered)
+        pdf.setGState(pdf.GState({ opacity: 0.08 }));
+        pdf.addImage(secondaryLogoBase64, 'PNG', 50, 70, 110, 110);
+        pdf.setGState(pdf.GState({ opacity: 1 }));
+        
+        // Add small logo at top left
+        pdf.addImage(secondaryLogoBase64, 'PNG', 15, 10, 30, 30);
+      } catch (secondaryLogoError) {
+        console.warn('Could not load any logo, proceeding without watermark:', secondaryLogoError);
+      }
+    }
     // Header
     pdf.setFontSize(24);
     pdf.setTextColor(45, 142, 65); // #2d8e41
