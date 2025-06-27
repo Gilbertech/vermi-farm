@@ -58,10 +58,11 @@ const PasswordResetPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Logo and Title */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-[#2d8e41] rounded-full flex items-center justify-center mx-auto mb-4">
-              <Sprout className="w-8 h-8 text-white" />
-            </div>
+          <img
+              src="https://i.postimg.cc/MTpyCg68/logo.png"
+              alt="Vermi-Farm Logo"
+              className="w-16 h-16 rounded-full object-cover mx-auto mb-4"
+            />
             <h1 className="text-2xl font-bold text-gray-800">Reset Password</h1>
             <p className="text-gray-600 mt-2">Enter your phone number to receive reset instructions</p>
           </div>
