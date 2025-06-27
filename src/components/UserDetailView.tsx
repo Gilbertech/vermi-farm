@@ -62,12 +62,10 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case 'admin':
+      case 'chairperson':
         return 'bg-red-100 text-red-800';
       case 'secretary':
         return 'bg-blue-100 text-blue-800';
-      case 'chairperson':
-        return 'bg-purple-100 text-purple-800';
       case 'treasurer':
         return 'bg-[#983F21] bg-opacity-10 text-[#983F21]';
       default:
@@ -84,9 +82,9 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
             onClick={onBack}
             className="text-gray-600 hover:text-gray-800 transition-colors duration-200"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <ArrowLeft className="w-5 h-5 lg:w-6 lg:h-6" />
           </button>
-          <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">User Details</h1>
+          <h1 className="text-xl lg:text-3xl font-bold text-gray-800">User Details</h1>
         </div>
         
         {!isEditing ? (
@@ -164,7 +162,6 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
                   <option value="treasurer">Treasurer</option>
                   <option value="secretary">Secretary</option>
                   <option value="chairperson">Chairperson</option>
-                  <option value="admin">Admin</option>
                 </select>
               ) : (
                 <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getRoleBadgeColor(user.role)}`}>

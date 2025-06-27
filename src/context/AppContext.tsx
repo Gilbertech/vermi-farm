@@ -5,7 +5,7 @@ interface User {
   name: string;
   email: string;
   phone: string;
-  role: 'admin' | 'member' | 'secretary' | 'chairperson' | 'treasurer';
+  role: 'chairperson' | 'member' | 'secretary' | 'treasurer';
   groupId?: string;
   balance: number;
   status: 'active' | 'inactive';
@@ -48,6 +48,7 @@ interface Loan {
   interestRate: number;
   dueDate: string;
   status: 'active' | 'completed' | 'overdue';
+  type: 'group' | 'individual';
   createdAt: string;
 }
 
@@ -101,7 +102,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         name: 'John Doe',
         email: 'john@example.com',
         phone: '+254712345678',
-        role: 'admin',
+        role: 'chairperson',
         groupId: '1',
         balance: 5000,
         status: 'active',
@@ -208,7 +209,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         interestRate: 5,
         dueDate: '2024-07-22T00:00:00Z',
         status: 'active',
+        type: 'group',
         createdAt: '2024-01-22T14:00:00Z'
+      },
+      {
+        id: '2',
+        userId: '3',
+        groupId: '2',
+        amount: 8000,
+        repaidAmount: 1000,
+        interestRate: 4.5,
+        dueDate: '2024-08-15T00:00:00Z',
+        status: 'active',
+        type: 'individual',
+        createdAt: '2024-01-25T10:00:00Z'
       }
     ];
 

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Download, Search, Filter, Calendar, Plus } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { generateStatement } from '../utils/statementGenerator';
 import Modal from './Modal';
 import GenerateStatementForm from './forms/GenerateStatementForm';
 
 const Statements: React.FC = () => {
-  const { groups, users } = useApp();
+  const { groups, users, transactions } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,27 +63,54 @@ const Statements: React.FC = () => {
     return matchesSearch && matchesDate;
   });
 
-  const handleDownload = (statementId: string) => {
-    // Mock download functionality
-    console.log(`Downloading statement ${statementId}`);
-    // In real app, this would trigger a file download
+  const handleDownload = async (statement: any) => {
+    const user = users.find(u => u.id === statement.userId);
+    const group = groups.find(g => g.id === statement.groupId);
+    
+    // Get transactions for the period
+    const statementTransactions = transactions
+      .filter(t => {
+        const transactionDate = new Date(t.createdAt);
+        const fromDate = new Date(statement.from);
+        const toDate = new Date(statement.to);
+        return transactionDate >= fromDate && transactionDate <= toDate;
+      })
+      .map((t, index) => ({
+        id: t.id,
+        date: t.createdAt,
+        type: t.type,
+        description: t.description,
+        amount: t.amount,
+        balance: 5000 + (index * 1000), // Mock running balance
+        status: t.status
+      }));
+
+    const statementData = {
+      fromDate: statement.from,
+      toDate: statement.to,
+      userName: user?.name,
+      groupName: group?.name,
+      transactions: statementTransactions
+    };
+
+    await generateStatement(statementData);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Available Statements</h1>
+    <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Available Statements</h1>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-[#2d8e41] text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium"
+          className="bg-[#2d8e41] text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium self-start sm:self-auto"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 lg:w-5 h-4 lg:h-5" />
           <span>Generate Statement</span>
         </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2">
             <div className="relative">
@@ -118,16 +146,16 @@ const Statements: React.FC = () => {
       {/* Statements Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[600px]">
             <thead className="bg-white border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">No.</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">From</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">To</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">Group</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">User</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">Type</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">Actions</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">No.</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">From</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">To</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Group</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">User</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Type</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -141,27 +169,27 @@ const Statements: React.FC = () => {
                       isEven ? 'bg-white' : 'bg-[#f9fafb]'
                     }`}
                   >
-                    <td className="px-6 py-4 text-sm text-gray-900">{index + 1}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">{index + 1}</td>
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">
                       {new Date(statement.from).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">
                       {new Date(statement.to).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 font-medium">
                       {getGroupName(statement.groupId)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">
                       {getUserName(statement.userId)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">
                       <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                         {statement.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 lg:px-6 py-4">
                       <button
-                        onClick={() => handleDownload(statement.id)}
+                        onClick={() => handleDownload(statement)}
                         className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
                         title="Download Statement"
                       >

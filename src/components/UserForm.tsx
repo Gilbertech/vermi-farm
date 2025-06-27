@@ -11,7 +11,7 @@ const UserForm: React.FC<UserFormProps> = ({ onClose }) => {
     name: '',
     email: '',
     phone: '',
-    role: 'member' as 'admin' | 'member',
+    role: 'member' as 'chairperson' | 'member' | 'secretary' | 'treasurer',
     groupId: '',
     balance: 0
   });
@@ -68,7 +68,6 @@ const UserForm: React.FC<UserFormProps> = ({ onClose }) => {
         />
       </div>
 
-
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Phone Number
@@ -94,8 +93,7 @@ const UserForm: React.FC<UserFormProps> = ({ onClose }) => {
           onChange={handleChange}
           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
         >
-          
-          <option value="admin">Chairperson</option>
+          <option value="chairperson">Chairperson</option>
           <option value="secretary">Secretary</option>
           <option value="treasurer">Treasurer</option>
           <option value="member">Member</option>

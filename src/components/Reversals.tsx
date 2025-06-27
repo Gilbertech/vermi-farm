@@ -1,12 +1,28 @@
 import React, { useState } from 'react';
 import { Search, Filter, Check, X, Eye } from 'lucide-react';
+import Modal from './Modal';
+
+interface ReversalRequest {
+  id: string;
+  txCode: string;
+  initiatedBy: string;
+  transactionType: string;
+  amount: number;
+  transactionTime: string;
+  from: string;
+  to: string;
+  status: 'pending' | 'approved' | 'rejected';
+  reason: string;
+}
 
 const Reversals: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedReversal, setSelectedReversal] = useState<ReversalRequest | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Mock reversal requests data
-  const reversalRequests = [
+  const reversalRequests: ReversalRequest[] = [
     {
       id: '1',
       txCode: 'TX001234567',
@@ -79,17 +95,17 @@ const Reversals: React.FC = () => {
     // In real app, this would make an API call
   };
 
-  const handleView = (requestId: string) => {
-    console.log(`Viewing details for reversal request ${requestId}`);
-    // In real app, this would open a modal or navigate to details page
+  const handleView = (request: ReversalRequest) => {
+    setSelectedReversal(request);
+    setIsDetailModalOpen(true);
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Reversal Requests</h1>
+    <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
+      <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Reversal Requests</h1>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="relative">
@@ -125,18 +141,16 @@ const Reversals: React.FC = () => {
       {/* Reversal Requests Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[800px]">
             <thead className="bg-white border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">Tx Code</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">Initiated By</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">Transaction Type</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">Amount</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">Transaction Time</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">From</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">To</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-black">Actions</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Tx Code</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Initiated By</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Transaction Type</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Amount</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Transaction Time</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Status</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -150,23 +164,21 @@ const Reversals: React.FC = () => {
                       isEven ? 'bg-white' : 'bg-[#f9fafb]'
                     }`}
                   >
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{request.txCode}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{request.initiatedBy}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{request.transactionType}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">
+                    <td className="px-4 lg:px-6 py-4 text-sm font-medium text-gray-900">{request.txCode}</td>
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">{request.initiatedBy}</td>
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">{request.transactionType}</td>
+                    <td className="px-4 lg:px-6 py-4 text-sm font-semibold text-gray-900">
                       KES {request.amount.toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">
                       {new Date(request.transactionTime).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{request.from}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{request.to}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 lg:px-6 py-4">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(request.status)}`}>
                         {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 lg:px-6 py-4">
                       <div className="flex items-center space-x-2">
                         {request.status === 'pending' && (
                           <>
@@ -187,7 +199,7 @@ const Reversals: React.FC = () => {
                           </>
                         )}
                         <button
-                          onClick={() => handleView(request.id)}
+                          onClick={() => handleView(request)}
                           className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
                           title="View Details"
                         >
@@ -208,6 +220,79 @@ const Reversals: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Detail Modal */}
+      <Modal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        title="Reversal Request Details"
+      >
+        {selectedReversal && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Transaction Code</label>
+                <p className="text-gray-900 font-medium">{selectedReversal.txCode}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Initiated By</label>
+                <p className="text-gray-900">{selectedReversal.initiatedBy}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Transaction Type</label>
+                <p className="text-gray-900">{selectedReversal.transactionType}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">Amount</label>
+                <p className="text-gray-900 font-semibold">KES {selectedReversal.amount.toLocaleString()}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">From</label>
+                <p className="text-gray-900">{selectedReversal.from}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-500">To</label>
+                <p className="text-gray-900">{selectedReversal.to}</p>
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-500">Reason for Reversal</label>
+              <p className="text-gray-900 mt-1 p-3 bg-gray-50 rounded-lg">{selectedReversal.reason}</p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-500">Status</label>
+              <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full mt-1 ${getStatusColor(selectedReversal.status)}`}>
+                {selectedReversal.status.charAt(0).toUpperCase() + selectedReversal.status.slice(1)}
+              </span>
+            </div>
+
+            {selectedReversal.status === 'pending' && (
+              <div className="flex space-x-3 pt-4">
+                <button
+                  onClick={() => {
+                    handleReject(selectedReversal.id);
+                    setIsDetailModalOpen(false);
+                  }}
+                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+                >
+                  Reject
+                </button>
+                <button
+                  onClick={() => {
+                    handleApprove(selectedReversal.id);
+                    setIsDetailModalOpen(false);
+                  }}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                >
+                  Approve
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

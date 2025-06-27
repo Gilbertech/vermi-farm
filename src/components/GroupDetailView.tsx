@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Users, DollarSign, MoreVertical, ArrowRight, Edit, Settings, TrendingUp, Percent } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, DollarSign, MoreVertical, ArrowRight, Edit, Settings, TrendingUp, Percent, Eye } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import Modal from './Modal';
 import EditGroupForm from './EditGroupForm';
@@ -14,7 +14,7 @@ interface GroupDetailViewProps {
 
 const GroupDetailView: React.FC<GroupDetailViewProps> = ({ groupId, onBack }) => {
   const { groups, users, transactions } = useApp();
-  const [activeTab, setActiveTab] = useState<'executives' | 'finances'>('executives');
+  const [activeTab, setActiveTab] = useState<'executives' | 'finances' | 'transactions'>('executives');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [modalType, setModalType] = useState<'edit' | 'executives' | 'loan-limit' | 'interest-limit' | null>(null);
 
@@ -57,17 +57,17 @@ const GroupDetailView: React.FC<GroupDetailViewProps> = ({ groupId, onBack }) =>
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center space-x-4">
           <button
             onClick={onBack}
             className="text-gray-600 hover:text-gray-800 transition-colors duration-200"
           >
-            <ArrowLeft className="w-6 h-6" />
+            <ArrowLeft className="w-5 h-5 lg:w-6 lg:h-6" />
           </button>
-          <h1 className="text-3xl font-bold text-gray-800">{group.name}</h1>
+          <h1 className="text-xl lg:text-3xl font-bold text-gray-800">{group.name}</h1>
         </div>
         
         <div className="relative">
@@ -116,11 +116,11 @@ const GroupDetailView: React.FC<GroupDetailViewProps> = ({ groupId, onBack }) =>
       </div>
 
       {/* Group Overview Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <MapPin className="w-6 h-6 text-blue-600" />
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <MapPin className="w-5 h-5 lg:w-6 lg:h-6 text-blue-600" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Location</p>
@@ -129,8 +129,8 @@ const GroupDetailView: React.FC<GroupDetailViewProps> = ({ groupId, onBack }) =>
           </div>
           
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-purple-600" />
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <Users className="w-5 h-5 lg:w-6 lg:h-6 text-purple-600" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Members</p>
@@ -139,8 +139,8 @@ const GroupDetailView: React.FC<GroupDetailViewProps> = ({ groupId, onBack }) =>
           </div>
           
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-green-600" />
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <DollarSign className="w-5 h-5 lg:w-6 lg:h-6 text-green-600" />
             </div>
             <div>
               <p className="text-sm text-gray-500">Total Balance</p>
@@ -153,8 +153,11 @@ const GroupDetailView: React.FC<GroupDetailViewProps> = ({ groupId, onBack }) =>
               <p className="text-sm text-gray-500">Description</p>
               <p className="font-medium text-gray-800">{group.description}</p>
             </div>
-            <button className="text-[#2d8e41] hover:text-[#246b35] flex items-center space-x-1 text-sm font-medium">
-              <span>View Group Transactions</span>
+            <button 
+              onClick={() => setActiveTab('transactions')}
+              className="text-[#2d8e41] hover:text-[#246b35] flex items-center space-x-1 text-sm font-medium"
+            >
+              <span>View Transactions</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -164,10 +167,10 @@ const GroupDetailView: React.FC<GroupDetailViewProps> = ({ groupId, onBack }) =>
       {/* Tab Interface */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
+          <nav className="flex space-x-4 lg:space-x-8 px-4 lg:px-6 overflow-x-auto">
             <button
               onClick={() => setActiveTab('executives')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+              className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 whitespace-nowrap ${
                 activeTab === 'executives'
                   ? 'border-[#2d8e41] text-[#2d8e41]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -177,7 +180,7 @@ const GroupDetailView: React.FC<GroupDetailViewProps> = ({ groupId, onBack }) =>
             </button>
             <button
               onClick={() => setActiveTab('finances')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+              className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 whitespace-nowrap ${
                 activeTab === 'finances'
                   ? 'border-[#2d8e41] text-[#2d8e41]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -185,10 +188,20 @@ const GroupDetailView: React.FC<GroupDetailViewProps> = ({ groupId, onBack }) =>
             >
               Finances
             </button>
+            <button
+              onClick={() => setActiveTab('transactions')}
+              className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 whitespace-nowrap ${
+                activeTab === 'transactions'
+                  ? 'border-[#2d8e41] text-[#2d8e41]'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Transactions
+            </button>
           </nav>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           {activeTab === 'executives' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-gray-50 rounded-lg p-4">
@@ -226,34 +239,105 @@ const GroupDetailView: React.FC<GroupDetailViewProps> = ({ groupId, onBack }) =>
               </div>
             </div>
           )}
+
+          {activeTab === 'transactions' && (
+            <div className="space-y-4">
+              {groupTransactions.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[600px]">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Transaction ID
+                        </th>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Type
+                        </th>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Amount
+                        </th>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {groupTransactions.map((transaction, index) => (
+                        <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#f9fafb]'}>
+                          <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {transaction.id}
+                          </td>
+                          <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              transaction.type === 'deposit' ? 'bg-green-100 text-green-800' :
+                              transaction.type === 'withdrawal' ? 'bg-red-100 text-red-800' :
+                              transaction.type === 'loan' ? 'bg-blue-100 text-blue-800' :
+                              'bg-purple-100 text-purple-800'
+                            }`}>
+                              {transaction.type}
+                            </span>
+                          </td>
+                          <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                            KES {transaction.amount.toLocaleString()}
+                          </td>
+                          <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              transaction.status === 'completed' ? 'bg-green-100 text-green-800' :
+                              transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {transaction.status}
+                            </span>
+                          </td>
+                          <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {new Date(transaction.createdAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <p className="text-gray-500">No transactions found for this group</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Group Members Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-4 lg:p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800">Group Members</h3>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[600px]">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member No</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member Role</th>
+                <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member No</th>
+                <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
+                <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member Role</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {groupMembers.map((member, index) => (
-                <tr key={member.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.phone}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <tr key={member.id} className={`hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-[#f9fafb]'}`}>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{member.name}</td>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">{member.phone}</td>
+                  <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      member.role === 'admin' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                      member.role === 'chairperson' ? 'bg-red-100 text-red-800' :
+                      member.role === 'secretary' ? 'bg-blue-100 text-blue-800' :
+                      member.role === 'treasurer' ? 'bg-[#983F21] bg-opacity-10 text-[#983F21]' :
+                      'bg-gray-100 text-gray-800'
                     }`}>
                       {member.role || 'Member'}
                     </span>
