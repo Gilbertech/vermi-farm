@@ -1,5 +1,4 @@
 import jsPDF from 'jspdf';
-import QRious from 'qrious';
 
 interface ReceiptData {
   transactionId: string;
@@ -40,29 +39,20 @@ const loadImageAsBase64 = (url: string): Promise<string> => {
   });
 };
 
-const generateInlineQRCode = async (text: string): Promise<string> => {
-  return new Promise((resolve) => {
-    const qr = new QRious({
-      value: text,
-      size: 128,
-    });
-    resolve(qr.toDataURL());
-  });
-};
-
 export const generateReceipt = async (data: ReceiptData): Promise<void> => {
   try {
     const pdf = new jsPDF();
 
-    // Load logo
+    // Load Logo
+    let logoBase64 = '';
     try {
-      const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
+      logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
       pdf.setGState(pdf.GState({ opacity: 0.1 }));
       pdf.addImage(logoBase64, 'JPEG', 60, 80, 90, 90);
       pdf.setGState(pdf.GState({ opacity: 1 }));
       pdf.addImage(logoBase64, 'JPEG', 15, 10, 25, 25);
     } catch (e) {
-      console.warn('Logo load failed:', e);
+      console.warn('Could not load logo:', e);
     }
 
     // Header
@@ -77,17 +67,17 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.text('Sustainable Agriculture Solutions', 50, 28);
 
     pdf.setFontSize(18);
-    pdf.setTextColor(152, 63, 33);
+    pdf.setTextColor(152, 63, 33); // #983F21
     pdf.setFont('helvetica', 'bold');
     pdf.text('TRANSACTION RECEIPT', 105, 45, { align: 'center' });
 
+    // Meta Info
     pdf.setFontSize(10);
     pdf.setTextColor(100, 100, 100);
     pdf.text(`Receipt #: ${data.transactionId}`, 150, 15);
     pdf.text(`Generated: ${new Date().toLocaleString()}`, 150, 22);
 
     pdf.setDrawColor(45, 142, 65);
-    pdf.setLineWidth(0.5);
     pdf.line(20, 55, 190, 55);
 
     pdf.setFontSize(14);
@@ -95,13 +85,14 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.text('TRANSACTION DETAILS', 20, 70);
 
     pdf.setDrawColor(200, 200, 200);
-    pdf.setLineWidth(0.3);
     pdf.rect(20, 75, 170, 80);
 
-    // Add QR Code
-    const qrValue = `https://vermi-farm.org/verify/${data.transactionId}`;
-    const qrDataUrl = await generateInlineQRCode(qrValue);
-    pdf.addImage(qrDataUrl, 'PNG', 155, 70, 30, 30);
+    // ✅ Add QR Code using Google's Chart API
+    const qrURL = `https://chart.googleapis.com/chart?cht=qr&chs=128x128&chl=${encodeURIComponent(
+      `https://vermi-farm.org/verify/${data.transactionId}`
+    )}`;
+    const qrBase64 = await loadImageAsBase64(qrURL);
+    pdf.addImage(qrBase64, 'PNG', 155, 70, 30, 30);
 
     // Transaction Details
     pdf.setFontSize(11);
@@ -126,28 +117,27 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
       pdf.setFont('helvetica', 'bold');
       pdf.text(label, 25, y);
       pdf.setFont('helvetica', 'normal');
-      const wrapped = pdf.splitTextToSize(value, 100);
-      pdf.text(wrapped, 90, y);
-      y += wrapped.length > 1 ? 8 * wrapped.length : 8;
+      const lines = pdf.splitTextToSize(value, 100);
+      pdf.text(lines, 90, y);
+      y += lines.length > 1 ? 8 * lines.length : 8;
     });
 
     // Status Badge
     const statusY = 165;
-    if (data.status.toLowerCase() === 'completed') {
+    const status = data.status.toLowerCase();
+    if (status === 'completed') {
       pdf.setFillColor(34, 197, 94);
-    } else if (data.status.toLowerCase() === 'pending') {
+    } else if (status === 'pending') {
       pdf.setFillColor(234, 179, 8);
     } else {
       pdf.setFillColor(239, 68, 68);
     }
-
     pdf.setTextColor(255, 255, 255);
     pdf.roundedRect(20, statusY, 40, 12, 2, 2, 'F');
-    pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(10);
     pdf.text(data.status.toUpperCase(), 40, statusY + 8, { align: 'center' });
 
-    // Amount Badge
+    // Amount Highlight
     pdf.setFillColor(45, 142, 65);
     pdf.roundedRect(130, statusY, 60, 12, 2, 2, 'F');
     pdf.setFontSize(12);
@@ -156,7 +146,6 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     // Footer
     const footerY = 200;
     pdf.setDrawColor(45, 142, 65);
-    pdf.setLineWidth(0.5);
     pdf.line(20, footerY, 190, footerY);
 
     pdf.setFontSize(10);
@@ -175,9 +164,9 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.text(`Security Code: VF-${Date.now().toString().slice(-6)}`, 20, footerY + 50);
     pdf.text(`Verification: ${data.transactionId.slice(-8).toUpperCase()}`, 150, footerY + 50);
 
+    // Save PDF
     pdf.save(`vermi-farm-receipt-${data.transactionId}.pdf`);
   } catch (error) {
-    console.error('Error generating receipt:', error);
-    // Optional: fallback to a simpler receipt if needed
+    console.error('Receipt generation error:', error);
   }
 };
