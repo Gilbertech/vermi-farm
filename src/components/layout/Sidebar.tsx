@@ -110,7 +110,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
         {/* Footer */}
         <div className="p-4 border-t border-gray-200 flex-shrink-0">
           <div className="text-xs text-gray-500 text-center">
-            © 2024 Vermi-Farm
+            © 2025 Vermi-Farm yetu
           </div>
         </div>
       </div>
