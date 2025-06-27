@@ -78,17 +78,7 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
 
    
       
-      // Add watermark logo (semi-transparent, centered)
-      pdf.setGState(pdf.GState({ opacity: 0.1 }));
-      pdf.addImage(logoBase64, 'JPEG', 60, 80, 90, 90);
-      pdf.setGState(pdf.GState({ opacity: 1 }));
       
-      // Add small logo at top
-      pdf.addImage(logoBase64, 'JPEG', 15, 10, 25, 25);
-    } catch (logoError) {
-      console.warn('Could not load logo, proceeding without watermark:', logoError);
-    }
-    
     // Header
     pdf.setFontSize(20);
     pdf.setTextColor(45, 142, 65); // #2d8e41
