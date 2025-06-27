@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import QRCode from 'qrcode';
+import QRious from 'qrious';
 
 interface ReceiptData {
   transactionId: string;
@@ -40,6 +40,16 @@ const loadImageAsBase64 = (url: string): Promise<string> => {
   });
 };
 
+const generateInlineQRCode = async (text: string): Promise<string> => {
+  return new Promise((resolve) => {
+    const qr = new QRious({
+      value: text,
+      size: 128,
+    });
+    resolve(qr.toDataURL());
+  });
+};
+
 export const generateReceipt = async (data: ReceiptData): Promise<void> => {
   try {
     const pdf = new jsPDF();
@@ -71,29 +81,29 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.setFont('helvetica', 'bold');
     pdf.text('TRANSACTION RECEIPT', 105, 45, { align: 'center' });
 
-    // Info
     pdf.setFontSize(10);
     pdf.setTextColor(100, 100, 100);
     pdf.text(`Receipt #: ${data.transactionId}`, 150, 15);
     pdf.text(`Generated: ${new Date().toLocaleString()}`, 150, 22);
 
     pdf.setDrawColor(45, 142, 65);
+    pdf.setLineWidth(0.5);
     pdf.line(20, 55, 190, 55);
 
-    // Section title
     pdf.setFontSize(14);
     pdf.setTextColor(45, 142, 65);
     pdf.text('TRANSACTION DETAILS', 20, 70);
 
     pdf.setDrawColor(200, 200, 200);
+    pdf.setLineWidth(0.3);
     pdf.rect(20, 75, 170, 80);
 
-    // QR Code generation
+    // Add QR Code
     const qrValue = `https://vermi-farm.org/verify/${data.transactionId}`;
-    const qrDataUrl = await QRCode.toDataURL(qrValue);
+    const qrDataUrl = await generateInlineQRCode(qrValue);
     pdf.addImage(qrDataUrl, 'PNG', 155, 70, 30, 30);
 
-    // Details
+    // Transaction Details
     pdf.setFontSize(11);
     pdf.setTextColor(0, 0, 0);
 
@@ -106,6 +116,7 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
       ['User Name:', data.userName],
       ['Phone Number:', data.userPhone],
     ];
+
     if (data.fees) details.push(['Transaction Fees:', data.fees]);
     if (data.from) details.push(['From:', data.from]);
     if (data.to) details.push(['To:', data.to]);
@@ -120,7 +131,7 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
       y += wrapped.length > 1 ? 8 * wrapped.length : 8;
     });
 
-    // Status badge
+    // Status Badge
     const statusY = 165;
     if (data.status.toLowerCase() === 'completed') {
       pdf.setFillColor(34, 197, 94);
@@ -129,12 +140,14 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     } else {
       pdf.setFillColor(239, 68, 68);
     }
+
     pdf.setTextColor(255, 255, 255);
     pdf.roundedRect(20, statusY, 40, 12, 2, 2, 'F');
     pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(10);
     pdf.text(data.status.toUpperCase(), 40, statusY + 8, { align: 'center' });
 
-    // Amount badge
+    // Amount Badge
     pdf.setFillColor(45, 142, 65);
     pdf.roundedRect(130, statusY, 60, 12, 2, 2, 'F');
     pdf.setFontSize(12);
@@ -143,14 +156,16 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     // Footer
     const footerY = 200;
     pdf.setDrawColor(45, 142, 65);
+    pdf.setLineWidth(0.5);
     pdf.line(20, footerY, 190, footerY);
 
     pdf.setFontSize(10);
     pdf.setTextColor(100, 100, 100);
     pdf.setFont('helvetica', 'normal');
     pdf.text('This is a computer-generated receipt and does not require a signature.', 105, footerY + 10, { align: 'center' });
-    pdf.text('For inquiries and support:', 105, footerY + 20, { align: 'center' });
 
+    pdf.setFontSize(9);
+    pdf.text('For inquiries and support:', 105, footerY + 20, { align: 'center' });
     pdf.setTextColor(45, 142, 65);
     pdf.text('Email: support@vermi-farm.org | Phone: +254 799 616 744', 105, footerY + 28, { align: 'center' });
     pdf.text('Website: www.vermi-farm.org', 105, footerY + 36, { align: 'center' });
@@ -160,10 +175,9 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.text(`Security Code: VF-${Date.now().toString().slice(-6)}`, 20, footerY + 50);
     pdf.text(`Verification: ${data.transactionId.slice(-8).toUpperCase()}`, 150, footerY + 50);
 
-    // Save
     pdf.save(`vermi-farm-receipt-${data.transactionId}.pdf`);
   } catch (error) {
-    console.error('Error generating receipt with QR:', error);
-    generateSimpleReceipt(data);
+    console.error('Error generating receipt:', error);
+    // Optional: fallback to a simpler receipt if needed
   }
 };
