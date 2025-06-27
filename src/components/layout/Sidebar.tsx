@@ -56,36 +56,28 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Header */}
-        <div className="p-4 lg:p-6 border-b border-gray-200 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="flex justify-center items-center py-4">
-<div className="w-full flex justify-center items-center pt-4">
-  <img
-    src="https://i.postimg.cc/MTpyCg68/logo.png"
-    alt="Vermi-Farm Logo"
-    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 rounded-full object-cover"
-  />
+<div className="p-4 lg:p-6 border-b border-gray-200 flex-shrink-0">
+  <div className="flex flex-col items-center justify-center space-y-2">
+    <img
+      src="https://i.postimg.cc/MTpyCg68/logo.png"
+      alt="Vermi-Farm Logo"
+      className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 rounded-full object-cover"
+    />
+    <h1 className="text-xs font-bold" style={{ color: '#2d8e41' }}>
+      Changing Lives, One Farm at a Time
+    </h1>
+  </div>
+
+  {/* Close Button - still at top right on small screens */}
+  <div className="absolute top-4 right-4 lg:hidden">
+    <button
+      onClick={() => setIsOpen(false)}
+      className="text-gray-500 hover:text-gray-700 p-1"
+    >
+      <X className="w-5 h-5" />
+    </button>
+  </div>
 </div>
-
-              </div>
-
-            </div>
-            <button
-              onClick={() => setIsOpen(false)}
-              className="lg:hidden text-gray-500 hover:text-gray-700 p-1"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div> <h1 className="text-xs" style={{ color: '#2d8e41' }} font-bold>
-  Changing Lives, One Farm at a Time
-</h1>
-
-
-
-</div>
-        </div>
 
         {/* Navigation - Scrollable */}
         <nav className="flex-1 overflow-y-auto py-4">
