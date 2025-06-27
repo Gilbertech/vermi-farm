@@ -60,7 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <img
-                src="https://www.vermi-farm.org/images/logo1.png"
+                src="https://i.postimg.cc/MTpyCg68/logo.png"
                 alt="Vermi-Farm Logo"
                 className="w-8 h-8 lg:w-10 lg:h-10 rounded-full object-cover"
               />
