@@ -49,9 +49,7 @@ const Dashboard: React.FC = () => {
       color: 'black',
       trend: '+7%'
     },
-    <h1 className="text-xs" style={{ color: '#983F21' }}>
-  Changing Lives, One Farm at a Time
-</h1>
+   
 
     {
       title: 'Total Amount Earned',
