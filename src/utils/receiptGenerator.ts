@@ -64,7 +64,7 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.setFontSize(24);
     pdf.setTextColor(45, 142, 65); // #2d8e41
     pdf.setFont('helvetica', 'bold');
-    pdf.text('VERMI-FARM YETU', 50, 20);
+    pdf.text('VERMI-FARM INITIATIVE', 50, 20);
     
     pdf.setFontSize(12);
     pdf.setTextColor(100, 100, 100);
@@ -243,7 +243,7 @@ const generateSimpleReceipt = (data: ReceiptData): void => {
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
   pdf.text('This is a computer-generated receipt.', 105, yPosition, { align: 'center' });
-  pdf.text('For inquiries, contact support@vermi-farm.org', 105, yPosition + 10, { align: 'center' });
+  pdf.text('For inquiries, contact info@vermi-farm.org', 105, yPosition + 10, { align: 'center' });
   
   pdf.save(`vermi-farm yetu-receipt-${data.transactionId}.pdf`);
 };
