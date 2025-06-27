@@ -70,11 +70,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
   Changing Lives, One Farm at a Time
 </h1>
 
-<div><h1 className="text-xs" style={{ color: '#983F21', fontSize: '10px' }}>
-  Changing Lives, One Farm at a Time
-</h1>
 
-</div>
 
 
 
