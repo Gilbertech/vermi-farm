@@ -251,7 +251,7 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     pdf.setTextColor(100, 100, 100);
     pdf.setFont('helvetica', 'normal');
     pdf.text('This is a computer-generated statement and does not require a signature.', 105, footerY + 8, { align: 'center' });
-    pdf.text('For inquiries and support: support@vermi-farm.org | +254 700 000 000', 105, footerY + 16, { align: 'center' });
+    pdf.text('For inquiries and support: support@vermi-farm.org | +254 799 616 744', 105, footerY + 16, { align: 'center' });
     
     // Security features
     pdf.setFontSize(7);
@@ -279,7 +279,7 @@ const generateSimpleStatement = (data: StatementData): void => {
   // Simple header
   pdf.setFontSize(20);
   pdf.setTextColor(45, 142, 65);
-  pdf.text('VERMI-FARM STATEMENT', 105, 20, { align: 'center' });
+  pdf.text('VERMI-FARM INITIATIVE STATEMENT', 105, 20, { align: 'center' });
   
   pdf.setFontSize(12);
   pdf.setTextColor(0, 0, 0);
