@@ -62,7 +62,7 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     } catch (logoError) {
       console.warn('Could not load primary logo, trying secondary logo:', logoError);
       try {
-        const secondaryLogoBase64 = await loadImageAsBase64('https://www.vermi-farm.org/images/logo4.png');
+        const secondaryLogoBase64 = await loadImageAsBase64('https://i.postimg.cc/HnK443C1/logo1.png');
         
         // Add watermark logo (semi-transparent, centered)
         pdf.setGState(pdf.GState({ opacity: 0.08 }));
