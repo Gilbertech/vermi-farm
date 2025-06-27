@@ -66,9 +66,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
 
 
               />
-            <h1 className="text-xs sm:text-sm md:text-base" style={{ color: '#983F21' }}>
+          <h1 className="text-xs" style={{ color: '#983F21', fontSize: '10px' }}>
   Changing Lives, One Farm at a Time
 </h1>
+
 
 
 
