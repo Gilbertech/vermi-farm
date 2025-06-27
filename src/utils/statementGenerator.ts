@@ -50,7 +50,7 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     
     // Load and add logo watermark
     try {
-      const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/dVZqjS4c/cropped-DSC-2567.jpg');
+      const logoBase64 = await loadImageAsBase64('https://www.vermi-farm.org/images/logo1.png');
       
       // Add watermark logo (semi-transparent, centered)
       pdf.setGState(pdf.GState({ opacity: 0.1 }));
