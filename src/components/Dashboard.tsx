@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Users2, CheckCircle, DollarSign, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { Users, Users2, CheckCircle, DollarSign, TrendingUp, TrendingDown, Wallet,  XCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import StatCard from './StatCard';
 
@@ -43,12 +43,13 @@ const Dashboard: React.FC = () => {
       trend: '+15%'
     },
     {
-      title: 'Total Loan Repaid',
-      value: `KES ${stats.totalLoanRepaid.toLocaleString()}`,
-      icon: TrendingDown,
-      color: 'black',
-      trend: '+7%'
-    },
+  title: 'Transaction Failed',
+  value: `KES ${stats.failedTransactions.toLocaleString()}`, // Replace with your failed transaction count or value
+  icon: XCircle, // Import this icon from lucide-react or your icon set
+  color: '#983F21', // Your secondary color
+  trend: '–100%' // Or any appropriate message
+},
+
    
 
     {
