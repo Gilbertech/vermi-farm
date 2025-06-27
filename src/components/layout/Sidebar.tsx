@@ -106,10 +106,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200 flex-shrink-0">
-          <div className="text-xs text-gray-500 text-center">
-            © 2025 Vermi-Farm initiative
-          </div>
+       <div className="p-4 border-t border-gray-200 flex-shrink-0">
+  <div
+    className="text-xs text-center font-semibold uppercase"
+    style={{ color: '#983F21' }}
+  >
+    © 2025 Vermi-Farm Initiative
+  </div>
+</div>
+
         </div>
       </div>
     </>
