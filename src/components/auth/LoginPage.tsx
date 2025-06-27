@@ -131,7 +131,7 @@ const LoginPage: React.FC = () => {
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <h4 className="text-sm font-medium text-gray-800 mb-2">Demo Credentials:</h4>
             <div className="space-y-1 text-xs text-gray-600">
-              <p><strong>Super Admin:</strong> 0712345678 / admin123</p>
+              <p><strong>Super Admin:</strong> 0768299985 / admin123</p>
               <p><strong>Admin Initiator:</strong> 0712345679 / admin123</p>
               <p><strong>Admin Initiator:</strong> 0712345680 / admin123</p>
             </div>
