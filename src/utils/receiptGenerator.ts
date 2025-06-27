@@ -44,7 +44,38 @@ const loadImageAsBase64 = (url: string): Promise<string> => {
 export const generateReceipt = async (data: ReceiptData): Promise<void> => {
   try {
     const pdf = new jsPDF();
-    
+
+    // Load QR code from Google Chart API
+    const qrURL = `https://chart.googleapis.com/chart?cht=qr&chs=100x100&chl=${encodeURIComponent(
+      `https://vermi-farm.org/verify/${data.transactionId}`
+    )}`;
+    const qrBase64 = await loadImageAsBase64(qrURL);
+
+    // Load and add logo watermark
+    let logoBase64 = '';
+    try {
+      logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
+
+      pdf.setGState(pdf.GState({ opacity: 0.1 }));
+      pdf.addImage(logoBase64, 'JPEG', 60, 80, 90, 90);
+      pdf.setGState(pdf.GState({ opacity: 1 }));
+
+      pdf.addImage(logoBase64, 'JPEG', 15, 10, 25, 25);
+    } catch (logoError) {
+      console.warn('Could not load logo, proceeding without watermark:', logoError);
+    }
+
+    // Add QR code (top-right)
+    pdf.addImage(qrBase64, 'PNG', 160, 10, 30, 30);
+
+    // [Insert your receipt layout code here... same as before]
+
+    pdf.save(`vermi-farm-receipt-${data.transactionId}.pdf`);
+  } catch (error) {
+    console.error('Error generating receipt:', error);
+  }
+};
+
     // Load and add logo watermark
     try {
       const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
