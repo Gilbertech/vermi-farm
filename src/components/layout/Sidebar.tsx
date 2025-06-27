@@ -67,9 +67,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
   />
 </div>
 
-          <h1 className="text-sm sm:text-base md:text-lg font-semibold" style={{ color: '#983F21' }}>
-  Vermi-Farm 
-</h1>
             </div>
             <button
               onClick={() => setIsOpen(false)}
