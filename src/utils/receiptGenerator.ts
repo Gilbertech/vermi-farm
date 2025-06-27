@@ -73,12 +73,10 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.save(`vermi-farm-receipt-${data.transactionId}.pdf`);
   } catch (error) {
     console.error('Error generating receipt:', error);
-  
+  }
 };
 
-    // Load and add logo watermark
-    try {
-      const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
+   
       
       // Add watermark logo (semi-transparent, centered)
       pdf.setGState(pdf.GState({ opacity: 0.1 }));
