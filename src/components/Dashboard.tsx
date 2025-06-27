@@ -51,7 +51,7 @@ const Dashboard: React.FC = () => {
       trend: '+25%'
     },
     {title: 'Transactions failed ',
-      value: `KES ${stats.totalGroups.toLocaleString()}`,
+      value: stats.totalGroups.toString(),
       icon: XCircle ,
       color: '#983F21',
       trend: '-100%'
