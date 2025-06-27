@@ -54,11 +54,11 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
       
       // Add watermark logo (semi-transparent, centered)
       pdf.setGState(pdf.GState({ opacity: 0.1 }));
-      pdf.addImage(logoBase64, 'JPEG', 60, 80, 90, 90);
+      pdf.addImage(logoBase64, 'PNG', 60, 80, 90, 90);
       pdf.setGState(pdf.GState({ opacity: 1 }));
       
       // Add small logo at top
-      pdf.addImage(logoBase64, 'JPEG', 15, 10, 25, 25);
+      pdf.addImage(logoBase64, 'PNG', 15, 10, 25, 25);
     } catch (logoError) {
       console.warn('Could not load logo, proceeding without watermark:', logoError);
     }
