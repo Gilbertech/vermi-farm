@@ -16,7 +16,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
         return 'bg-red-100 text-red-800';
       case 'admin_initiator':
         return 'bg-blue-100 text-blue-800';
-      case 'admin_approver':
+      case 'admin_initiator':
         return 'bg-[#983F21] bg-opacity-10 text-[#983F21]';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -30,7 +30,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
       case 'admin_initiator':
         return 'Admin (Initiator)';
       case 'admin_approver':
-        return 'Admin (Approver)';
+        return 'Admin (initiator)';
       default:
         return 'Admin';
     }
