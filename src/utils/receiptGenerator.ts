@@ -64,7 +64,7 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.setFontSize(24);
     pdf.setTextColor(45, 142, 65); // #2d8e41
     pdf.setFont('helvetica', 'bold');
-    pdf.text('VERMI-FARM', 50, 20);
+    pdf.text('VERMI-FARM YETU', 50, 20);
     
     pdf.setFontSize(12);
     pdf.setTextColor(100, 100, 100);
