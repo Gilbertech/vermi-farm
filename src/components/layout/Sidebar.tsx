@@ -61,7 +61,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
     <img
       src="https://i.postimg.cc/MTpyCg68/logo.png"
       alt="Vermi-Farm Logo"
-      className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 xl:w-20 xl:h-20 rounded-full object-cover"
+     className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28 rounded-full object-cover"
+
     />
     <h1 className="text-xs font-bold" style={{ color: '#2d8e41' }}>
       Changing Lives, One Farm at a Time
