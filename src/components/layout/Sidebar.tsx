@@ -69,12 +69,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
           <h1 className="text-sm sm:text-base md:text-lg font-semibold" style={{ color: '#983F21' }}>
   Vermi-Farm 
 </h1>
-
-
-
-
-
-
             </div>
             <button
               onClick={() => setIsOpen(false)}
@@ -83,7 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div> <h1 className="text-xs" style={{ color: '#000' }} font-bold>
+          <div> <h1 className="text-xs" style={{ color: '#2d8e41' }} font-bold>
   Changing Lives, One Farm at a Time
 </h1>
 
