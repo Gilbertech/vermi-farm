@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
   icon: XCircle, // Import this icon from lucide-react or your icon set
   color: '#983F21', // Your secondary color
   trend: '–100%' // Or any appropriate message
-},
+}
   ];
 
   return (
