@@ -64,7 +64,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
      className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28 rounded-full object-cover"
 
     />
-    <h1 className="text-xs font-bold" style={{ color: '#983F21' }}>
+    <h1 className="text-xs font-bold" style={{ color: '#2d8e41' }}>
       Changing Lives, One Farm at a Time
     </h1>
   </div>
