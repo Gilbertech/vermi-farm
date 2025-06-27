@@ -51,12 +51,13 @@ const Dashboard: React.FC = () => {
       trend: '+25%'
     },
     {
-      title: 'Total Amount Earned',
-      value: `KES ${stats.totalEarned.toLocaleString()}`,
-      icon: Wallet,
-      color: 'emerald',
-      trend: '+25%'
-    }
+  title: 'Transaction Failed',
+  value: `KES ${stats.failedTransactions.toLocaleString()}`, // Replace with your failed transaction count or value
+  icon: XCircle, // Import this icon from lucide-react or your icon set
+  color: '#983F21', // Your secondary color
+  trend: '–100%' // Or any appropriate message
+}
+
   ];
 
   return (
