@@ -245,11 +245,11 @@ const generateSimpleReceipt = (data: ReceiptData): void => {
   pdf.text('This is a computer-generated receipt.', 105, yPosition, { align: 'center' });
   pdf.text('For inquiries, contact support@vermi-farm.org', 105, yPosition + 10, { align: 'center' });
   
-  pdf.save(`vermi-farm-receipt-${data.transactionId}.pdf`);
+  pdf.save(`vermi-farm yetu-receipt-${data.transactionId}.pdf`);
 };
 
 export const generateCSVReceipt = (data: ReceiptData): void => {
-  const csvContent = `VERMI-FARM Transaction Receipt
+  const csvContent = `VERMI-FARM YETU Transaction Receipt
 Receipt Number,${data.transactionId}
 Generated Date,${new Date().toLocaleString()}
 Transaction Date,${new Date(data.date).toLocaleString()}
