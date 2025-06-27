@@ -83,7 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div> <h1 className="text-xs" style={{ color: '#983F21' }}>
+          <div> <h1 className="text-xs" style={{ color: '#983F21' }} font-bold>
   Changing Lives, One Farm at a Time
 </h1>
 
