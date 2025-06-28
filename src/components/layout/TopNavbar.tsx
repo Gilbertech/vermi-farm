@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, LogOut, User } from 'lucide-react';
+import { Menu, LogOut, User, Bell } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface TopNavbarProps {
@@ -8,7 +8,10 @@ interface TopNavbarProps {
 }
 
 const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
-  const { logout, currentUser } = useAuth();
+  const { logout, currentUser, notifications, markNotificationAsRead } = useAuth();
+  const [showNotifications, setShowNotifications] = React.useState(false);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -16,8 +19,6 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
         return 'bg-red-100 text-red-800';
       case 'admin_initiator':
         return 'bg-blue-100 text-blue-800';
-      case 'admin_initiator':
-        return 'bg-[#983F21] bg-opacity-10 text-[#983F21]';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -29,11 +30,13 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
         return 'Super Admin';
       case 'admin_initiator':
         return 'Admin (Initiator)';
-      case 'admin_approver':
-        return 'Admin (initiator)';
       default:
         return 'Admin';
     }
+  };
+
+  const handleNotificationClick = (notification: any) => {
+    markNotificationAsRead(notification.id);
   };
 
   return (
@@ -50,6 +53,65 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
         </div>
         
         <div className="flex items-center space-x-4">
+          {/* Notifications - Only for Super Admin */}
+          {currentUser?.role === 'super_admin' && (
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {showNotifications && (
+                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                  <div className="p-4 border-b border-gray-200">
+                    <h3 className="text-sm font-medium text-gray-800">Notifications</h3>
+                  </div>
+                  <div className="max-h-64 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500 text-sm">
+                        No notifications
+                      </div>
+                    ) : (
+                      notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          onClick={() => handleNotificationClick(notification)}
+                          className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
+                            !notification.read ? 'bg-blue-50' : ''
+                          }`}
+                        >
+                          <div className="flex items-start space-x-3">
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-800">
+                                Payment Initiated
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {notification.initiatorName} initiated a payment of KES {notification.amount.toLocaleString()}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {new Date(notification.timestamp).toLocaleString()}
+                              </p>
+                            </div>
+                            {!notification.read && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {currentUser && (
             <div className="hidden sm:flex items-center space-x-3">
               <div className="flex items-center space-x-2">

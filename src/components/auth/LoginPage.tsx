@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sprout, Eye, EyeOff, Phone, Lock } from 'lucide-react';
+import { Eye, EyeOff, Phone, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const LoginPage: React.FC = () => {
@@ -35,24 +35,31 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-6 lg:p-8">
+        <div className="bg-white rounded-2xl shadow-2xl p-6 lg:p-8 border border-gray-100">
           {/* Logo and Title */}
           <div className="text-center mb-8">
-            <img
-              src="https://i.postimg.cc/MTpyCg68/logo.png"
-              alt="Vermi-Farm Logo"
-              className="w-16 h-16 rounded-full object-cover mx-auto mb-4"
-            />
-            <h1 className="text-2xl font-bold text-gray-800">Vermi-Farm Admin</h1>
-            <p className="text-gray-600 mt-2">Sign in to your account</p>
+            <div className="relative inline-block mb-4">
+              <img
+                src="https://i.postimg.cc/MTpyCg68/logo.png"
+                alt="Vermi-Farm Logo"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover mx-auto shadow-lg border-4 border-white"
+              />
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#2d8e41]/20 to-transparent"></div>
+            </div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Vermi-Farm Admin</h1>
+            <p className="text-gray-600 text-sm lg:text-base">Management Information System</p>
+            <div className="w-16 h-1 bg-gradient-to-r from-[#2d8e41] to-[#983F21] mx-auto mt-3 rounded-full"></div>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-              {error}
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-red-500 rounded-full flex-shrink-0"></div>
+                <span>{error}</span>
+              </div>
             </div>
           )}
 
@@ -71,7 +78,7 @@ const LoginPage: React.FC = () => {
                   onChange={handleChange}
                   placeholder="07xxxxxxxx or 01xxxxxxxx"
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200 bg-gray-50 focus:bg-white"
                 />
               </div>
             </div>
@@ -89,7 +96,7 @@ const LoginPage: React.FC = () => {
                   onChange={handleChange}
                   placeholder="Enter your password"
                   required
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200 bg-gray-50 focus:bg-white"
                 />
                 <button
                   type="button"
@@ -104,7 +111,7 @@ const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#2d8e41] text-white py-3 rounded-lg font-medium hover:bg-[#246b35] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-[#2d8e41] to-[#246b35] text-white py-3 rounded-lg font-medium hover:from-[#246b35] hover:to-[#1d5429] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
@@ -121,20 +128,36 @@ const LoginPage: React.FC = () => {
           <div className="text-center mt-6">
             <button
               onClick={() => setCurrentView('reset-password')}
-              className="text-[#2d8e41] hover:text-[#246b35] font-medium transition-colors duration-200"
+              className="text-[#2d8e41] hover:text-[#246b35] font-medium transition-colors duration-200 text-sm"
             >
               Forgot your password?
             </button>
           </div>
 
           {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h4 className="text-sm font-medium text-gray-800 mb-2">Demo Credentials:</h4>
-            <div className="space-y-1 text-xs text-gray-600">
-              <p><strong>Super Admin:</strong> 0712345678 / admin123</p>
-              <p><strong>Admin Initiator:</strong> 0712345679 / admin123</p>
-              <p><strong>Admin Initiator:</strong> 0712345680 / admin123</p>
+          <div className="mt-8 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+            <h4 className="text-sm font-medium text-gray-800 mb-3 text-center">Demo Credentials</h4>
+            <div className="space-y-2 text-xs text-gray-600">
+              <div className="flex justify-between items-center p-2 bg-white rounded border">
+                <span><strong>Super Admin:</strong></span>
+                <span>0712345678 / admin123</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded border">
+                <span><strong>Initiator 1:</strong></span>
+                <span>0712345679 / admin123</span>
+              </div>
+              <div className="flex justify-between items-center p-2 bg-white rounded border">
+                <span><strong>Initiator 2:</strong></span>
+                <span>0712345680 / admin123</span>
+              </div>
             </div>
+          </div>
+
+          {/* Footer */}
+          <div className="text-center mt-6 pt-4 border-t border-gray-200">
+            <p className="text-xs text-gray-500">
+              © 2025 Vermi-Farm Initiative. All rights reserved.
+            </p>
           </div>
         </div>
       </div>

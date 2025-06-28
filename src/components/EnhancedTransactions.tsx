@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Filter, Download, ArrowUpRight, ArrowDownLeft, Clock, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { generateReceipt } from '../utils/receiptGenerator';
 
 const EnhancedTransactions: React.FC = () => {
   const { transactions, users, groups } = useApp();
@@ -89,30 +90,21 @@ const EnhancedTransactions: React.FC = () => {
     const transaction = filteredTransactions.find(t => t.id === transactionId);
     if (!transaction) return;
 
-    // Create CSV content based on transaction type
-    let csvContent = '';
-    
-    if (activeTab === 'inwallet') {
-      csvContent = `Tx Code,From,To,Amount,Fees,Time
-${transaction.txCode},${transaction.from},${transaction.to},${transaction.amount},${transaction.fees},${transaction.time}`;
-    } else if (activeTab === 'outwallet') {
-      csvContent = `Tx Code,From,Recipient,MSISDN,Amount,Tx Cost,Time,Status
-${transaction.txCode},${transaction.from},${transaction.recipient},${transaction.msisdn},${transaction.amount},${transaction.txCost},${transaction.time},${transaction.status}`;
-    } else {
-      csvContent = `Tx Code,From,Amount,Tx Cost,Mpesa Receipt,Time,Status
-${transaction.txCode},${transaction.from},${transaction.amount},${transaction.txCost},${transaction.mpesaReceipt},${transaction.time},${transaction.status}`;
-    }
+    // Generate PDF receipt using the same function as portfolio
+    const receiptData = {
+      transactionId: transaction.txCode,
+      date: transaction.time,
+      userName: transaction.from,
+      userPhone: transaction.msisdn || '+254712345678',
+      amount: transaction.amount,
+      type: `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Transaction`,
+      status: transaction.status,
+      from: transaction.from,
+      to: transaction.to,
+      fees: transaction.fees ? `KES ${transaction.fees}` : undefined
+    };
 
-    // Create and download the file
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${activeTab}_transaction_${transaction.txCode}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    generateReceipt(receiptData);
   };
 
   const renderInwalletTable = () => (
@@ -120,41 +112,41 @@ ${transaction.txCode},${transaction.from},${transaction.amount},${transaction.tx
       <table className="w-full">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Code</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fees</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Code</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fees</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {filteredTransactions.map((transaction, index) => (
             <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#f9fafb]'}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 {transaction.txCode}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {transaction.from}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {transaction.to}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                 {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {showAmounts ? `KES ${transaction.fees}` : '****'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {new Date(transaction.time).toLocaleString()}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                 <button
                   onClick={() => handleDownload(transaction.id)}
                   className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
-                  title="Download Transaction"
+                  title="Download PDF Receipt"
                 >
                   <Download className="w-4 h-4" />
                 </button>
@@ -171,51 +163,51 @@ ${transaction.txCode},${transaction.from},${transaction.amount},${transaction.tx
       <table className="w-full">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Code</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MSISDN</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Cost</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Code</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MSISDN</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Cost</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {filteredTransactions.map((transaction, index) => (
             <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#f9fafb]'}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 {transaction.txCode}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {transaction.from}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {transaction.recipient}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {showAmounts ? transaction.msisdn : '****'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                 {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {showAmounts ? `KES ${transaction.txCost}` : '****'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {new Date(transaction.time).toLocaleString()}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}>
                   {transaction.status}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                 <button
                   onClick={() => handleDownload(transaction.id)}
                   className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
-                  title="Download Transaction"
+                  title="Download PDF Receipt"
                 >
                   <Download className="w-4 h-4" />
                 </button>
@@ -232,47 +224,47 @@ ${transaction.txCode},${transaction.from},${transaction.amount},${transaction.tx
       <table className="w-full">
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Code</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Cost</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mpesa Receipt</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Code</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Cost</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mpesa Receipt</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {filteredTransactions.map((transaction, index) => (
             <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#f9fafb]'}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 {transaction.txCode}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {transaction.from}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                 {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {showAmounts ? `KES ${transaction.txCost}` : '****'}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 {transaction.mpesaReceipt}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                 {new Date(transaction.time).toLocaleString()}
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}>
                   {transaction.status}
                 </span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                 <button
                   onClick={() => handleDownload(transaction.id)}
                   className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
-                  title="Download Receipt"
+                  title="Download PDF Receipt"
                 >
                   <Download className="w-4 h-4" />
                 </button>
@@ -285,12 +277,12 @@ ${transaction.txCode},${transaction.from},${transaction.amount},${transaction.tx
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Transactions</h1>
+    <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Transactions</h1>
         <button
           onClick={() => setShowAmounts(!showAmounts)}
-          className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+          className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 self-start sm:self-auto"
         >
           {showAmounts ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           <span>{showAmounts ? 'Hide Amounts' : 'Show Amounts'}</span>
@@ -298,7 +290,7 @@ ${transaction.txCode},${transaction.from},${transaction.amount},${transaction.tx
       </div>
 
       {/* Global Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <div className="relative">
@@ -344,10 +336,10 @@ ${transaction.txCode},${transaction.from},${transaction.amount},${transaction.tx
       {/* Tabbed Interface */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
+          <nav className="flex space-x-4 lg:space-x-8 px-4 lg:px-6 overflow-x-auto">
             <button
               onClick={() => setActiveTab('inwallet')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center space-x-2 ${
+              className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap ${
                 activeTab === 'inwallet'
                   ? 'border-[#2d8e41] text-[#2d8e41]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -358,7 +350,7 @@ ${transaction.txCode},${transaction.from},${transaction.amount},${transaction.tx
             </button>
             <button
               onClick={() => setActiveTab('outwallet')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center space-x-2 ${
+              className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap ${
                 activeTab === 'outwallet'
                   ? 'border-[#2d8e41] text-[#2d8e41]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -369,7 +361,7 @@ ${transaction.txCode},${transaction.from},${transaction.amount},${transaction.tx
             </button>
             <button
               onClick={() => setActiveTab('withdrawals')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 flex items-center space-x-2 ${
+              className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap ${
                 activeTab === 'withdrawals'
                   ? 'border-[#2d8e41] text-[#2d8e41]'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -381,7 +373,7 @@ ${transaction.txCode},${transaction.from},${transaction.amount},${transaction.tx
           </nav>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           {activeTab === 'inwallet' && renderInwalletTable()}
           {activeTab === 'outwallet' && renderOutwalletTable()}
           {activeTab === 'withdrawals' && renderWithdrawalsTable()}

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface PaybillFormProps {
   onClose: () => void;
 }
 
 const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
+  const { currentUser, addNotification } = useAuth();
   const [formData, setFormData] = useState({
     paybillNumber: '',
     accountNumber: '',
@@ -19,6 +21,16 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // If user is an initiator (not super admin), send notification to super admin
+    if (currentUser?.role === 'admin_initiator') {
+      addNotification({
+        type: 'payment_initiated',
+        message: `Paybill payment of KES ${parseFloat(formData.amount).toLocaleString()} initiated`,
+        initiatorName: currentUser.name,
+        amount: parseFloat(formData.amount)
+      });
+    }
     
     setIsSubmitting(false);
     onClose();

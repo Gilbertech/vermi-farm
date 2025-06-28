@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Upload, Download, CheckCircle, AlertCircle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface BulkPaymentsFormProps {
   onClose: () => void;
 }
 
 const BulkPaymentsForm: React.FC<BulkPaymentsFormProps> = ({ onClose }) => {
+  const { currentUser, addNotification } = useAuth();
   const [formData, setFormData] = useState({
     referenceLabel: '',
     scheduledDate: ''
@@ -20,6 +22,19 @@ const BulkPaymentsForm: React.FC<BulkPaymentsFormProps> = ({ onClose }) => {
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    // Calculate total amount for notification
+    const totalAmount = previewData.reduce((sum, item) => sum + item.amount, 0);
+    
+    // If user is an initiator (not super admin), send notification to super admin
+    if (currentUser?.role === 'admin_initiator') {
+      addNotification({
+        type: 'payment_initiated',
+        message: `Bulk payment of KES ${totalAmount.toLocaleString()} initiated (${previewData.length} transactions)`,
+        initiatorName: currentUser.name,
+        amount: totalAmount
+      });
+    }
     
     setIsSubmitting(false);
     onClose();

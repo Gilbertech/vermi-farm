@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, PiggyBank as Piggy, ChevronDown, Search, Filter, Calendar, Download, Eye, EyeOff, ArrowUpRight, Check, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, PiggyBank as Piggy, ChevronDown, Search, Filter, Calendar, Download, Eye, EyeOff, ArrowUpRight, Check, X, AlertTriangle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { generateReceipt } from '../utils/receiptGenerator';
@@ -8,7 +8,7 @@ import TransferForm from './forms/TransferForm';
 
 const Portfolio: React.FC = () => {
   const { stats, loans, transactions, users } = useApp();
-  const { canInitiate, canApprove, currentUser } = useAuth();
+  const { canInitiate, canApprove, canTransferPortfolio, currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'loan' | 'revenue' | 'investment' | 'expense' | 'working' | 'b2b' | 'savings'>('loan');
   const [searchTerm, setSearchTerm] = useState('');
   const [amountFilter, setAmountFilter] = useState('');
@@ -154,8 +154,8 @@ const Portfolio: React.FC = () => {
   });
 
   const handleTransfer = (targetPortfolioId: string) => {
-    if (!canInitiate()) {
-      alert('You do not have permission to initiate transfers');
+    if (!canTransferPortfolio()) {
+      alert('Only Super Admin can transfer between portfolios');
       return;
     }
     
@@ -312,6 +312,19 @@ const Portfolio: React.FC = () => {
         </button>
       </div>
 
+      {/* Access Restriction Notice for Initiators */}
+      {!canTransferPortfolio() && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 lg:p-6">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800">Limited Access</h3>
+              <p className="text-sm text-yellow-700">Portfolio transfers are restricted to Super Admin only. You can view portfolio data but cannot initiate transfers.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Pending Transfers Section */}
       {canApprove() && pendingTransfers.filter(t => t.status === 'pending').length > 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 lg:p-6">
@@ -372,8 +385,8 @@ const Portfolio: React.FC = () => {
               })}
             </nav>
 
-            {/* Transfer Dropdown */}
-            {canInitiate() && (
+            {/* Transfer Dropdown - Only for Super Admin */}
+            {canTransferPortfolio() && (
               <div className="relative">
                 <button
                   onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
@@ -511,19 +524,21 @@ const Portfolio: React.FC = () => {
         </div>
       </div>
 
-      {/* Transfer Modal */}
-      <Modal
-        isOpen={isTransferModalOpen}
-        onClose={() => setIsTransferModalOpen(false)}
-        title={`Transfer from ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Portfolio`}
-      >
-        <TransferForm 
-          fromPortfolio={activeTab}
-          toPortfolio={targetPortfolio}
-          onSubmit={handleTransferSubmit}
+      {/* Transfer Modal - Only for Super Admin */}
+      {canTransferPortfolio() && (
+        <Modal
+          isOpen={isTransferModalOpen}
           onClose={() => setIsTransferModalOpen(false)}
-        />
-      </Modal>
+          title={`Transfer from ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Portfolio`}
+        >
+          <TransferForm 
+            fromPortfolio={activeTab}
+            toPortfolio={targetPortfolio}
+            onSubmit={handleTransferSubmit}
+            onClose={() => setIsTransferModalOpen(false)}
+          />
+        </Modal>
+      )}
     </div>
   );
 };

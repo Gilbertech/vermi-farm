@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface SinglePaymentFormProps {
   onClose: () => void;
@@ -7,6 +8,7 @@ interface SinglePaymentFormProps {
 
 const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
   const { users, groups } = useApp();
+  const { currentUser, addNotification } = useAuth();
   const [userType, setUserType] = useState<'existing' | 'new'>('existing');
   const [formData, setFormData] = useState({
     purpose: '',
@@ -23,6 +25,16 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // If user is an initiator (not super admin), send notification to super admin
+    if (currentUser?.role === 'admin_initiator') {
+      addNotification({
+        type: 'payment_initiated',
+        message: `Payment of KES ${parseFloat(formData.amount).toLocaleString()} initiated`,
+        initiatorName: currentUser.name,
+        amount: parseFloat(formData.amount)
+      });
+    }
     
     setIsSubmitting(false);
     onClose();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Users2, CheckCircle, DollarSign, TrendingUp, TrendingDown, Wallet,  XCircle } from 'lucide-react';
+import { Users, Users2, CheckCircle, DollarSign, TrendingUp, TrendingDown, Wallet, XCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import StatCard from './StatCard';
 
@@ -11,52 +11,51 @@ const Dashboard: React.FC = () => {
       title: 'Registered Users',
       value: stats.totalUsers.toString(),
       icon: Users,
-      color: 'blue',
+      color: 'blue' as const,
       trend: '+12%'
     },
     {
       title: 'Groups',
       value: stats.totalGroups.toString(),
       icon: Users2,
-      color: 'purple',
+      color: 'purple' as const,
       trend: '+8%'
     },
     {
       title: 'Transactions Completed',
       value: stats.completedTransactions.toString(),
       icon: CheckCircle,
-      color: 'green',
+      color: 'green' as const,
       trend: '+23%'
     },
     {
       title: 'Total Amount Transacted',
       value: `KES ${stats.totalTransacted.toLocaleString()}`,
       icon: DollarSign,
-      color: 'indigo',
+      color: 'indigo' as const,
       trend: '+18%'
     },
     {
       title: 'Total Loan Disbursed',
       value: `KES ${stats.totalLoanDisbursed.toLocaleString()}`,
       icon: TrendingUp,
-      color: 'orange',
+      color: 'orange' as const,
       trend: '+15%'
     },
-   
     {
       title: 'Total Amount Earned',
       value: `KES ${stats.totalEarned.toLocaleString()}`,
       icon: Wallet,
-      color: 'emerald',
+      color: 'emerald' as const,
       trend: '+25%'
     },
-    {title: 'Transactions failed ',
-      value: stats.totalGroups.toString(),
-      icon: XCircle ,
-      color: 'red',
+    {
+      title: 'Transactions Failed',
+      value: '0',
+      icon: XCircle,
+      color: 'red' as const,
       trend: '-100%'
     }
-
   ];
 
   return (
