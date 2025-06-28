@@ -105,23 +105,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ onClose }) => {
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Group Chairperson
-        </label>
-        <select
-          name="adminId"
-          value={formData.adminId}
-          onChange={handleChange}
-          required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
-        >
-          <option value="">Select a chairperson</option>
-          {users.map(user => (
-            <option key={user.id} value={user.id}>{user.name}</option>
-          ))}
-        </select>
-      </div>
+      
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
