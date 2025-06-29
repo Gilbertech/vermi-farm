@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, LogOut, User, Bell } from 'lucide-react';
+import { Menu, LogOut, User, Bell, Check, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface TopNavbarProps {
@@ -8,7 +8,7 @@ interface TopNavbarProps {
 }
 
 const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
-  const { logout, currentUser, notifications, markNotificationAsRead } = useAuth();
+  const { logout, currentUser, notifications, markNotificationAsRead, approveAction, rejectAction } = useAuth();
   const [showNotifications, setShowNotifications] = React.useState(false);
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -37,6 +37,16 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
 
   const handleNotificationClick = (notification: any) => {
     markNotificationAsRead(notification.id);
+  };
+
+  const handleApprove = (notificationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    approveAction(notificationId);
+  };
+
+  const handleReject = (notificationId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    rejectAction(notificationId);
   };
 
   return (
@@ -69,14 +79,14 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto">
                   <div className="p-4 border-b border-gray-200">
-                    <h3 className="text-sm font-medium text-gray-800">Notifications</h3>
+                    <h3 className="text-sm font-medium text-gray-800">Approval Requests</h3>
                   </div>
-                  <div className="max-h-64 overflow-y-auto">
+                  <div>
                     {notifications.length === 0 ? (
                       <div className="p-4 text-center text-gray-500 text-sm">
-                        No notifications
+                        No pending requests
                       </div>
                     ) : (
                       notifications.map((notification) => (
@@ -87,20 +97,37 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
                             !notification.read ? 'bg-blue-50' : ''
                           }`}
                         >
-                          <div className="flex items-start space-x-3">
+                          <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <p className="text-sm font-medium text-gray-800">
-                                Payment Initiated
+                                {notification.actionType.charAt(0).toUpperCase() + notification.actionType.slice(1)} Request
                               </p>
                               <p className="text-sm text-gray-600">
-                                {notification.initiatorName} initiated a payment of KES {notification.amount.toLocaleString()}
+                                {notification.initiatorName} requested {notification.actionType} of KES {notification.amount.toLocaleString()}
                               </p>
                               <p className="text-xs text-gray-500 mt-1">
                                 {new Date(notification.timestamp).toLocaleString()}
                               </p>
+                              
+                              <div className="flex items-center space-x-2 mt-3">
+                                <button
+                                  onClick={(e) => handleApprove(notification.id, e)}
+                                  className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition-colors duration-200 flex items-center space-x-1"
+                                >
+                                  <Check className="w-3 h-3" />
+                                  <span>Approve</span>
+                                </button>
+                                <button
+                                  onClick={(e) => handleReject(notification.id, e)}
+                                  className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700 transition-colors duration-200 flex items-center space-x-1"
+                                >
+                                  <X className="w-3 h-3" />
+                                  <span>Reject</span>
+                                </button>
+                              </div>
                             </div>
                             {!notification.read && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                              <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>
                             )}
                           </div>
                         </div>

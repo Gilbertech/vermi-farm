@@ -1,21 +1,41 @@
 import React, { useState } from 'react';
 import {
   Plus, Search, DollarSign, User, 
-  Building2, Filter, Eye, X, Clock, TrendingUp
+  Building2, Filter, Eye, X, Clock, TrendingUp, AlertTriangle
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 import LoanForm from './LoanForm';
 
 const Loans: React.FC = () => {
   const { loans, users, groups } = useApp();
+  const { canDisburseLoan, addNotification, currentUser } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedLoan, setSelectedLoan] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'group' | 'individual'>('group');
   const [amountFilter, setAmountFilter] = useState('');
   const [timeFilter, setTimeFilter] = useState('all');
+
+  const handleDisburseLoan = () => {
+    if (!canDisburseLoan()) {
+      // Send notification to super admin
+      if (currentUser) {
+        addNotification({
+          type: 'loan_initiated',
+          message: `Loan disbursement request initiated`,
+          initiatorName: currentUser.name,
+          amount: 0, // Will be filled when form is submitted
+          actionType: 'loan',
+          details: { type: 'loan_disbursement' }
+        });
+        alert('Loan disbursement request sent to Super Admin for approval');
+      }
+      return;
+    }
+    setIsModalOpen(true);
+  };
 
   const filterLoans = (type: 'group' | 'individual') => {
     const filtered = loans.filter((loan) => loan.type === type);
@@ -68,7 +88,6 @@ const Loans: React.FC = () => {
     return Math.round((repaid / total) * 100);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleViewDetails = (loan: any) => {
     setSelectedLoan(loan);
   };
@@ -253,26 +272,39 @@ const Loans: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Loans</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Loans</h1>
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-[#2d8e41] text-white px-5 py-2.5 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition"
+          onClick={handleDisburseLoan}
+          className="bg-[#2d8e41] text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition self-start sm:self-auto"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-4 lg:w-5 h-4 lg:h-5" />
           <span>Disburse Loan</span>
         </button>
       </div>
 
+      {/* Access Restriction Notice for Initiators */}
+      {!canDisburseLoan() && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 lg:p-6">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800">Limited Access</h3>
+              <p className="text-sm text-yellow-700">Loan disbursement requires Super Admin approval. Click "Disburse Loan" to send a request.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-xl border">
         {/* Tabs */}
-        <nav className="flex space-x-6 px-6 border-b overflow-x-auto">
+        <nav className="flex space-x-4 lg:space-x-6 px-4 lg:px-6 border-b overflow-x-auto">
           {['group', 'individual'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as 'group' | 'individual')}
-              className={`py-4 text-sm font-medium border-b-2 flex items-center space-x-2 ${
+              className={`py-3 lg:py-4 text-sm lg:text-base font-medium border-b-2 flex items-center space-x-2 whitespace-nowrap ${
                 activeTab === tab
                   ? 'text-[#2d8e41] border-[#2d8e41]'
                   : 'text-gray-500 border-transparent hover:text-gray-700'
@@ -285,15 +317,15 @@ const Loans: React.FC = () => {
         </nav>
 
         {/* Filters */}
-        <div className="p-4 grid md:grid-cols-3 gap-4">
+        <div className="p-4 lg:p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
-            <Search className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+            <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search loans..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 pr-4 py-2.5 border rounded-lg w-full"
+              className="pl-10 pr-4 py-2.5 border rounded-lg w-full focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
             />
           </div>
 
@@ -302,15 +334,15 @@ const Loans: React.FC = () => {
             placeholder="Min Amount (KES)"
             value={amountFilter}
             onChange={(e) => setAmountFilter(e.target.value)}
-            className="px-4 py-2.5 border rounded-lg w-full"
+            className="px-4 py-2.5 border rounded-lg w-full focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
           />
 
           <div className="relative">
-            <Filter className="w-5 h-5 absolute left-3 top-3 text-gray-400" />
+            <Filter className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <select
               value={timeFilter}
               onChange={(e) => setTimeFilter(e.target.value)}
-              className="pl-10 pr-4 py-2.5 border rounded-lg w-full"
+              className="pl-10 pr-4 py-2.5 border rounded-lg w-full focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 appearance-none bg-white"
             >
               <option value="all">All Time</option>
               <option value="today">Today</option>
@@ -321,13 +353,13 @@ const Loans: React.FC = () => {
         </div>
 
         {/* Loan Cards */}
-        <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
           {currentLoans.length > 0 ? currentLoans.map((loan) => (
-            <div key={loan.id} className="bg-white border rounded-lg p-5 shadow-sm">
+            <div key={loan.id} className="bg-white border rounded-lg p-4 lg:p-5 shadow-sm hover:shadow-md transition-shadow duration-200">
               <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-blue-100 flex items-center justify-center rounded-full">
-                    <DollarSign className="text-blue-600" />
+                    <DollarSign className="text-blue-600 w-5 h-5" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold">KES {loan.amount.toLocaleString()}</h3>

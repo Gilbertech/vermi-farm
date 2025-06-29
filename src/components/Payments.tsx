@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Wallet, ChevronDown, Copy, Plus, Download, Search, Filter, Calendar } from 'lucide-react';
+import { Wallet, ChevronDown, Copy, Plus, Download, Search, Filter, Calendar, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 import PaybillForm from './forms/PaybillForm';
 import SinglePaymentForm from './forms/SinglePaymentForm';
@@ -7,6 +8,7 @@ import BuyGoodsForm from './forms/BuyGoodsForm';
 import BulkPaymentsForm from './forms/BulkPaymentsForm';
 
 const Payments: React.FC = () => {
+  const { canMakePayment, addNotification, currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'normal' | 'b2b'>('normal');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [modalType, setModalType] = useState<'paybill' | 'single' | 'buygoods' | 'bulk' | null>(null);
@@ -79,6 +81,22 @@ const Payments: React.FC = () => {
   };
 
   const handlePaymentAction = (type: 'paybill' | 'single' | 'buygoods' | 'bulk') => {
+    if (!canMakePayment()) {
+      // Send notification to super admin
+      if (currentUser) {
+        addNotification({
+          type: 'payment_initiated',
+          message: `${type.charAt(0).toUpperCase() + type.slice(1)} payment request initiated`,
+          initiatorName: currentUser.name,
+          amount: 0, // Will be filled when form is submitted
+          actionType: 'payment',
+          details: { type }
+        });
+        alert('Payment request sent to Super Admin for approval');
+      }
+      setDropdownOpen(false);
+      return;
+    }
     setModalType(type);
     setDropdownOpen(false);
   };
@@ -102,19 +120,32 @@ const Payments: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800 text-center">Payments</h1>
+    <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
+      <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 text-center">Payments</h1>
+
+      {/* Access Restriction Notice for Initiators */}
+      {!canMakePayment() && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 lg:p-6">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800">Limited Access</h3>
+              <p className="text-sm text-yellow-700">Payment processing requires Super Admin approval. Click payment options to send requests.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Wallet Balance Card */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 max-w-md mx-auto">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6 max-w-md mx-auto">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-[#2d8e41] rounded-full flex items-center justify-center">
-              <Wallet className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-[#2d8e41] rounded-full flex items-center justify-center">
+              <Wallet className="w-5 h-5 lg:w-6 lg:h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">Main Wallet Balance</h3>
-              <p className="text-2xl font-bold text-gray-800">KES {walletBalance.toFixed(2)}</p>
+              <h3 className="text-base lg:text-lg font-semibold text-gray-800">Main Wallet Balance</h3>
+              <p className="text-xl lg:text-2xl font-bold text-gray-800">KES {walletBalance.toFixed(2)}</p>
             </div>
           </div>
           <button
@@ -132,10 +163,10 @@ const Payments: React.FC = () => {
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="bg-[#2d8e41] text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium"
+            className="bg-[#2d8e41] text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium"
           >
             <span>Make Payment</span>
-            <ChevronDown className="w-5 h-5" />
+            <ChevronDown className="w-4 lg:w-5 h-4 lg:h-5" />
           </button>
           
           {dropdownOpen && (
@@ -180,7 +211,7 @@ const Payments: React.FC = () => {
         <div className="bg-gray-100 rounded-lg p-1 flex">
           <button
             onClick={() => setActiveTab('normal')}
-            className={`px-6 py-2 rounded-md font-medium transition-colors duration-200 ${
+            className={`px-4 lg:px-6 py-2 rounded-md font-medium transition-colors duration-200 ${
               activeTab === 'normal'
                 ? 'bg-[#2d8e41] text-white'
                 : 'bg-transparent text-[#2d8e41] hover:bg-gray-200'
@@ -190,7 +221,7 @@ const Payments: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('b2b')}
-            className={`px-6 py-2 rounded-md font-medium transition-colors duration-200 ${
+            className={`px-4 lg:px-6 py-2 rounded-md font-medium transition-colors duration-200 ${
               activeTab === 'b2b'
                 ? 'bg-[#2d8e41] text-white'
                 : 'bg-transparent text-[#2d8e41] hover:bg-gray-200'
@@ -202,7 +233,7 @@ const Payments: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <div className="relative">
@@ -248,29 +279,29 @@ const Payments: React.FC = () => {
       {/* Payments Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[600px]">
             <thead className="bg-gray-50">
               <tr>
                 {activeTab === 'normal' ? (
                   <>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TXCODE</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient Name</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient MSISDN</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TXCODE</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient Name</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient MSISDN</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
                   </>
                 ) : (
                   <>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Initiator</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paybill</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mpesa Receipt</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Initiator</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paybill</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mpesa Receipt</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
                   </>
                 )}
               </tr>
@@ -280,54 +311,54 @@ const Payments: React.FC = () => {
                 <tr key={payment.id} className={`hover:bg-gray-50 ${index % 2 === 0 ? 'bg-white' : 'bg-[#f9fafb]'}`}>
                   {activeTab === 'normal' ? (
                     <>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {payment.txCode}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {(payment as any).recipientName}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {(payment as any).recipientMSISDN}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                         KES {payment.amount.toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         KES {payment.cost}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(payment.time).toLocaleString()}
                       </td>
                     </>
                   ) : (
                     <>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {(payment as any).initiator}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {(payment as any).paybill}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {(payment as any).account}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                         KES {payment.amount.toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         KES {payment.cost}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {(payment as any).mpesaReceipt}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {(payment as any).description}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor((payment as any).status)}`}>
                           {(payment as any).status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(payment.time).toLocaleString()}
                       </td>
                     </>

@@ -4,7 +4,9 @@ import { useApp } from '../context/AppContext';
 import StatCard from './StatCard';
 
 const Dashboard: React.FC = () => {
-  const { stats } = useApp();
+  const { stats, transactions } = useApp();
+
+  const failedTransactions = transactions.filter(t => t.status === 'failed').length;
 
   const statCards = [
     {
@@ -51,30 +53,30 @@ const Dashboard: React.FC = () => {
     },
     {
       title: 'Transactions Failed',
-      value: '0',
+      value: failedTransactions.toString(),
       icon: XCircle,
       color: 'red' as const,
-      trend: '-100%'
+      trend: failedTransactions === 0 ? '0%' : `+${failedTransactions}`
     }
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+    <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Dashboard</h1>
         <div className="text-sm text-gray-500">
           Last updated: {new Date().toLocaleString()}
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
         {statCards.map((card, index) => (
           <StatCard key={index} {...card} />
         ))}
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <div className="bg-white p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -101,7 +103,7 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <div className="bg-white p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">System Status</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">

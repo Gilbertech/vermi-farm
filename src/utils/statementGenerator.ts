@@ -63,28 +63,21 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
       console.warn('Could not load logo, proceeding without watermark:', logoError);
     }
     
-    // Header
+    // Header - Centered
     pdf.setFontSize(20);
     pdf.setTextColor(45, 142, 65); // #2d8e41
     pdf.setFont('helvetica', 'bold');
-    pdf.text('VERMI-FARM INITIATIVE', 50, 20);
+    pdf.text('VERMI-FARM INITIATIVE', 105, 20, { align: 'center' });
     
     pdf.setFontSize(12);
     pdf.setTextColor(100, 100, 100);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Sustainable Agriculture & Financial Inclusion', 50, 28);
+    pdf.text('Sustainable Agriculture & Financial Inclusion', 105, 28, { align: 'center' });
     
     pdf.setFontSize(18);
     pdf.setTextColor(152, 63, 33); // #983F21
     pdf.setFont('helvetica', 'bold');
     pdf.text('ACCOUNT STATEMENT', 105, 45, { align: 'center' });
-    
-    // Statement period and date
-    pdf.setFontSize(10);
-    pdf.setTextColor(100, 100, 100);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Period: ${new Date(data.fromDate).toLocaleDateString()} - ${new Date(data.toDate).toLocaleDateString()}`, 150, 15);
-    pdf.text(`Generated: ${new Date().toLocaleString()}`, 150, 22);
     
     // Line separator
     pdf.setDrawColor(45, 142, 65);
@@ -241,6 +234,14 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     pdf.setFont('helvetica', 'normal');
     pdf.text(`KES ${finalBalance.toLocaleString()}`, 80, yPosition);
     
+    // Statement Number and Timestamp - Centered below summary
+    yPosition += 25;
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 100, 100);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Statement #: VF-STMT-${Date.now().toString().slice(-8)}`, 105, yPosition, { align: 'center' });
+    pdf.text(`Generated: ${new Date().toLocaleString()}`, 105, yPosition + 8, { align: 'center' });
+    
     // Footer
     const footerY = 270;
     pdf.setDrawColor(45, 142, 65);
@@ -252,12 +253,6 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     pdf.setFont('helvetica', 'normal');
     pdf.text('This is a computer-generated statement and does not require a signature.', 105, footerY + 8, { align: 'center' });
     pdf.text('For inquiries and support: support@vermi-farm.org | +254 799 616 744', 105, footerY + 16, { align: 'center' });
-    
-    // Security features
-    pdf.setFontSize(7);
-    pdf.setTextColor(150, 150, 150);
-    pdf.text(`Statement ID: VF-STMT-${Date.now().toString().slice(-8)}`, 20, footerY + 25);
-    pdf.text(`Generated on: ${new Date().toISOString()}`, 150, footerY + 25);
     
     // Download the PDF
     const fileName = data.userName 
@@ -306,6 +301,13 @@ const generateSimpleStatement = (data: StatementData): void => {
     
     yPosition += 8;
   });
+  
+  // Statement Number and Timestamp - Centered
+  yPosition += 20;
+  pdf.setFontSize(10);
+  pdf.setTextColor(100, 100, 100);
+  pdf.text(`Statement #: VF-STMT-${Date.now().toString().slice(-8)}`, 105, yPosition, { align: 'center' });
+  pdf.text(`Generated: ${new Date().toLocaleString()}`, 105, yPosition + 8, { align: 'center' });
   
   const fileName = data.userName 
     ? `statement-${data.userName.replace(/\s+/g, '-').toLowerCase()}.pdf`

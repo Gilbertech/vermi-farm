@@ -9,12 +9,14 @@ interface User {
 
 interface Notification {
   id: string;
-  type: 'payment_initiated';
+  type: 'payment_initiated' | 'loan_initiated' | 'transfer_initiated';
   message: string;
   initiatorName: string;
   amount: number;
   timestamp: string;
   read: boolean;
+  actionType: 'payment' | 'loan' | 'transfer';
+  details?: any;
 }
 
 interface AuthContextType {
@@ -29,9 +31,13 @@ interface AuthContextType {
   canInitiate: () => boolean;
   canApprove: () => boolean;
   canTransferPortfolio: () => boolean;
+  canDisburseLoan: () => boolean;
+  canMakePayment: () => boolean;
   addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
   markNotificationAsRead: (id: string) => void;
   clearNotifications: () => void;
+  approveAction: (notificationId: string) => void;
+  rejectAction: (notificationId: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Mock admin users - removed admin_approver role
+  // Mock admin users
   const adminUsers: User[] = [
     { id: '1', name: 'Super Admin', phone: '0712345678', role: 'super_admin' },
     { id: '2', name: 'Admin Initiator 1', phone: '0712345679', role: 'admin_initiator' },
@@ -106,8 +112,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return currentUser?.role === 'super_admin';
   };
 
-  // Only super admin can transfer between portfolios
   const canTransferPortfolio = (): boolean => {
+    return currentUser?.role === 'super_admin';
+  };
+
+  const canDisburseLoan = (): boolean => {
+    return currentUser?.role === 'super_admin';
+  };
+
+  const canMakePayment = (): boolean => {
     return currentUser?.role === 'super_admin';
   };
 
@@ -133,6 +146,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setNotifications([]);
   };
 
+  const approveAction = (notificationId: string) => {
+    const notification = notifications.find(n => n.id === notificationId);
+    if (notification) {
+      // Simulate approval process
+      console.log(`Approved ${notification.actionType}:`, notification.details);
+      
+      // Remove notification after approval
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      
+      // In real app, this would trigger the actual action
+      alert(`${notification.actionType.charAt(0).toUpperCase() + notification.actionType.slice(1)} approved successfully!`);
+    }
+  };
+
+  const rejectAction = (notificationId: string) => {
+    const notification = notifications.find(n => n.id === notificationId);
+    if (notification) {
+      // Remove notification after rejection
+      setNotifications(prev => prev.filter(n => n.id !== notificationId));
+      
+      alert(`${notification.actionType.charAt(0).toUpperCase() + notification.actionType.slice(1)} rejected.`);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       isAuthenticated,
@@ -146,9 +183,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       canInitiate,
       canApprove,
       canTransferPortfolio,
+      canDisburseLoan,
+      canMakePayment,
       addNotification,
       markNotificationAsRead,
-      clearNotifications
+      clearNotifications,
+      approveAction,
+      rejectAction
     }}>
       {children}
     </AuthContext.Provider>

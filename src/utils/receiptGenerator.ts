@@ -60,7 +60,7 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
       console.warn('Could not load logo, proceeding without watermark:', logoError);
     }
     
-    // Header
+    // Header - Centered
     pdf.setFontSize(20);
     pdf.setTextColor(45, 142, 65); // #2d8e41
     pdf.setFont('helvetica', 'bold');
@@ -75,12 +75,6 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.setTextColor(152, 63, 33); // #983F21
     pdf.setFont('helvetica', 'bold');
     pdf.text('TRANSACTION RECEIPT', 105, 45, { align: 'center' });
-    
-    // Receipt number only (removed generated timestamp from top)
-    pdf.setFontSize(10);
-    pdf.setTextColor(100, 100, 100);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Receipt #: ${data.transactionId}`, 150, 15);
     
     // Line separator
     pdf.setDrawColor(45, 142, 65);
@@ -148,12 +142,6 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.setFont('helvetica', 'bold');
     pdf.text(data.status.toUpperCase(), 40, statusY + 8, { align: 'center' });
     
-    // Generated timestamp (moved between status and amount)
-    pdf.setFontSize(8);
-    pdf.setTextColor(100, 100, 100);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Generated: ${new Date().toLocaleString()}`, 85, statusY + 8);
-    
     // Amount highlight
     pdf.setFillColor(45, 142, 65);
     pdf.setTextColor(255, 255, 255);
@@ -162,8 +150,16 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.setFont('helvetica', 'bold');
     pdf.text(`KES ${data.amount.toLocaleString()}`, 160, statusY + 8, { align: 'center' });
     
+    // Receipt Number and Timestamp - Centered below amount
+    const receiptY = statusY + 25;
+    pdf.setFontSize(10);
+    pdf.setTextColor(100, 100, 100);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Receipt #: ${data.transactionId}`, 105, receiptY, { align: 'center' });
+    pdf.text(`Generated: ${new Date().toLocaleString()}`, 105, receiptY + 8, { align: 'center' });
+    
     // Footer section
-    const footerY = 200;
+    const footerY = 210;
     pdf.setDrawColor(45, 142, 65);
     pdf.setLineWidth(0.5);
     pdf.line(20, footerY, 190, footerY);
@@ -239,8 +235,15 @@ const generateSimpleReceipt = (data: ReceiptData): void => {
     yPosition += 10;
   });
   
-  // Footer
+  // Receipt Number and Timestamp - Centered
   yPosition += 20;
+  pdf.setFontSize(10);
+  pdf.setTextColor(100, 100, 100);
+  pdf.text(`Receipt #: ${data.transactionId}`, 105, yPosition, { align: 'center' });
+  pdf.text(`Generated: ${new Date().toLocaleString()}`, 105, yPosition + 8, { align: 'center' });
+  
+  // Footer
+  yPosition += 30;
   pdf.setDrawColor(200, 200, 200);
   pdf.line(20, yPosition, 190, yPosition);
   
@@ -250,11 +253,11 @@ const generateSimpleReceipt = (data: ReceiptData): void => {
   pdf.text('This is a computer-generated receipt.', 105, yPosition, { align: 'center' });
   pdf.text('For inquiries, contact info@vermi-farm.org', 105, yPosition + 10, { align: 'center' });
   
-  pdf.save(`vermi-farm yetu-receipt-${data.transactionId}.pdf`);
+  pdf.save(`vermi-farm-receipt-${data.transactionId}.pdf`);
 };
 
 export const generateCSVReceipt = (data: ReceiptData): void => {
-  const csvContent = `VERMI-FARM YETU Transaction Receipt
+  const csvContent = `VERMI-FARM Transaction Receipt
 Receipt Number,${data.transactionId}
 Generated Date,${new Date().toLocaleString()}
 Transaction Date,${new Date(data.date).toLocaleString()}
