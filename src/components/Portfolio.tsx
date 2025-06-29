@@ -333,12 +333,12 @@ const Portfolio: React.FC = () => {
 
       {/* Access Information for Initiators */}
       {!canTransferPortfolio() && canInitiate() && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 lg:p-6">
+        <div className="bg-[#983F21] bg-opacity-10 border border-[#983F21] border-opacity-30 rounded-xl p-4 lg:p-6">
           <div className="flex items-center space-x-3">
-            <Send className="w-5 h-5 text-blue-600" />
+            <Send className="w-5 h-5 text-[#983F21]" />
             <div>
-              <h3 className="text-sm font-medium text-blue-800">Transfer Request System</h3>
-              <p className="text-sm text-blue-700">You can initiate portfolio transfer requests. Use the Transfer button to send requests to Super Admin for approval.</p>
+              <h3 className="text-sm font-medium text-[#983F21]">Transfer Request System</h3>
+              <p className="text-sm text-[#983F21] opacity-90">You can initiate portfolio transfer requests. Use the Transfer button to send requests to Super Admin for approval.</p>
             </div>
           </div>
         </div>
@@ -346,12 +346,12 @@ const Portfolio: React.FC = () => {
 
       {/* No Access Notice for Non-Initiators */}
       {!canTransferPortfolio() && !canInitiate() && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 lg:p-6">
+        <div className="bg-[#983F21] bg-opacity-10 border border-[#983F21] border-opacity-30 rounded-xl p-4 lg:p-6">
           <div className="flex items-center space-x-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+            <AlertTriangle className="w-5 h-5 text-[#983F21]" />
             <div>
-              <h3 className="text-sm font-medium text-yellow-800">View Only Access</h3>
-              <p className="text-sm text-brown-700">Portfolio transfers are restricted to authorized personnel only. You can view portfolio data but cannot initiate transfers.</p>
+              <h3 className="text-sm font-medium text-[#983F21]">View Only Access</h3>
+              <p className="text-sm text-[#983F21] opacity-90">Portfolio transfers are restricted to authorized personnel only. You can view portfolio data but cannot initiate transfers.</p>
             </div>
           </div>
         </div>
@@ -422,7 +422,7 @@ const Portfolio: React.FC = () => {
               <div className="relative">
                 <button
                   onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
-                  className={`${canTransferPortfolio() ? 'bg-[#983F21] hover:bg-[#7a3219]' : 'bg-blue-600 hover:bg-blue-700'} text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors duration-200 w-full sm:w-auto justify-center`}
+                  className={`${canTransferPortfolio() ? 'bg-[#983F21] hover:bg-[#7a3219]' : 'bg-[#983F21] hover:bg-[#7a3219]'} text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors duration-200 w-full sm:w-auto justify-center`}
                 >
                   {canTransferPortfolio() ? <ArrowUpRight className="w-4 h-4" /> : <Send className="w-4 h-4" />}
                   <span>{canTransferPortfolio() ? 'Transfer' : 'Request Transfer'}</span>
@@ -430,7 +430,7 @@ const Portfolio: React.FC = () => {
                 </button>
                 
                 {transferDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-brown rounded-lg shadow-lg border border-gray-200 z-10">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                     <div className="py-1">
                       <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-200">
                         {canTransferPortfolio() ? 'Transfer to:' : 'Request transfer to:'}
