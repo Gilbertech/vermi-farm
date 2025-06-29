@@ -71,6 +71,19 @@ const addStatementFooter = (pdf: jsPDF, statementNumber: string, pageNum: number
   pdf.text('This is a computer-generated statement. For inquiries: support@vermi-farm.org | +254 799 616 744', 105, footerY + 16, { align: 'center' });
 };
 
+const addWatermarkLogo = async (pdf: jsPDF) => {
+  try {
+    const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
+    pdf.setGState(pdf.GState({ opacity: 0.1 }));
+    pdf.addImage(logoBase64, 'PNG', 60, 80, 90, 90);
+    pdf.setGState(pdf.GState({ opacity: 1 }));
+    return logoBase64;
+  } catch (error) {
+    console.warn('Could not load logo for watermark:', error);
+    return null;
+  }
+};
+
 export const generateStatement = async (data: StatementData): Promise<void> => {
   try {
     const pdf = new jsPDF();
@@ -81,9 +94,10 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     const transactionsPerPage = 15;
     const totalPages = Math.max(1, Math.ceil(data.transactions.length / transactionsPerPage) + 1); // +1 for summary page
     
-    // Load and add logo watermark
+    // Load logo once for reuse
+    let logoBase64: string | null = null;
     try {
-      const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
+      logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
       
       // Add watermark logo (semi-transparent, centered)
       pdf.setGState(pdf.GState({ opacity: 0.1 }));
@@ -190,15 +204,34 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
         currentPage++;
         yPosition = 30;
         
-        // Re-add logo watermark on new page
-        try {
-          const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
-          pdf.setGState(pdf.GState({ opacity: 0.1 }));
-          pdf.addImage(logoBase64, 'PNG', 60, 80, 90, 90);
-          pdf.setGState(pdf.GState({ opacity: 1 }));
-        } catch (logoError) {
-          // Continue without logo
+        // Re-add logo watermark on new page if available
+        if (logoBase64) {
+          try {
+            pdf.setGState(pdf.GState({ opacity: 0.1 }));
+            pdf.addImage(logoBase64, 'PNG', 60, 80, 90, 90);
+            pdf.setGState(pdf.GState({ opacity: 1 }));
+          } catch (error) {
+            console.warn('Could not add logo to new page:', error);
+          }
         }
+        
+        // Re-add transaction table header on new page
+        pdf.setDrawColor(45, 142, 65);
+        pdf.setFillColor(45, 142, 65);
+        pdf.rect(20, yPosition - 5, 170, 12, 'F');
+        
+        pdf.setFontSize(9);
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Date', 25, yPosition + 3);
+        pdf.text('Type', 55, yPosition + 3);
+        pdf.text('Description', 80, yPosition + 3);
+        pdf.text('Amount', 130, yPosition + 3);
+        pdf.text('Balance', 160, yPosition + 3);
+        
+        yPosition += 15;
+        pdf.setTextColor(0, 0, 0);
+        pdf.setFont('helvetica', 'normal');
       }
       
       const rowColor = index % 2 === 0 ? [255, 255, 255] : [249, 250, 251];
@@ -236,6 +269,17 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
       pdf.addPage();
       currentPage++;
       yPosition = 30;
+      
+      // Add watermark to summary page if available
+      if (logoBase64) {
+        try {
+          pdf.setGState(pdf.GState({ opacity: 0.1 }));
+          pdf.addImage(logoBase64, 'PNG', 60, 80, 90, 90);
+          pdf.setGState(pdf.GState({ opacity: 1 }));
+        } catch (error) {
+          console.warn('Could not add logo to summary page:', error);
+        }
+      }
     }
     
     pdf.setDrawColor(45, 142, 65);
