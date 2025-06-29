@@ -77,7 +77,7 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.text('TRANSACTION RECEIPT', 105, 45, { align: 'center' });
     
     // Receipt number and date
-    pdf.setFontSize(10);
+    pdf.setFontSize(5);
     pdf.setTextColor(100, 100, 100);
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Receipt #: ${data.transactionId}`, 150, 15);
