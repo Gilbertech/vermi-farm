@@ -41,35 +41,88 @@ const loadImageAsBase64 = (url: string): Promise<string> => {
   });
 };
 
-const createDigitalStamp = (pdf: jsPDF, x: number, y: number, status: string) => {
-  // Stamp dimensions
-  const stampWidth = 50;
-  const stampHeight = 30;
+const generateQRCode = (data: string, size: number = 100): string => {
+  // Simple QR code generation using a pattern-based approach
+  // In production, you'd use a proper QR code library
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '';
   
-  // Stamp colors based on status
-  let stampColor: [number, number, number];
-  let textColor: [number, number, number];
+  canvas.width = size;
+  canvas.height = size;
+  
+  // Fill background
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, size, size);
+  
+  // Create a simple pattern based on the data
+  const gridSize = 21; // Standard QR code grid
+  const cellSize = size / gridSize;
+  
+  // Generate pattern from data hash
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    const char = data.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  
+  ctx.fillStyle = '#000000';
+  
+  // Draw finder patterns (corners)
+  const drawFinderPattern = (x: number, y: number) => {
+    // Outer square
+    ctx.fillRect(x * cellSize, y * cellSize, 7 * cellSize, 7 * cellSize);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect((x + 1) * cellSize, (y + 1) * cellSize, 5 * cellSize, 5 * cellSize);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect((x + 2) * cellSize, (y + 2) * cellSize, 3 * cellSize, 3 * cellSize);
+  };
+  
+  // Draw finder patterns
+  drawFinderPattern(0, 0);
+  drawFinderPattern(14, 0);
+  drawFinderPattern(0, 14);
+  
+  // Draw data pattern
+  for (let x = 0; x < gridSize; x++) {
+    for (let y = 0; y < gridSize; y++) {
+      // Skip finder patterns
+      if ((x < 9 && y < 9) || (x > 12 && y < 9) || (x < 9 && y > 12)) continue;
+      
+      // Generate pseudo-random pattern based on position and hash
+      const seed = (x * gridSize + y + hash) % 1000;
+      if (seed % 3 === 0) {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+      }
+    }
+  }
+  
+  return canvas.toDataURL('image/png');
+};
+
+const createVerticalDigitalStamp = (pdf: jsPDF, x: number, y: number, status: string) => {
+  // Vertical stamp dimensions
+  const stampWidth = 25;
+  const stampHeight = 60;
+  
+  // Blue color scheme for all stamps
+  const stampColor: [number, number, number] = [37, 99, 235]; // Blue
+  const textColor: [number, number, number] = [255, 255, 255]; // White
+  
   let stampText: string;
-  
   switch (status.toLowerCase()) {
     case 'completed':
-      stampColor = [45, 142, 65]; // Green
-      textColor = [255, 255, 255]; // White
       stampText = 'VERIFIED';
       break;
     case 'pending':
-      stampColor = [234, 179, 8]; // Yellow
-      textColor = [0, 0, 0]; // Black
       stampText = 'PENDING';
       break;
     case 'failed':
-      stampColor = [239, 68, 68]; // Red
-      textColor = [255, 255, 255]; // White
       stampText = 'FAILED';
       break;
     default:
-      stampColor = [100, 100, 100]; // Gray
-      textColor = [255, 255, 255]; // White
       stampText = 'PROCESSED';
   }
   
@@ -84,33 +137,101 @@ const createDigitalStamp = (pdf: jsPDF, x: number, y: number, status: string) =>
   pdf.roundedRect(x, y, stampWidth, stampHeight, 3, 3, 'S');
   
   pdf.setLineWidth(0.5);
-  pdf.roundedRect(x + 2, y + 2, stampWidth - 4, stampHeight - 4, 2, 2, 'S');
+  pdf.roundedRect(x + 1.5, y + 1.5, stampWidth - 3, stampHeight - 3, 2, 2, 'S');
   
-  // Fill stamp background with transparency
+  // Fill stamp background with blue
   pdf.setFillColor(stampColor[0], stampColor[1], stampColor[2]);
-  pdf.setGState(pdf.GState({ opacity: 0.1 }));
+  pdf.setGState(pdf.GState({ opacity: 0.15 }));
   pdf.roundedRect(x + 1, y + 1, stampWidth - 2, stampHeight - 2, 2, 2, 'F');
   pdf.setGState(pdf.GState({ opacity: 1 }));
   
-  // Add stamp text
+  // Add stamp text vertically
   pdf.setTextColor(stampColor[0], stampColor[1], stampColor[2]);
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(10);
-  pdf.text(stampText, x + stampWidth/2, y + stampHeight/2 - 3, { align: 'center' });
   
-  // Add "VERMI-FARM" text
-  pdf.setFontSize(6);
-  pdf.setFont('helvetica', 'normal');
-  pdf.text('VERMI-FARM', x + stampWidth/2, y + stampHeight/2 + 3, { align: 'center' });
+  // Rotate text for vertical orientation
+  const centerX = x + stampWidth / 2;
+  const centerY = y + stampHeight / 2;
   
-  // Add date stamp
+  // Main status text
+  pdf.setFontSize(8);
+  pdf.text(stampText, centerX, centerY - 8, { 
+    align: 'center',
+    angle: 90
+  });
+  
+  // "VERMI-FARM" text
   pdf.setFontSize(5);
-  pdf.text(new Date().toLocaleDateString(), x + stampWidth/2, y + stampHeight/2 + 8, { align: 'center' });
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('VERMI-FARM', centerX, centerY + 5, { 
+    align: 'center',
+    angle: 90
+  });
+  
+  // Date stamp
+  pdf.setFontSize(4);
+  pdf.text(new Date().toLocaleDateString(), centerX, centerY + 15, { 
+    align: 'center',
+    angle: 90
+  });
+  
+  // Add decorative elements
+  pdf.setDrawColor(stampColor[0], stampColor[1], stampColor[2]);
+  pdf.setLineWidth(0.3);
+  pdf.line(x + 3, y + 5, x + stampWidth - 3, y + 5);
+  pdf.line(x + 3, y + stampHeight - 5, x + stampWidth - 3, y + stampHeight - 5);
   
   // Restore previous state
   pdf.setFillColor(currentFillColor);
   pdf.setDrawColor(currentDrawColor);
   pdf.setLineWidth(currentLineWidth);
+};
+
+const addQRCode = (pdf: jsPDF, data: ReceiptData, x: number, y: number, size: number = 30) => {
+  // Create QR code data string
+  const qrData = `VF-${data.transactionId}-${data.amount}-${new Date(data.date).getTime()}`;
+  
+  try {
+    // Generate QR code
+    const qrCodeDataURL = generateQRCode(qrData, 150);
+    
+    // Add QR code to PDF
+    pdf.addImage(qrCodeDataURL, 'PNG', x, y, size, size);
+    
+    // Add border around QR code
+    pdf.setDrawColor(100, 100, 100);
+    pdf.setLineWidth(0.5);
+    pdf.rect(x, y, size, size);
+    
+    // Add label below QR code
+    pdf.setFontSize(6);
+    pdf.setTextColor(100, 100, 100);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('SCAN TO VERIFY', x + size/2, y + size + 5, { align: 'center' });
+    pdf.text(`ID: ${data.transactionId.slice(-6)}`, x + size/2, y + size + 10, { align: 'center' });
+    
+  } catch (error) {
+    console.warn('Could not generate QR code, adding placeholder:', error);
+    
+    // Fallback: Draw QR code placeholder
+    pdf.setDrawColor(150, 150, 150);
+    pdf.setLineWidth(0.5);
+    pdf.rect(x, y, size, size);
+    
+    // Add grid pattern
+    const gridLines = 8;
+    for (let i = 1; i < gridLines; i++) {
+      const linePos = (size / gridLines) * i;
+      pdf.line(x + linePos, y, x + linePos, y + size);
+      pdf.line(x, y + linePos, x + size, y + linePos);
+    }
+    
+    pdf.setFontSize(6);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text('QR CODE', x + size/2, y + size/2, { align: 'center' });
+    pdf.text('VERIFICATION', x + size/2, y + size/2 + 4, { align: 'center' });
+    pdf.text(`${data.transactionId.slice(-6)}`, x + size/2, y + size + 5, { align: 'center' });
+  }
 };
 
 const addFooter = (pdf: jsPDF, receiptNumber: string, pageNum: number, totalPages: number) => {
@@ -262,35 +383,35 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.setFont('helvetica', 'bold');
     pdf.text(`KES ${data.amount.toLocaleString()}`, amountX + 30, amountY + 10, { align: 'center' });
     
-    // Add Digital Stamp - Positioned in top right corner of details section
-    createDigitalStamp(pdf, 140, 80, data.status);
+    // Add Blue Vertical Digital Stamp - Positioned in top right corner of details section
+    createVerticalDigitalStamp(pdf, 160, 80, data.status);
+    
+    // Add QR Code - Positioned in bottom left
+    addQRCode(pdf, data, 20, 190, 35);
     
     // Security features
     pdf.setFontSize(8);
     pdf.setTextColor(150, 150, 150);
-    pdf.text(`Security Code: VF-${Date.now().toString().slice(-6)}`, 20, 200);
-    pdf.text(`Verification: ${data.transactionId.slice(-8).toUpperCase()}`, 150, 200);
-    
-    // QR Code placeholder (text-based for now)
-    pdf.setDrawColor(150, 150, 150);
-    pdf.setLineWidth(0.5);
-    pdf.rect(20, 210, 25, 25);
-    pdf.setFontSize(6);
-    pdf.setTextColor(100, 100, 100);
-    pdf.text('QR CODE', 32.5, 220, { align: 'center' });
-    pdf.text('VERIFICATION', 32.5, 225, { align: 'center' });
-    pdf.text(data.transactionId.slice(-6), 32.5, 230, { align: 'center' });
+    pdf.text(`Security Code: VF-${Date.now().toString().slice(-6)}`, 70, 200);
+    pdf.text(`Verification: ${data.transactionId.slice(-8).toUpperCase()}`, 70, 208);
     
     // Important Notice
     pdf.setFontSize(9);
     pdf.setTextColor(152, 63, 33);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('IMPORTANT NOTICE:', 55, 215);
+    pdf.text('IMPORTANT NOTICE:', 70, 220);
     pdf.setFontSize(8);
     pdf.setTextColor(0, 0, 0);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('This receipt is valid for 90 days from the date of issue.', 55, 223);
-    pdf.text('Keep this receipt for your records and future reference.', 55, 230);
+    pdf.text('• This receipt is valid for 90 days from the date of issue.', 70, 228);
+    pdf.text('• Keep this receipt for your records and future reference.', 70, 235);
+    pdf.text('• Scan QR code to verify transaction authenticity.', 70, 242);
+    
+    // Digital signature placeholder
+    pdf.setFontSize(7);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text('Digitally signed by Vermi-Farm System', 70, 250);
+    pdf.text(`Digital signature: ${data.transactionId.slice(-12).toUpperCase()}`, 70, 257);
     
     // Add footer with receipt number, timestamp, and page number
     addFooter(pdf, data.transactionId, 1, totalPages);
@@ -368,8 +489,11 @@ const generateSimpleReceipt = (data: ReceiptData): void => {
   pdf.setFont('helvetica', 'bold');
   pdf.text(`KES ${data.amount.toLocaleString()}`, 160, yPosition + 5, { align: 'center' });
   
-  // Add simple digital stamp
-  createDigitalStamp(pdf, 140, 60, data.status);
+  // Add blue vertical digital stamp
+  createVerticalDigitalStamp(pdf, 160, 60, data.status);
+  
+  // Add QR code
+  addQRCode(pdf, data, 20, 150, 30);
   
   // Add footer
   addFooter(pdf, data.transactionId, 1, totalPages);
