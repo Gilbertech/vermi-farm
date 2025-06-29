@@ -54,7 +54,8 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
       pdf.addImage(logoBase64, 'JPEG', 60, 80, 90, 90);
       pdf.setGState(pdf.GState({ opacity: 1 }));
       
-      
+    
+    }
     
     // Header
     pdf.setFontSize(20);
