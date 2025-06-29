@@ -351,7 +351,7 @@ const Portfolio: React.FC = () => {
             <AlertTriangle className="w-5 h-5 text-yellow-600" />
             <div>
               <h3 className="text-sm font-medium text-yellow-800">View Only Access</h3>
-              <p className="text-sm text-yellow-700">Portfolio transfers are restricted to authorized personnel only. You can view portfolio data but cannot initiate transfers.</p>
+              <p className="text-sm text-brown-700">Portfolio transfers are restricted to authorized personnel only. You can view portfolio data but cannot initiate transfers.</p>
             </div>
           </div>
         </div>
@@ -430,7 +430,7 @@ const Portfolio: React.FC = () => {
                 </button>
                 
                 {transferDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                  <div className="absolute right-0 mt-2 w-56 bg-brown rounded-lg shadow-lg border border-gray-200 z-10">
                     <div className="py-1">
                       <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-200">
                         {canTransferPortfolio() ? 'Transfer to:' : 'Request transfer to:'}
