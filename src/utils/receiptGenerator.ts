@@ -41,6 +41,78 @@ const loadImageAsBase64 = (url: string): Promise<string> => {
   });
 };
 
+const createDigitalStamp = (pdf: jsPDF, x: number, y: number, status: string) => {
+  // Stamp dimensions
+  const stampWidth = 50;
+  const stampHeight = 30;
+  
+  // Stamp colors based on status
+  let stampColor: [number, number, number];
+  let textColor: [number, number, number];
+  let stampText: string;
+  
+  switch (status.toLowerCase()) {
+    case 'completed':
+      stampColor = [45, 142, 65]; // Green
+      textColor = [255, 255, 255]; // White
+      stampText = 'VERIFIED';
+      break;
+    case 'pending':
+      stampColor = [234, 179, 8]; // Yellow
+      textColor = [0, 0, 0]; // Black
+      stampText = 'PENDING';
+      break;
+    case 'failed':
+      stampColor = [239, 68, 68]; // Red
+      textColor = [255, 255, 255]; // White
+      stampText = 'FAILED';
+      break;
+    default:
+      stampColor = [100, 100, 100]; // Gray
+      textColor = [255, 255, 255]; // White
+      stampText = 'PROCESSED';
+  }
+  
+  // Save current state
+  const currentFillColor = pdf.getFillColor();
+  const currentDrawColor = pdf.getDrawColor();
+  const currentLineWidth = pdf.getLineWidth();
+  
+  // Draw stamp border (double border for official look)
+  pdf.setDrawColor(stampColor[0], stampColor[1], stampColor[2]);
+  pdf.setLineWidth(1.5);
+  pdf.roundedRect(x, y, stampWidth, stampHeight, 3, 3, 'S');
+  
+  pdf.setLineWidth(0.5);
+  pdf.roundedRect(x + 2, y + 2, stampWidth - 4, stampHeight - 4, 2, 2, 'S');
+  
+  // Fill stamp background with transparency
+  pdf.setFillColor(stampColor[0], stampColor[1], stampColor[2]);
+  pdf.setGState(pdf.GState({ opacity: 0.1 }));
+  pdf.roundedRect(x + 1, y + 1, stampWidth - 2, stampHeight - 2, 2, 2, 'F');
+  pdf.setGState(pdf.GState({ opacity: 1 }));
+  
+  // Add stamp text
+  pdf.setTextColor(stampColor[0], stampColor[1], stampColor[2]);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(10);
+  pdf.text(stampText, x + stampWidth/2, y + stampHeight/2 - 3, { align: 'center' });
+  
+  // Add "VERMI-FARM" text
+  pdf.setFontSize(6);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('VERMI-FARM', x + stampWidth/2, y + stampHeight/2 + 3, { align: 'center' });
+  
+  // Add date stamp
+  pdf.setFontSize(5);
+  pdf.text(new Date().toLocaleDateString(), x + stampWidth/2, y + stampHeight/2 + 8, { align: 'center' });
+  
+  // Restore previous state
+  pdf.setFillColor(currentFillColor);
+  pdf.setDrawColor(currentDrawColor);
+  pdf.setLineWidth(currentLineWidth);
+};
+
 const addFooter = (pdf: jsPDF, receiptNumber: string, pageNum: number, totalPages: number) => {
   const footerY = 280;
   
@@ -78,7 +150,7 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
       const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
       
       // Add watermark logo (semi-transparent, centered)
-      pdf.setGState(pdf.GState({ opacity: 0.1 }));
+      pdf.setGState(pdf.GState({ opacity: 0.08 }));
       pdf.addImage(logoBase64, 'JPEG', 60, 80, 90, 90);
       pdf.setGState(pdf.GState({ opacity: 1 }));
       
@@ -152,8 +224,17 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
       yPosition += lines.length > 1 ? 8 * lines.length : 8;
     });
     
-    // Status indicator
-    const statusY = 165;
+    // Status and Amount Section - Better Alignment
+    const statusSectionY = 165;
+    
+    // Create a centered container for status and amount
+    const containerWidth = 170;
+    const containerX = 20;
+    
+    // Status indicator - Left aligned in container
+    const statusX = containerX + 10;
+    const statusY = statusSectionY;
+    
     if (data.status.toLowerCase() === 'completed') {
       pdf.setFillColor(45, 142, 65); // green
       pdf.setTextColor(255, 255, 255);
@@ -165,24 +246,51 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
       pdf.setTextColor(255, 255, 255);
     }
     
-    pdf.roundedRect(20, statusY, 40, 12, 2, 2, 'F');
-    pdf.setFontSize(10);
+    pdf.roundedRect(statusX, statusY, 50, 15, 3, 3, 'F');
+    pdf.setFontSize(11);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(data.status.toUpperCase(), 40, statusY + 8, { align: 'center' });
+    pdf.text(data.status.toUpperCase(), statusX + 25, statusY + 10, { align: 'center' });
     
-    // Amount highlight - centered below status
+    // Amount highlight - Right aligned in container
+    const amountX = containerX + containerWidth - 70;
+    const amountY = statusY;
+    
     pdf.setFillColor(45, 142, 65);
     pdf.setTextColor(255, 255, 255);
-    pdf.roundedRect(75, statusY + 20, 60, 15, 2, 2, 'F');
-    pdf.setFontSize(14);
+    pdf.roundedRect(amountX, amountY, 60, 15, 3, 3, 'F');
+    pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(`KES ${data.amount.toLocaleString()}`, 105, statusY + 30, { align: 'center' });
+    pdf.text(`KES ${data.amount.toLocaleString()}`, amountX + 30, amountY + 10, { align: 'center' });
+    
+    // Add Digital Stamp - Positioned in top right corner of details section
+    createDigitalStamp(pdf, 140, 80, data.status);
     
     // Security features
     pdf.setFontSize(8);
     pdf.setTextColor(150, 150, 150);
-    pdf.text(`Security Code: VF-${Date.now().toString().slice(-6)}`, 20, 220);
-    pdf.text(`Verification: ${data.transactionId.slice(-8).toUpperCase()}`, 150, 220);
+    pdf.text(`Security Code: VF-${Date.now().toString().slice(-6)}`, 20, 200);
+    pdf.text(`Verification: ${data.transactionId.slice(-8).toUpperCase()}`, 150, 200);
+    
+    // QR Code placeholder (text-based for now)
+    pdf.setDrawColor(150, 150, 150);
+    pdf.setLineWidth(0.5);
+    pdf.rect(20, 210, 25, 25);
+    pdf.setFontSize(6);
+    pdf.setTextColor(100, 100, 100);
+    pdf.text('QR CODE', 32.5, 220, { align: 'center' });
+    pdf.text('VERIFICATION', 32.5, 225, { align: 'center' });
+    pdf.text(data.transactionId.slice(-6), 32.5, 230, { align: 'center' });
+    
+    // Important Notice
+    pdf.setFontSize(9);
+    pdf.setTextColor(152, 63, 33);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('IMPORTANT NOTICE:', 55, 215);
+    pdf.setFontSize(8);
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('This receipt is valid for 90 days from the date of issue.', 55, 223);
+    pdf.text('Keep this receipt for your records and future reference.', 55, 230);
     
     // Add footer with receipt number, timestamp, and page number
     addFooter(pdf, data.transactionId, 1, totalPages);
@@ -241,14 +349,27 @@ const generateSimpleReceipt = (data: ReceiptData): void => {
     yPosition += 10;
   });
   
-  // Amount highlight - centered
+  // Status and Amount - Better aligned
   yPosition += 20;
+  
+  // Status
   pdf.setFillColor(45, 142, 65);
   pdf.setTextColor(255, 255, 255);
-  pdf.roundedRect(75, yPosition - 5, 60, 15, 2, 2, 'F');
-  pdf.setFontSize(14);
+  pdf.roundedRect(30, yPosition - 5, 50, 15, 3, 3, 'F');
+  pdf.setFontSize(11);
   pdf.setFont('helvetica', 'bold');
-  pdf.text(`KES ${data.amount.toLocaleString()}`, 105, yPosition + 5, { align: 'center' });
+  pdf.text(data.status.toUpperCase(), 55, yPosition + 5, { align: 'center' });
+  
+  // Amount
+  pdf.setFillColor(45, 142, 65);
+  pdf.setTextColor(255, 255, 255);
+  pdf.roundedRect(130, yPosition - 5, 60, 15, 3, 3, 'F');
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(`KES ${data.amount.toLocaleString()}`, 160, yPosition + 5, { align: 'center' });
+  
+  // Add simple digital stamp
+  createDigitalStamp(pdf, 140, 60, data.status);
   
   // Add footer
   addFooter(pdf, data.transactionId, 1, totalPages);
