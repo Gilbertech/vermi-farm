@@ -106,6 +106,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             read: false,
             actionType: 'loan',
             details: { type: 'group_loan', groupName: 'Nairobi Farmers' }
+          },
+          {
+            id: '3',
+            type: 'transfer_initiated',
+            message: 'Portfolio transfer request initiated',
+            initiatorName: 'Admin Initiator 1',
+            amount: 50000,
+            timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 minutes ago
+            read: false,
+            actionType: 'transfer',
+            details: { 
+              type: 'portfolio_transfer',
+              fromPortfolio: 'revenue',
+              toPortfolio: 'investment',
+              description: 'Quarterly investment allocation',
+              reference: 'Q1-2024-INV'
+            }
           }
         ];
         setNotifications(sampleNotifications);
@@ -190,15 +207,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const approveAction = (notificationId: string) => {
     const notification = notifications.find(n => n.id === notificationId);
     if (notification) {
-      // Simulate approval process
-      console.log(`Approved ${notification.actionType}:`, notification.details);
-      
       // Remove notification after approval
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       
-      // Show success message
+      // Show success message with details
       const actionName = notification.actionType.charAt(0).toUpperCase() + notification.actionType.slice(1);
-      alert(`✅ ${actionName} of KES ${notification.amount.toLocaleString()} approved successfully!\n\nInitiated by: ${notification.initiatorName}\nAmount: KES ${notification.amount.toLocaleString()}\nTime: ${new Date(notification.timestamp).toLocaleString()}`);
+      let detailsText = '';
+      
+      if (notification.actionType === 'transfer' && notification.details) {
+        detailsText = `\nFrom: ${notification.details.fromPortfolio} Portfolio\nTo: ${notification.details.toPortfolio} Portfolio`;
+        if (notification.details.description) {
+          detailsText += `\nDescription: ${notification.details.description}`;
+        }
+      }
+      
+      alert(`✅ ${actionName} of KES ${notification.amount.toLocaleString()} approved successfully!\n\nInitiated by: ${notification.initiatorName}\nAmount: KES ${notification.amount.toLocaleString()}\nTime: ${new Date(notification.timestamp).toLocaleString()}${detailsText}`);
       
       // In real app, this would trigger the actual action via API
     }

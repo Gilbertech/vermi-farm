@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, PiggyBank as Piggy, ChevronDown, Search, Filter, Calendar, Download, Eye, EyeOff, ArrowUpRight, Check, X, AlertTriangle } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, PiggyBank as Piggy, ChevronDown, Search, Filter, Calendar, Download, Eye, EyeOff, ArrowUpRight, Check, X, AlertTriangle, Send } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { generateReceipt } from '../utils/receiptGenerator';
@@ -8,7 +8,7 @@ import TransferForm from './forms/TransferForm';
 
 const Portfolio: React.FC = () => {
   const { stats, loans, transactions, users } = useApp();
-  const { canInitiate, canApprove, canTransferPortfolio, currentUser } = useAuth();
+  const { canInitiate, canApprove, canTransferPortfolio, currentUser, addNotification } = useAuth();
   const [activeTab, setActiveTab] = useState<'loan' | 'revenue' | 'investment' | 'expense' | 'working' | 'b2b' | 'savings'>('loan');
   const [searchTerm, setSearchTerm] = useState('');
   const [amountFilter, setAmountFilter] = useState('');
@@ -154,8 +154,8 @@ const Portfolio: React.FC = () => {
   });
 
   const handleTransfer = (targetPortfolioId: string) => {
-    if (!canTransferPortfolio()) {
-      alert('Only Super Admin can transfer between portfolios');
+    if (!canTransferPortfolio() && !canInitiate()) {
+      alert('You do not have permission to initiate transfers');
       return;
     }
     
@@ -178,10 +178,29 @@ const Portfolio: React.FC = () => {
     if (canApprove()) {
       // Auto-approve if super admin
       console.log('Transfer approved and executed:', newTransfer);
+      alert(`✅ Transfer of KES ${transferData.amount.toLocaleString()} from ${activeTab} to ${targetPortfolio} portfolio completed successfully!`);
     } else {
-      // Add to pending transfers
+      // Send notification to super admin for approval
+      if (currentUser) {
+        addNotification({
+          type: 'transfer_initiated',
+          message: `Portfolio transfer of KES ${transferData.amount.toLocaleString()} initiated`,
+          initiatorName: currentUser.name,
+          amount: transferData.amount,
+          actionType: 'transfer',
+          details: { 
+            type: 'portfolio_transfer',
+            fromPortfolio: activeTab,
+            toPortfolio: targetPortfolio,
+            description: transferData.description,
+            reference: transferData.reference
+          }
+        });
+        alert(`📤 Transfer request sent to Super Admin for approval!\n\nAmount: KES ${transferData.amount.toLocaleString()}\nFrom: ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Portfolio\nTo: ${targetPortfolio.charAt(0).toUpperCase() + targetPortfolio.slice(1)} Portfolio`);
+      }
+      
+      // Add to pending transfers for display
       setPendingTransfers(prev => [...prev, newTransfer]);
-      console.log('Transfer submitted for approval:', newTransfer);
     }
 
     setIsTransferModalOpen(false);
@@ -312,14 +331,27 @@ const Portfolio: React.FC = () => {
         </button>
       </div>
 
-      {/* Access Restriction Notice for Initiators */}
-      {!canTransferPortfolio() && (
+      {/* Access Information for Initiators */}
+      {!canTransferPortfolio() && canInitiate() && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 lg:p-6">
+          <div className="flex items-center space-x-3">
+            <Send className="w-5 h-5 text-blue-600" />
+            <div>
+              <h3 className="text-sm font-medium text-blue-800">Transfer Request System</h3>
+              <p className="text-sm text-blue-700">You can initiate portfolio transfer requests. Use the Transfer button to send requests to Super Admin for approval.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* No Access Notice for Non-Initiators */}
+      {!canTransferPortfolio() && !canInitiate() && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 lg:p-6">
           <div className="flex items-center space-x-3">
             <AlertTriangle className="w-5 h-5 text-yellow-600" />
             <div>
-              <h3 className="text-sm font-medium text-yellow-800">Limited Access</h3>
-              <p className="text-sm text-yellow-700">Portfolio transfers are restricted to Super Admin only. You can view portfolio data but cannot initiate transfers.</p>
+              <h3 className="text-sm font-medium text-yellow-800">View Only Access</h3>
+              <p className="text-sm text-yellow-700">Portfolio transfers are restricted to authorized personnel only. You can view portfolio data but cannot initiate transfers.</p>
             </div>
           </div>
         </div>
@@ -385,21 +417,24 @@ const Portfolio: React.FC = () => {
               })}
             </nav>
 
-            {/* Transfer Dropdown - Only for Super Admin */}
-            {canTransferPortfolio() && (
+            {/* Transfer Dropdown - Available for both Super Admin and Initiators */}
+            {(canTransferPortfolio() || canInitiate()) && (
               <div className="relative">
                 <button
                   onClick={() => setTransferDropdownOpen(!transferDropdownOpen)}
-                  className="bg-[#983F21] text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-[#7a3219] transition-colors duration-200 w-full sm:w-auto justify-center"
+                  className={`${canTransferPortfolio() ? 'bg-[#983F21] hover:bg-[#7a3219]' : 'bg-blue-600 hover:bg-blue-700'} text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors duration-200 w-full sm:w-auto justify-center`}
                 >
-                  <ArrowUpRight className="w-4 h-4" />
-                  <span>Transfer</span>
+                  {canTransferPortfolio() ? <ArrowUpRight className="w-4 h-4" /> : <Send className="w-4 h-4" />}
+                  <span>{canTransferPortfolio() ? 'Transfer' : 'Request Transfer'}</span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
                 
                 {transferDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
                     <div className="py-1">
+                      <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-200">
+                        {canTransferPortfolio() ? 'Transfer to:' : 'Request transfer to:'}
+                      </div>
                       {portfolioTabs.filter(tab => tab.id !== activeTab).map(tab => (
                         <button
                           key={tab.id}
@@ -407,7 +442,7 @@ const Portfolio: React.FC = () => {
                           className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center space-x-2"
                         >
                           <tab.icon className="w-4 h-4" />
-                          <span>Transfer to {tab.label}</span>
+                          <span>{tab.label}</span>
                         </button>
                       ))}
                     </div>
@@ -524,12 +559,12 @@ const Portfolio: React.FC = () => {
         </div>
       </div>
 
-      {/* Transfer Modal - Only for Super Admin */}
-      {canTransferPortfolio() && (
+      {/* Transfer Modal - Available for both Super Admin and Initiators */}
+      {(canTransferPortfolio() || canInitiate()) && (
         <Modal
           isOpen={isTransferModalOpen}
           onClose={() => setIsTransferModalOpen(false)}
-          title={`Transfer from ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Portfolio`}
+          title={`${canTransferPortfolio() ? 'Transfer' : 'Request Transfer'} from ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Portfolio`}
         >
           <TransferForm 
             fromPortfolio={activeTab}
