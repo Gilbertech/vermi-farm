@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, LogOut, User, Bell, Check, X } from 'lucide-react';
+import { Menu, LogOut, User, Bell, Check, X, AlertTriangle, DollarSign, CreditCard, ArrowLeftRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface TopNavbarProps {
@@ -32,6 +32,32 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
         return 'Admin (Initiator)';
       default:
         return 'Admin';
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'payment_initiated':
+        return <DollarSign className="w-5 h-5 text-green-600" />;
+      case 'loan_initiated':
+        return <CreditCard className="w-5 h-5 text-blue-600" />;
+      case 'transfer_initiated':
+        return <ArrowLeftRight className="w-5 h-5 text-purple-600" />;
+      default:
+        return <AlertTriangle className="w-5 h-5 text-yellow-600" />;
+    }
+  };
+
+  const getNotificationTitle = (type: string) => {
+    switch (type) {
+      case 'payment_initiated':
+        return 'Payment Request';
+      case 'loan_initiated':
+        return 'Loan Request';
+      case 'transfer_initiated':
+        return 'Transfer Request';
+      default:
+        return 'Request';
     }
   };
 
@@ -72,68 +98,89 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
               >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
                     {unreadCount}
                   </span>
                 )}
               </button>
 
               {showNotifications && (
-                <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-96 overflow-y-auto">
-                  <div className="p-4 border-b border-gray-200">
-                    <h3 className="text-sm font-medium text-gray-800">Approval Requests</h3>
+                <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                  <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-[#2d8e41] to-[#246b35]">
+                    <h3 className="text-sm font-medium text-white flex items-center space-x-2">
+                      <Bell className="w-4 h-4" />
+                      <span>Approval Requests ({unreadCount} pending)</span>
+                    </h3>
                   </div>
                   <div>
                     {notifications.length === 0 ? (
-                      <div className="p-4 text-center text-gray-500 text-sm">
-                        No pending requests
+                      <div className="p-6 text-center text-gray-500 text-sm">
+                        <AlertTriangle className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                        <p>No pending requests</p>
+                        <p className="text-xs text-gray-400 mt-1">All caught up!</p>
                       </div>
                     ) : (
                       notifications.map((notification) => (
                         <div
                           key={notification.id}
                           onClick={() => handleNotificationClick(notification)}
-                          className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                            !notification.read ? 'bg-blue-50' : ''
+                          className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors duration-200 ${
+                            !notification.read ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
                           }`}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-800">
-                                {notification.actionType.charAt(0).toUpperCase() + notification.actionType.slice(1)} Request
+                              <div className="flex items-center space-x-2 mb-2">
+                                {getNotificationIcon(notification.type)}
+                                <p className="text-sm font-medium text-gray-800">
+                                  {getNotificationTitle(notification.type)}
+                                </p>
+                                {!notification.read && (
+                                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                )}
+                              </div>
+                              
+                              <p className="text-sm text-gray-600 mb-1">
+                                <span className="font-medium">{notification.initiatorName}</span> requested{' '}
+                                <span className="font-semibold text-[#2d8e41]">
+                                  KES {notification.amount.toLocaleString()}
+                                </span>
                               </p>
-                              <p className="text-sm text-gray-600">
-                                {notification.initiatorName} requested {notification.actionType} of KES {notification.amount.toLocaleString()}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-1">
+                              
+                              <p className="text-xs text-gray-500 mb-3">
                                 {new Date(notification.timestamp).toLocaleString()}
                               </p>
                               
-                              <div className="flex items-center space-x-2 mt-3">
+                              <div className="flex items-center space-x-2">
                                 <button
                                   onClick={(e) => handleApprove(notification.id, e)}
-                                  className="bg-green-600 text-white px-3 py-1 rounded text-xs hover:bg-green-700 transition-colors duration-200 flex items-center space-x-1"
+                                  className="bg-green-600 text-white px-3 py-1.5 rounded text-xs hover:bg-green-700 transition-colors duration-200 flex items-center space-x-1 shadow-sm"
                                 >
                                   <Check className="w-3 h-3" />
                                   <span>Approve</span>
                                 </button>
                                 <button
                                   onClick={(e) => handleReject(notification.id, e)}
-                                  className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700 transition-colors duration-200 flex items-center space-x-1"
+                                  className="bg-red-600 text-white px-3 py-1.5 rounded text-xs hover:bg-red-700 transition-colors duration-200 flex items-center space-x-1 shadow-sm"
                                 >
                                   <X className="w-3 h-3" />
                                   <span>Reject</span>
                                 </button>
                               </div>
                             </div>
-                            {!notification.read && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></div>
-                            )}
                           </div>
                         </div>
                       ))
                     )}
                   </div>
+                  
+                  {notifications.length > 0 && (
+                    <div className="p-3 border-t border-gray-200 bg-gray-50">
+                      <p className="text-xs text-gray-500 text-center">
+                        💡 Tip: Click on notifications to mark as read
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -81,6 +81,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (user && password === 'admin123') {
       setIsAuthenticated(true);
       setCurrentUser(user);
+      
+      // Add some sample notifications for super admin
+      if (user.role === 'super_admin') {
+        const sampleNotifications: Notification[] = [
+          {
+            id: '1',
+            type: 'payment_initiated',
+            message: 'Payment request initiated',
+            initiatorName: 'Admin Initiator 1',
+            amount: 15000,
+            timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
+            read: false,
+            actionType: 'payment',
+            details: { type: 'single_payment', recipient: 'John Doe' }
+          },
+          {
+            id: '2',
+            type: 'loan_initiated',
+            message: 'Loan disbursement request initiated',
+            initiatorName: 'Admin Initiator 2',
+            amount: 25000,
+            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+            read: false,
+            actionType: 'loan',
+            details: { type: 'group_loan', groupName: 'Nairobi Farmers' }
+          }
+        ];
+        setNotifications(sampleNotifications);
+      }
+      
       return true;
     }
     
@@ -132,6 +162,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       read: false
     };
     setNotifications(prev => [newNotification, ...prev]);
+    
+    // Simulate real-time notification (in real app, this would be via WebSocket or push notification)
+    if (currentUser?.role === 'super_admin') {
+      // Show browser notification if permission granted
+      if (Notification.permission === 'granted') {
+        new Notification('Vermi-Farm Admin', {
+          body: `New ${notification.actionType} request: KES ${notification.amount.toLocaleString()} from ${notification.initiatorName}`,
+          icon: 'https://i.postimg.cc/MTpyCg68/logo.png'
+        });
+      }
+    }
   };
 
   const markNotificationAsRead = (id: string) => {
@@ -155,8 +196,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Remove notification after approval
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       
-      // In real app, this would trigger the actual action
-      alert(`${notification.actionType.charAt(0).toUpperCase() + notification.actionType.slice(1)} approved successfully!`);
+      // Show success message
+      const actionName = notification.actionType.charAt(0).toUpperCase() + notification.actionType.slice(1);
+      alert(`✅ ${actionName} of KES ${notification.amount.toLocaleString()} approved successfully!\n\nInitiated by: ${notification.initiatorName}\nAmount: KES ${notification.amount.toLocaleString()}\nTime: ${new Date(notification.timestamp).toLocaleString()}`);
+      
+      // In real app, this would trigger the actual action via API
     }
   };
 
@@ -166,9 +210,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Remove notification after rejection
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       
-      alert(`${notification.actionType.charAt(0).toUpperCase() + notification.actionType.slice(1)} rejected.`);
+      const actionName = notification.actionType.charAt(0).toUpperCase() + notification.actionType.slice(1);
+      alert(`❌ ${actionName} of KES ${notification.amount.toLocaleString()} rejected.\n\nInitiated by: ${notification.initiatorName}\nReason: Administrative decision`);
     }
   };
+
+  // Request notification permission on mount
+  React.useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
 
   return (
     <AuthContext.Provider value={{

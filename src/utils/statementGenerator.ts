@@ -44,9 +44,42 @@ const loadImageAsBase64 = (url: string): Promise<string> => {
   });
 };
 
+const addStatementFooter = (pdf: jsPDF, statementNumber: string, pageNum: number, totalPages: number) => {
+  const footerY = 280;
+  
+  // Footer line
+  pdf.setDrawColor(45, 142, 65);
+  pdf.setLineWidth(0.5);
+  pdf.line(20, footerY, 190, footerY);
+  
+  // Footer content
+  pdf.setFontSize(8);
+  pdf.setTextColor(100, 100, 100);
+  pdf.setFont('helvetica', 'normal');
+  
+  // Left side - Statement number
+  pdf.text(`Statement #: ${statementNumber}`, 20, footerY + 8);
+  
+  // Center - Generated timestamp
+  pdf.text(`Generated: ${new Date().toLocaleString()}`, 105, footerY + 8, { align: 'center' });
+  
+  // Right side - Page number
+  pdf.text(`Page ${pageNum} of ${totalPages}`, 190, footerY + 8, { align: 'right' });
+  
+  // Contact info and disclaimer on second line
+  pdf.setFontSize(7);
+  pdf.text('This is a computer-generated statement. For inquiries: support@vermi-farm.org | +254 799 616 744', 105, footerY + 16, { align: 'center' });
+};
+
 export const generateStatement = async (data: StatementData): Promise<void> => {
   try {
     const pdf = new jsPDF();
+    let currentPage = 1;
+    const statementNumber = `VF-STMT-${Date.now().toString().slice(-8)}`;
+    
+    // Calculate total pages (rough estimate)
+    const transactionsPerPage = 15;
+    const totalPages = Math.max(1, Math.ceil(data.transactions.length / transactionsPerPage) + 1); // +1 for summary page
     
     // Load and add logo watermark
     try {
@@ -149,9 +182,23 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     pdf.setFont('helvetica', 'normal');
     
     data.transactions.forEach((transaction, index) => {
-      if (yPosition > 240) { // Reduced from 250 to give more space for footer
+      if (yPosition > 240) { // Leave space for footer
+        // Add footer to current page
+        addStatementFooter(pdf, statementNumber, currentPage, totalPages);
+        
         pdf.addPage();
+        currentPage++;
         yPosition = 30;
+        
+        // Re-add logo watermark on new page
+        try {
+          const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
+          pdf.setGState(pdf.GState({ opacity: 0.1 }));
+          pdf.addImage(logoBase64, 'PNG', 60, 80, 90, 90);
+          pdf.setGState(pdf.GState({ opacity: 1 }));
+        } catch (logoError) {
+          // Continue without logo
+        }
       }
       
       const rowColor = index % 2 === 0 ? [255, 255, 255] : [249, 250, 251];
@@ -183,7 +230,11 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     // Summary section
     yPosition += 20;
     if (yPosition > 220) { // Check if we need a new page for summary
+      // Add footer to current page
+      addStatementFooter(pdf, statementNumber, currentPage, totalPages);
+      
       pdf.addPage();
+      currentPage++;
       yPosition = 30;
     }
     
@@ -234,58 +285,8 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     pdf.setFont('helvetica', 'normal');
     pdf.text(`KES ${finalBalance.toLocaleString()}`, 80, yPosition);
     
-    // Statement Number and Timestamp - Properly positioned and centered
-    yPosition += 25;
-    
-    // Ensure we have enough space for the statement info
-    if (yPosition > 250) {
-      pdf.addPage();
-      yPosition = 30;
-    }
-    
-    // Statement info box - centered
-    pdf.setDrawColor(45, 142, 65);
-    pdf.setLineWidth(0.3);
-    pdf.rect(50, yPosition - 5, 110, 20);
-    
-    pdf.setFontSize(10);
-    pdf.setTextColor(100, 100, 100);
-    pdf.setFont('helvetica', 'normal');
-    
-    const statementNumber = `VF-STMT-${Date.now().toString().slice(-8)}`;
-    const generatedTime = new Date().toLocaleString();
-    
-    pdf.text(`Statement #: ${statementNumber}`, 105, yPosition + 3, { align: 'center' });
-    pdf.text(`Generated: ${generatedTime}`, 105, yPosition + 11, { align: 'center' });
-    
-    // Footer - positioned at bottom with proper spacing
-    const footerY = yPosition + 35;
-    
-    // Ensure footer doesn't go off page
-    if (footerY > 270) {
-      pdf.addPage();
-      const newFooterY = 30;
-      
-      pdf.setDrawColor(45, 142, 65);
-      pdf.setLineWidth(0.5);
-      pdf.line(20, newFooterY, 190, newFooterY);
-      
-      pdf.setFontSize(8);
-      pdf.setTextColor(100, 100, 100);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('This is a computer-generated statement and does not require a signature.', 105, newFooterY + 8, { align: 'center' });
-      pdf.text('For inquiries and support: support@vermi-farm.org | +254 799 616 744', 105, newFooterY + 16, { align: 'center' });
-    } else {
-      pdf.setDrawColor(45, 142, 65);
-      pdf.setLineWidth(0.5);
-      pdf.line(20, footerY, 190, footerY);
-      
-      pdf.setFontSize(8);
-      pdf.setTextColor(100, 100, 100);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('This is a computer-generated statement and does not require a signature.', 105, footerY + 8, { align: 'center' });
-      pdf.text('For inquiries and support: support@vermi-farm.org | +254 799 616 744', 105, footerY + 16, { align: 'center' });
-    }
+    // Add footer to final page
+    addStatementFooter(pdf, statementNumber, currentPage, totalPages);
     
     // Download the PDF
     const fileName = data.userName 
@@ -303,6 +304,9 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
 
 const generateSimpleStatement = (data: StatementData): void => {
   const pdf = new jsPDF();
+  const statementNumber = `VF-STMT-${Date.now().toString().slice(-8)}`;
+  const totalPages = Math.max(1, Math.ceil(data.transactions.length / 20));
+  let currentPage = 1;
   
   // Simple header
   pdf.setFontSize(20);
@@ -322,8 +326,10 @@ const generateSimpleStatement = (data: StatementData): void => {
   pdf.setFontSize(10);
   
   data.transactions.forEach((transaction, index) => {
-    if (yPosition > 240) {
+    if (yPosition > 240) { // Leave space for footer
+      addStatementFooter(pdf, statementNumber, currentPage, totalPages);
       pdf.addPage();
+      currentPage++;
       yPosition = 30;
     }
     
@@ -335,28 +341,8 @@ const generateSimpleStatement = (data: StatementData): void => {
     yPosition += 8;
   });
   
-  // Statement Number and Timestamp - Properly centered with spacing
-  yPosition += 25;
-  
-  if (yPosition > 250) {
-    pdf.addPage();
-    yPosition = 30;
-  }
-  
-  // Statement info box
-  pdf.setDrawColor(100, 100, 100);
-  pdf.setLineWidth(0.3);
-  pdf.rect(40, yPosition - 5, 130, 20);
-  
-  pdf.setFontSize(10);
-  pdf.setTextColor(100, 100, 100);
-  pdf.setFont('helvetica', 'normal');
-  
-  const statementNumber = `VF-STMT-${Date.now().toString().slice(-8)}`;
-  const generatedTime = new Date().toLocaleString();
-  
-  pdf.text(`Statement #: ${statementNumber}`, 105, yPosition + 3, { align: 'center' });
-  pdf.text(`Generated: ${generatedTime}`, 105, yPosition + 11, { align: 'center' });
+  // Add footer to final page
+  addStatementFooter(pdf, statementNumber, currentPage, totalPages);
   
   const fileName = data.userName 
     ? `statement-${data.userName.replace(/\s+/g, '-').toLowerCase()}.pdf`
@@ -390,7 +376,7 @@ Final Balance,${data.transactions.length > 0 ? data.transactions[data.transactio
   
   const fileName = data.userName 
     ? `vermi-farm-statement-${data.userName.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`
-    : `vermi-farm-statement-${new Date().toISOString().split('T')[0]}.pdf`;
+    : `vermi-farm-statement-${new Date().toISOString().split('T')[0]}.csv`;
   
   link.download = fileName;
   document.body.appendChild(link);
