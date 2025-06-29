@@ -135,23 +135,7 @@ const LoginPage: React.FC = () => {
           </div>
 
           {/* Demo Credentials */}
-          <div className="mt-8 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200">
-            <h4 className="text-sm font-medium text-gray-800 mb-3 text-center">Demo Credentials</h4>
-            <div className="space-y-2 text-xs text-gray-600">
-              <div className="flex justify-between items-center p-2 bg-white rounded border">
-                <span><strong>Super Admin:</strong></span>
-                <span>0712345678 / admin123</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-white rounded border">
-                <span><strong>Initiator 1:</strong></span>
-                <span>0712345679 / admin123</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-white rounded border">
-                <span><strong>Initiator 2:</strong></span>
-                <span>0712345680 / admin123</span>
-              </div>
-            </div>
-          </div>
+       
 
           {/* Footer */}
           <div className="text-center mt-6 pt-4 border-t border-gray-200">
