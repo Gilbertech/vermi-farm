@@ -134,9 +134,6 @@ const LoginPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Demo Credentials */}
-       
-
           {/* Footer */}
           <div className="text-center mt-6 pt-4 border-t border-gray-200">
             <p className="text-xs text-gray-500">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sprout, Phone, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Phone, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const PasswordResetPage: React.FC = () => {
@@ -58,14 +58,15 @@ const PasswordResetPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           {/* Logo and Title */}
-  <img
+          <div className="text-center mb-8">
+            <img
               src="https://i.postimg.cc/MTpyCg68/logo.png"
               alt="Vermi-Farm Logo"
               className="w-16 h-16 rounded-full object-cover mx-auto mb-4"
             />
-            <h1 className="text-2xl font-bold text-gray-800">Reset Password</h1>
+            <h1 className="text-2xl font-bold text-[#2d8e41]">Reset Password</h1>
             <p className="text-gray-600 mt-2">Enter your phone number to receive reset instructions</p>
-          
+          </div>
 
           {/* Error Message */}
           {error && (
