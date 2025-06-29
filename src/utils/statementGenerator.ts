@@ -149,7 +149,7 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     pdf.setFont('helvetica', 'normal');
     
     data.transactions.forEach((transaction, index) => {
-      if (yPosition > 250) {
+      if (yPosition > 240) { // Reduced from 250 to give more space for footer
         pdf.addPage();
         yPosition = 30;
       }
@@ -182,7 +182,7 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     
     // Summary section
     yPosition += 20;
-    if (yPosition > 250) {
+    if (yPosition > 220) { // Check if we need a new page for summary
       pdf.addPage();
       yPosition = 30;
     }
@@ -234,25 +234,58 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     pdf.setFont('helvetica', 'normal');
     pdf.text(`KES ${finalBalance.toLocaleString()}`, 80, yPosition);
     
-    // Statement Number and Timestamp - Centered below summary
+    // Statement Number and Timestamp - Properly positioned and centered
     yPosition += 25;
+    
+    // Ensure we have enough space for the statement info
+    if (yPosition > 250) {
+      pdf.addPage();
+      yPosition = 30;
+    }
+    
+    // Statement info box - centered
+    pdf.setDrawColor(45, 142, 65);
+    pdf.setLineWidth(0.3);
+    pdf.rect(50, yPosition - 5, 110, 20);
+    
     pdf.setFontSize(10);
     pdf.setTextColor(100, 100, 100);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Statement #: VF-STMT-${Date.now().toString().slice(-8)}`, 105, yPosition, { align: 'center' });
-    pdf.text(`Generated: ${new Date().toLocaleString()}`, 105, yPosition + 8, { align: 'center' });
     
-    // Footer
-    const footerY = 270;
-    pdf.setDrawColor(45, 142, 65);
-    pdf.setLineWidth(0.5);
-    pdf.line(20, footerY, 190, footerY);
+    const statementNumber = `VF-STMT-${Date.now().toString().slice(-8)}`;
+    const generatedTime = new Date().toLocaleString();
     
-    pdf.setFontSize(8);
-    pdf.setTextColor(100, 100, 100);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text('This is a computer-generated statement and does not require a signature.', 105, footerY + 8, { align: 'center' });
-    pdf.text('For inquiries and support: support@vermi-farm.org | +254 799 616 744', 105, footerY + 16, { align: 'center' });
+    pdf.text(`Statement #: ${statementNumber}`, 105, yPosition + 3, { align: 'center' });
+    pdf.text(`Generated: ${generatedTime}`, 105, yPosition + 11, { align: 'center' });
+    
+    // Footer - positioned at bottom with proper spacing
+    const footerY = yPosition + 35;
+    
+    // Ensure footer doesn't go off page
+    if (footerY > 270) {
+      pdf.addPage();
+      const newFooterY = 30;
+      
+      pdf.setDrawColor(45, 142, 65);
+      pdf.setLineWidth(0.5);
+      pdf.line(20, newFooterY, 190, newFooterY);
+      
+      pdf.setFontSize(8);
+      pdf.setTextColor(100, 100, 100);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('This is a computer-generated statement and does not require a signature.', 105, newFooterY + 8, { align: 'center' });
+      pdf.text('For inquiries and support: support@vermi-farm.org | +254 799 616 744', 105, newFooterY + 16, { align: 'center' });
+    } else {
+      pdf.setDrawColor(45, 142, 65);
+      pdf.setLineWidth(0.5);
+      pdf.line(20, footerY, 190, footerY);
+      
+      pdf.setFontSize(8);
+      pdf.setTextColor(100, 100, 100);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('This is a computer-generated statement and does not require a signature.', 105, footerY + 8, { align: 'center' });
+      pdf.text('For inquiries and support: support@vermi-farm.org | +254 799 616 744', 105, footerY + 16, { align: 'center' });
+    }
     
     // Download the PDF
     const fileName = data.userName 
@@ -289,7 +322,7 @@ const generateSimpleStatement = (data: StatementData): void => {
   pdf.setFontSize(10);
   
   data.transactions.forEach((transaction, index) => {
-    if (yPosition > 250) {
+    if (yPosition > 240) {
       pdf.addPage();
       yPosition = 30;
     }
@@ -302,12 +335,28 @@ const generateSimpleStatement = (data: StatementData): void => {
     yPosition += 8;
   });
   
-  // Statement Number and Timestamp - Centered
-  yPosition += 20;
+  // Statement Number and Timestamp - Properly centered with spacing
+  yPosition += 25;
+  
+  if (yPosition > 250) {
+    pdf.addPage();
+    yPosition = 30;
+  }
+  
+  // Statement info box
+  pdf.setDrawColor(100, 100, 100);
+  pdf.setLineWidth(0.3);
+  pdf.rect(40, yPosition - 5, 130, 20);
+  
   pdf.setFontSize(10);
   pdf.setTextColor(100, 100, 100);
-  pdf.text(`Statement #: VF-STMT-${Date.now().toString().slice(-8)}`, 105, yPosition, { align: 'center' });
-  pdf.text(`Generated: ${new Date().toLocaleString()}`, 105, yPosition + 8, { align: 'center' });
+  pdf.setFont('helvetica', 'normal');
+  
+  const statementNumber = `VF-STMT-${Date.now().toString().slice(-8)}`;
+  const generatedTime = new Date().toLocaleString();
+  
+  pdf.text(`Statement #: ${statementNumber}`, 105, yPosition + 3, { align: 'center' });
+  pdf.text(`Generated: ${generatedTime}`, 105, yPosition + 11, { align: 'center' });
   
   const fileName = data.userName 
     ? `statement-${data.userName.replace(/\s+/g, '-').toLowerCase()}.pdf`
@@ -341,7 +390,7 @@ Final Balance,${data.transactions.length > 0 ? data.transactions[data.transactio
   
   const fileName = data.userName 
     ? `vermi-farm-statement-${data.userName.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`
-    : `vermi-farm-statement-${new Date().toISOString().split('T')[0]}.csv`;
+    : `vermi-farm-statement-${new Date().toISOString().split('T')[0]}.pdf`;
   
   link.download = fileName;
   document.body.appendChild(link);
