@@ -64,12 +64,12 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.setFontSize(20);
     pdf.setTextColor(45, 142, 65); // #2d8e41
     pdf.setFont('helvetica', 'bold');
-     pdf.text('VERMI-FARM INITIATIVE', 50, 20, { align: 'center' });
+     pdf.text('VERMI-FARM INITIATIVE', 50, 20, );
     
     pdf.setFontSize(12);
     pdf.setTextColor(100, 100, 100);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Sustainable Agriculture & Financial Inclusion', 50, 28, { align: 'center' });
+    pdf.text('Sustainable Agriculture & Financial Inclusion', 50, 28, );
     
     pdf.setFontSize(18);
     pdf.setTextColor(152, 63, 33); // #983F21
