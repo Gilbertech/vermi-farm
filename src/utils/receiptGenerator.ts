@@ -50,61 +50,70 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
       const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
       
       // Add watermark logo (semi-transparent, centered)
-      pdf.setGState(pdf.GState({ opacity: 0.1 }));
-      pdf.addImage(logoBase64, 'JPEG', 60, 80, 90, 90);
+      pdf.setGState(pdf.GState({ opacity: 0.08 }));
+      pdf.addImage(logoBase64, 'JPEG', 55, 90, 100, 100);
       pdf.setGState(pdf.GState({ opacity: 1 }));
       
-      // Add small logo at top
-      pdf.addImage(logoBase64, 'JPEG', 15, 10, 25, 25);
+      // Add centered logo at top
+      pdf.addImage(logoBase64, 'JPEG', 92.5, 8, 25, 25);
     } catch (logoError) {
       console.warn('Could not load logo, proceeding without watermark:', logoError);
     }
     
-    // Header
-    pdf.setFontSize(20);
-    pdf.setTextColor(45, 142, 65); // #2d8e41
+    // Decorative header background
+    pdf.setFillColor(45, 142, 65); // Primary green
+    pdf.roundedRect(15, 5, 180, 45, 5, 5, 'F');
+    
+    // Inner decorative element
+    pdf.setFillColor(152, 63, 33); // Secondary brown
+    pdf.roundedRect(20, 35, 170, 8, 2, 2, 'F');
+    
+    // Centered Header
+    pdf.setFontSize(22);
+    pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('VERMI-FARM INITIATIVE', 50, 20);
+    pdf.text('VERMI-FARM INITIATIVE', 105, 20, { align: 'center' });
     
-    pdf.setFontSize(12);
-    pdf.setTextColor(100, 100, 100);
+    pdf.setFontSize(11);
+    pdf.setTextColor(240, 240, 240);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Sustainable Agriculture & Financial Inclusion', 50, 28);
+    pdf.text('Sustainable Agriculture & Financial Inclusion', 105, 28, { align: 'center' });
     
-    pdf.setFontSize(18);
-    pdf.setTextColor(152, 63, 33); // #983F21
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('TRANSACTION RECEIPT', 105, 45, { align: 'center' });
-    
-    // Receipt number and date
-    pdf.setFontSize(10);
-    pdf.setTextColor(100, 100, 100);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(`Receipt #: ${data.transactionId}`, 150, 15);
-    pdf.text(`Generated: ${new Date().toLocaleString()}`, 150, 22);
-    
-    // Line separator
-    pdf.setDrawColor(45, 142, 65);
-    pdf.setLineWidth(0.5);
-    pdf.line(20, 55, 190, 55);
-    
-    // Transaction details section
     pdf.setFontSize(14);
-    pdf.setTextColor(45, 142, 65);
+    pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('TRANSACTION DETAILS', 20, 70);
+    pdf.text('TRANSACTION RECEIPT', 105, 40, { align: 'center' });
     
-    // Details box
-    pdf.setDrawColor(200, 200, 200);
-    pdf.setLineWidth(0.3);
-    pdf.rect(20, 75, 170, 80);
+    // Transaction ID banner
+    pdf.setFillColor(152, 63, 33);
+    pdf.roundedRect(25, 60, 160, 15, 3, 3, 'F');
+    pdf.setFontSize(12);
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`Receipt #: ${data.transactionId}`, 105, 70, { align: 'center' });
     
-    // Receipt details
+    // Main content area with gradient-like effect
+    pdf.setFillColor(248, 250, 252);
+    pdf.roundedRect(20, 85, 170, 90, 5, 5, 'F');
+    
+    // Accent border
+    pdf.setDrawColor(45, 142, 65);
+    pdf.setLineWidth(1);
+    pdf.roundedRect(20, 85, 170, 90, 5, 5, 'S');
+    
+    // Section header
+    pdf.setFillColor(45, 142, 65);
+    pdf.roundedRect(25, 90, 160, 12, 3, 3, 'F');
+    pdf.setFontSize(12);
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('TRANSACTION DETAILS', 105, 98, { align: 'center' });
+    
+    // Details section
     pdf.setFontSize(11);
     pdf.setTextColor(0, 0, 0);
     
     const details = [
-      ['Transaction ID:', data.transactionId],
       ['Date & Time:', new Date(data.date).toLocaleString()],
       ['Transaction Type:', data.type],
       ['Status:', data.status.toUpperCase()],
@@ -117,69 +126,91 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     if (data.from) details.push(['From:', data.from]);
     if (data.to) details.push(['To:', data.to]);
 
-    let yPosition = 85;
-    details.forEach(([label, value]) => {
+    let yPosition = 110;
+    details.forEach(([label, value], index) => {
+      // Alternating row background
+      if (index % 2 === 0) {
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(25, yPosition - 5, 160, 8, 'F');
+      }
+      
       pdf.setFont('helvetica', 'bold');
-      pdf.text(label, 25, yPosition);
+      pdf.setTextColor(45, 142, 65);
+      pdf.text(label, 30, yPosition);
+      
       pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
       
       // Handle long text wrapping
-      const maxWidth = 100;
+      const maxWidth = 90;
       const lines = pdf.splitTextToSize(value, maxWidth);
-      pdf.text(lines, 90, yPosition);
+      pdf.text(lines, 95, yPosition);
       
-      yPosition += lines.length > 1 ? 8 * lines.length : 8;
+      yPosition += 8;
     });
     
-    // Status indicator
-    const statusY = 165;
+    // Status and amount highlight section
+    const statusY = 185;
+    
+    // Status indicator with enhanced styling
+    let statusColor, statusBgColor;
     if (data.status.toLowerCase() === 'completed') {
-      pdf.setFillColor(34, 197, 94); // green
-      pdf.setTextColor(255, 255, 255);
+      statusColor = [255, 255, 255];
+      statusBgColor = [34, 197, 94]; // green
     } else if (data.status.toLowerCase() === 'pending') {
-      pdf.setFillColor(234, 179, 8); // yellow
-      pdf.setTextColor(255, 255, 255);
+      statusColor = [0, 0, 0];
+      statusBgColor = [255, 193, 7]; // amber
     } else {
-      pdf.setFillColor(239, 68, 68); // red
-      pdf.setTextColor(255, 255, 255);
+      statusColor = [255, 255, 255];
+      statusBgColor = [239, 68, 68]; // red
     }
     
-    pdf.roundedRect(20, statusY, 40, 12, 2, 2, 'F');
-    pdf.setFontSize(10);
+    pdf.setFillColor(...statusBgColor);
+    pdf.roundedRect(25, statusY, 50, 15, 5, 5, 'F');
+    pdf.setFontSize(11);
+    pdf.setTextColor(...statusColor);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(data.status.toUpperCase(), 40, statusY + 8, { align: 'center' });
+    pdf.text(data.status.toUpperCase(), 50, statusY + 9, { align: 'center' });
     
-    // Amount highlight
+    // Amount highlight with enhanced styling
     pdf.setFillColor(45, 142, 65);
+    pdf.roundedRect(135, statusY, 55, 15, 5, 5, 'F');
+    pdf.setFontSize(13);
     pdf.setTextColor(255, 255, 255);
-    pdf.roundedRect(130, statusY, 60, 12, 2, 2, 'F');
-    pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(`KES ${data.amount.toLocaleString()}`, 160, statusY + 8, { align: 'center' });
+    pdf.text(`KES ${data.amount.toLocaleString()}`, 162.5, statusY + 9, { align: 'center' });
     
-    // Footer section
-    const footerY = 200;
-    pdf.setDrawColor(45, 142, 65);
-    pdf.setLineWidth(0.5);
-    pdf.line(20, footerY, 190, footerY);
+    // Decorative footer section
+    const footerY = 215;
+    pdf.setFillColor(45, 142, 65);
+    pdf.roundedRect(15, footerY, 180, 50, 5, 5, 'F');
+    
+    // Footer accent
+    pdf.setFillColor(152, 63, 33);
+    pdf.roundedRect(20, footerY + 5, 170, 3, 1, 1, 'F');
     
     pdf.setFontSize(10);
-    pdf.setTextColor(100, 100, 100);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text('This is a computer-generated receipt and does not require a signature.', 105, footerY + 10, { align: 'center' });
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'italic');
+    pdf.text('This is a computer-generated receipt and does not require a signature.', 105, footerY + 18, { align: 'center' });
     
-    // Contact information
+    // Contact information with better spacing
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('FOR INQUIRIES & SUPPORT', 105, footerY + 30, { align: 'center' });
+    
     pdf.setFontSize(9);
-    pdf.text('For inquiries and support:', 105, footerY + 20, { align: 'center' });
-    pdf.setTextColor(45, 142, 65);
-    pdf.text('Email: support@vermi-farm.org | Phone: +254 799 616 744', 105, footerY + 28, { align: 'center' });
-    pdf.text('Website: www.vermi-farm.org', 105, footerY + 36, { align: 'center' });
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Email: support@vermi-farm.org | Phone: +254 799 616 744', 105, footerY + 38, { align: 'center' });
+    pdf.text('Website: www.vermi-farm.org', 105, footerY + 46, { align: 'center' });
     
-    // Security features
+    // Security features with enhanced styling
     pdf.setFontSize(8);
-    pdf.setTextColor(150, 150, 150);
-    pdf.text(`Security Code: VF-${Date.now().toString().slice(-6)}`, 20, footerY + 50);
-    pdf.text(`Verification: ${data.transactionId.slice(-8).toUpperCase()}`, 150, footerY + 50);
+    pdf.setTextColor(200, 200, 200);
+    const securityCode = `VF-${Date.now().toString().slice(-6)}`;
+    const verification = data.transactionId.slice(-8).toUpperCase();
+    pdf.text(`Security: ${securityCode}`, 25, footerY + 58);
+    pdf.text(`Verification: ${verification}`, 140, footerY + 58);
     
     // Download the PDF
     pdf.save(`vermi-farm-receipt-${data.transactionId}.pdf`);
@@ -194,25 +225,35 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
 const generateSimpleReceipt = (data: ReceiptData): void => {
   const pdf = new jsPDF();
   
-  // Simple header without logo
-  pdf.setFontSize(20);
-  pdf.setTextColor(45, 142, 65);
-  pdf.text('VERMI-FARM', 105, 20, { align: 'center' });
+  // Enhanced simple header
+  pdf.setFillColor(45, 142, 65);
+  pdf.roundedRect(15, 10, 180, 35, 5, 5, 'F');
   
-  pdf.setFontSize(16);
-  pdf.setTextColor(152, 63, 33);
+  pdf.setFontSize(20);
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('VERMI-FARM INITIATIVE', 105, 25, { align: 'center' });
+  
+  pdf.setFontSize(14);
+  pdf.setTextColor(240, 240, 240);
   pdf.text('Transaction Receipt', 105, 35, { align: 'center' });
   
-  // Line separator
-  pdf.setDrawColor(200, 200, 200);
-  pdf.line(20, 45, 190, 45);
+  // Transaction ID
+  pdf.setFillColor(152, 63, 33);
+  pdf.roundedRect(25, 55, 160, 12, 3, 3, 'F');
+  pdf.setFontSize(11);
+  pdf.setTextColor(255, 255, 255);
+  pdf.text(`Receipt #: ${data.transactionId}`, 105, 63, { align: 'center' });
+  
+  // Content area
+  pdf.setFillColor(248, 250, 252);
+  pdf.roundedRect(20, 75, 170, 80, 5, 5, 'F');
   
   // Receipt details
-  pdf.setFontSize(12);
+  pdf.setFontSize(11);
   pdf.setTextColor(0, 0, 0);
   
   const details = [
-    ['Transaction ID:', data.transactionId],
     ['Date & Time:', new Date(data.date).toLocaleString()],
     ['Transaction Type:', data.type],
     ['Status:', data.status],
@@ -225,33 +266,32 @@ const generateSimpleReceipt = (data: ReceiptData): void => {
   if (data.to) details.push(['To:', data.to]);
   if (data.fees) details.push(['Fees:', data.fees]);
 
-  let yPosition = 60;
+  let yPosition = 85;
   details.forEach(([label, value]) => {
     pdf.setFont('helvetica', 'bold');
-    pdf.text(label, 20, yPosition);
+    pdf.setTextColor(45, 142, 65);
+    pdf.text(label, 25, yPosition);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(value, 80, yPosition);
-    yPosition += 10;
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(value, 85, yPosition);
+    yPosition += 8;
   });
   
   // Footer
-  yPosition += 20;
-  pdf.setDrawColor(200, 200, 200);
-  pdf.line(20, yPosition, 190, yPosition);
+  pdf.setFillColor(45, 142, 65);
+  pdf.roundedRect(15, 165, 180, 35, 5, 5, 'F');
   
-  yPosition += 15;
   pdf.setFontSize(10);
-  pdf.setTextColor(100, 100, 100);
-  pdf.text('This is a computer-generated receipt.', 105, yPosition, { align: 'center' });
-  pdf.text('For inquiries, contact info@vermi-farm.org', 105, yPosition + 10, { align: 'center' });
+  pdf.setTextColor(255, 255, 255);
+  pdf.text('This is a computer-generated receipt.', 105, 180, { align: 'center' });
+  pdf.text('For inquiries, contact support@vermi-farm.org', 105, 190, { align: 'center' });
   
-  pdf.save(`vermi-farm yetu-receipt-${data.transactionId}.pdf`);
+  pdf.save(`vermi-farm-receipt-${data.transactionId}.pdf`);
 };
 
 export const generateCSVReceipt = (data: ReceiptData): void => {
-  const csvContent = `VERMI-FARM YETU Transaction Receipt
+  const csvContent = `VERMI-FARM INITIATIVE Transaction Receipt
 Receipt Number,${data.transactionId}
-Generated Date,${new Date().toLocaleString()}
 Transaction Date,${new Date(data.date).toLocaleString()}
 Transaction Type,${data.type}
 Status,${data.status}
@@ -263,7 +303,8 @@ ${data.to ? `To,${data.to}` : ''}
 ${data.fees ? `Fees,${data.fees}` : ''}
 
 Contact Information
-Email,info@vermi-farm.org
+Email,support@vermi-farm.org
+Phone,+254 799 616 744
 Website,www.vermi-farm.org
 Generated by,Vermi-Farm Admin System`;
 
