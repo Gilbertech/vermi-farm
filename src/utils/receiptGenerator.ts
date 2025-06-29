@@ -54,31 +54,33 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
       pdf.addImage(logoBase64, 'JPEG', 60, 80, 90, 90);
       pdf.setGState(pdf.GState({ opacity: 1 }));
       
-    
+      // Add small logo at top
+      pdf.addImage(logoBase64, 'JPEG', 15, 10, 25, 25);
+    } catch (logoError) {
+      console.warn('Could not load logo, proceeding without watermark:', logoError);
     }
     
     // Header
     pdf.setFontSize(20);
     pdf.setTextColor(45, 142, 65); // #2d8e41
     pdf.setFont('helvetica', 'bold');
-     pdf.text('VERMI-FARM INITIATIVE', 50, 20, );
+    pdf.text('VERMI-FARM INITIATIVE', 105, 20, { align: 'center' });
     
     pdf.setFontSize(12);
     pdf.setTextColor(100, 100, 100);
     pdf.setFont('helvetica', 'normal');
-    pdf.text('Sustainable Agriculture & Financial Inclusion', 50, 28, );
+    pdf.text('Sustainable Agriculture & Financial Inclusion', 105, 28, { align: 'center' });
     
     pdf.setFontSize(18);
     pdf.setTextColor(152, 63, 33); // #983F21
     pdf.setFont('helvetica', 'bold');
     pdf.text('TRANSACTION RECEIPT', 105, 45, { align: 'center' });
     
-    // Receipt number and date
-    pdf.setFontSize(5);
+    // Receipt number only (removed generated timestamp from top)
+    pdf.setFontSize(10);
     pdf.setTextColor(100, 100, 100);
     pdf.setFont('helvetica', 'normal');
     pdf.text(`Receipt #: ${data.transactionId}`, 150, 15);
-    pdf.text(`Generated: ${new Date().toLocaleString()}`, 150, 22);
     
     // Line separator
     pdf.setDrawColor(45, 142, 65);
@@ -145,6 +147,12 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'bold');
     pdf.text(data.status.toUpperCase(), 40, statusY + 8, { align: 'center' });
+    
+    // Generated timestamp (moved between status and amount)
+    pdf.setFontSize(8);
+    pdf.setTextColor(100, 100, 100);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Generated: ${new Date().toLocaleString()}`, 85, statusY + 8);
     
     // Amount highlight
     pdf.setFillColor(45, 142, 65);
