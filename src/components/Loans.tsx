@@ -192,7 +192,7 @@ return (
         </div>
       </div>
     </div>
-  </div>
+  
 import React, { useState } from 'react'; import { Plus, Search, DollarSign, User, Building2, Filter, Eye, X, Clock, TrendingUp, AlertTriangle, Send } from 'lucide-react'; import { useApp } from '../context/AppContext'; import { useAuth } from '../context/AuthContext'; import Modal from './Modal'; import LoanForm from './LoanForm';
 const Loans: React.FC = () => { const { loans, users, groups } = useApp(); const { canDisburseLoan, canInitiate, addNotification, currentUser } = useAuth(); const [isModalOpen, setIsModalOpen] = useState(false); const [selectedLoan, setSelectedLoan] = useState(null); const [searchTerm, setSearchTerm] = useState(''); const [activeTab, setActiveTab] = useState<'group' | 'individual'>('group'); const [amountFilter, setAmountFilter] = useState(''); const [timeFilter, setTimeFilter] = useState('all');
 const handleDisburseLoan = () => { if (canDisburseLoan()) { // Super admin can directly disburse loans setIsModalOpen(true); } else if (canInitiate()) { // Initiators send request to super admin if (currentUser) { addNotification({ type: 'loan_initiated', message: Loan disbursement request initiated, initiatorName: currentUser.name, amount: 0, // Will be filled when form is submitted actionType: 'loan', details: { type: 'loan_disbursement' } }); alert('📤 Loan disbursement request sent to Super Admin for approval!\n\nYour request will be reviewed and processed by the Super Admin.'); } } else { alert('❌ You do not have permission to initiate loan disbursements.\n\nPlease contact your administrator for assistance.'); } };
