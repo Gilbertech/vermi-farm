@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Wallet, ChevronDown, Copy, Plus, Download, Search, Filter, Calendar, AlertTriangle } from 'lucide-react';
+
+
+export default Payments;
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 import PaybillForm from './forms/PaybillForm';
