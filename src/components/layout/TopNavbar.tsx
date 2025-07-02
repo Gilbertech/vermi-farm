@@ -85,7 +85,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
     switch (notification.type) {
       case 'loan_initiated':
         return (
-          <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-gray-200">
+          <div className="mt-2 p-3 bg-black-50 rounded-lg border border-gray-200">
             <h4 className="text-sm font-semibold text-gray-800 mb-2">Loan Details</h4>
             <div className="space-y-1 text-xs text-gray-700">
               {details.borrowerName && (
@@ -187,7 +187,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
       
       case 'transfer_initiated':
         return (
-          <div className="mt-2 p-3 bg-white-50 rounded-lg border border-purple-200">
+          <div className="mt-2 p-3 bg-white-50 rounded-lg border border-black-200">
             <h4 className="text-sm font-semibold text-black-800 mb-2">Transfer Details</h4>
             <div className="space-y-1 text-xs text-black-700">
               {details.fromPortfolio && (
@@ -211,7 +211,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
               {details.description && (
                 <div className="mt-2">
                   <span className="font-medium">Description:</span>
-                  <p className="text-purple-600 mt-1">{details.description}</p>
+                  <p className="text-gray-600 mt-1">{details.description}</p>
                 </div>
               )}
             </div>
