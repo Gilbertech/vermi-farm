@@ -46,7 +46,7 @@ const LoginPage: React.FC = () => {
                 alt="Vermi-Farm Logo"
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover mx-auto shadow-lg border-4 border-white"
               />
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#2d8e41]/20 to-transparent"></div>
+            
             </div>
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Vermi-Farm Admin</h1>
             <p className="text-gray-600 text-sm lg:text-base">Management Information System</p>
