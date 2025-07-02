@@ -253,7 +253,8 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
 
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-96 max-w-[90vw] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[80vh] overflow-hidden">
-                 <div className="p-4 border-b border-gray-200 bg-[#E7F4EA] text-[#2D8E41] flex items-center justify-between">
+                 <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-[#2D8E41] to-[#3FA853] flex items-center justify-between">
+
 
                     <h3 className="text-sm font-medium text-white flex items-center space-x-2">
                       <Bell className="w-4 h-4" />
