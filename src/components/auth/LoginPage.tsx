@@ -44,7 +44,7 @@ const LoginPage: React.FC = () => {
               <img
                 src="https://i.postimg.cc/MTpyCg68/logo.png"
                 alt="Vermi-Farm Logo"
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover mx-auto shadow-lg border-4 border-white"
+              
               />
             
             </div>
