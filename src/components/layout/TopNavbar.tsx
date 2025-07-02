@@ -254,7 +254,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
 
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-96 max-w-[90vw] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[80vh] overflow-hidden">
-                  <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-[#2d8e41] to-[#246b35] flex items-center justify-between">
+                  <div className="p-4 border-b border-gray-200 bg-from-[#2d8e41]flex items-center justify-between">
                     <h3 className="text-sm font-medium text-white flex items-center space-x-2">
                       <Bell className="w-4 h-4" />
                       <span>Approval Requests ({unreadCount} pending)</span>
@@ -291,7 +291,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
                                   {getNotificationTitle(notification.type)}
                                 </p>
                                 {!notification.read && (
-                                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                  <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
                                 )}
                               </div>
                               
