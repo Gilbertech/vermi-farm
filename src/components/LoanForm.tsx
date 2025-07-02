@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 
 interface LoanFormProps {
   onClose: () => void;
@@ -7,25 +8,65 @@ interface LoanFormProps {
 
 const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
   const { addLoan, users, groups } = useApp();
+  const { canDisburseLoan, addNotification, currentUser } = useAuth();
   const [formData, setFormData] = useState({
     userId: '',
     groupId: '',
     amount: 0,
     interestRate: 5,
-    dueDate: ''
+    dueDate: '',
+    purpose: '',
+    loanType: 'group' as 'group' | 'individual'
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    addLoan({
-      ...formData,
-      repaidAmount: 0,
-      status: 'active'
-    });
+    setIsSubmitting(true);
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    if (canDisburseLoan()) {
+      // Super admin can directly disburse loans
+      addLoan({
+        ...formData,
+        repaidAmount: 0,
+        status: 'active',
+        type: formData.loanType
+      });
+      alert(`✅ Loan of KES ${formData.amount.toLocaleString()} disbursed successfully!`);
+    } else {
+      // Initiators send notification to super admin
+      if (currentUser) {
+        const borrower = users.find(u => u.id === formData.userId);
+        const group = groups.find(g => g.id === formData.groupId);
+        
+        addNotification({
+          type: 'loan_initiated',
+          message: `Loan disbursement of KES ${formData.amount.toLocaleString()} requested`,
+          initiatorName: currentUser.name,
+          amount: formData.amount,
+          actionType: 'loan',
+          details: {
+            borrowerName: borrower?.name,
+            groupName: group?.name,
+            loanType: formData.loanType,
+            interestRate: formData.interestRate,
+            dueDate: formData.dueDate,
+            purpose: formData.purpose
+          }
+        });
+        
+        alert(`📤 Loan request sent to Super Admin for approval!\n\nAmount: KES ${formData.amount.toLocaleString()}\nBorrower: ${borrower?.name}\nGroup: ${group?.name}\nPurpose: ${formData.purpose}`);
+      }
+    }
+
+    setIsSubmitting(false);
     onClose();
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -39,6 +80,22 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
+          Loan Type
+        </label>
+        <select
+          name="loanType"
+          value={formData.loanType}
+          onChange={handleChange}
+          required
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
+        >
+          <option value="group">Group Loan</option>
+          <option value="individual">Individual Loan</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
           Group
         </label>
         <select
@@ -46,7 +103,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           value={formData.groupId}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
         >
           <option value="">Select a group</option>
           {groups.map(group => (
@@ -65,7 +122,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           onChange={handleChange}
           required
           disabled={!formData.groupId}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent disabled:bg-gray-100"
         >
           <option value="">Select a borrower</option>
           {filteredUsers.map(user => (
@@ -86,7 +143,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           required
           min="1"
           step="0.01"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
         />
       </div>
 
@@ -103,7 +160,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           min="0"
           max="100"
           step="0.1"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
         />
       </div>
 
@@ -117,7 +174,22 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           value={formData.dueDate}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Purpose of Loan
+        </label>
+        <textarea
+          name="purpose"
+          value={formData.purpose}
+          onChange={handleChange}
+          required
+          rows={3}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
+          placeholder="Describe the purpose of this loan..."
         />
       </div>
 
@@ -131,9 +203,17 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
         </button>
         <button
           type="submit"
-          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+          disabled={isSubmitting}
+          className="flex-1 px-4 py-2 bg-[#983F21] text-white rounded-lg hover:bg-[#7a3219] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Disburse Loan
+          {isSubmitting ? (
+            <div className="flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              {canDisburseLoan() ? 'Disbursing...' : 'Sending Request...'}
+            </div>
+          ) : (
+            canDisburseLoan() ? 'Disburse Loan' : 'Send Request'
+          )}
         </button>
       </div>
     </form>

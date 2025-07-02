@@ -8,7 +8,7 @@ interface SinglePaymentFormProps {
 
 const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
   const { users, groups } = useApp();
-  const { currentUser, addNotification } = useAuth();
+  const { currentUser, addNotification, canMakePayment } = useAuth();
   const [userType, setUserType] = useState<'existing' | 'new'>('existing');
   const [formData, setFormData] = useState({
     purpose: '',
@@ -26,14 +26,33 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // If user is an initiator (not super admin), send notification to super admin
-    if (currentUser?.role === 'admin_initiator') {
-      addNotification({
-        type: 'payment_initiated',
-        message: `Payment of KES ${parseFloat(formData.amount).toLocaleString()} initiated`,
-        initiatorName: currentUser.name,
-        amount: parseFloat(formData.amount)
-      });
+    if (canMakePayment()) {
+      // Super admin can directly make payments
+      alert(`✅ Payment of KES ${parseFloat(formData.amount).toLocaleString()} processed successfully!`);
+    } else {
+      // Initiators send notification to super admin
+      if (currentUser) {
+        const recipient = userType === 'existing' 
+          ? [...users, ...groups].find(item => item.id === formData.to)
+          : { name: formData.newUserName, phone: formData.newUserPhone };
+
+        addNotification({
+          type: 'payment_initiated',
+          message: `Single payment of KES ${parseFloat(formData.amount).toLocaleString()} requested`,
+          initiatorName: currentUser.name,
+          amount: parseFloat(formData.amount),
+          actionType: 'payment',
+          details: {
+            paymentType: 'single',
+            recipientName: userType === 'existing' ? recipient?.name : formData.newUserName,
+            recipientPhone: userType === 'existing' ? (recipient as any)?.phone : formData.newUserPhone,
+            purpose: formData.purpose,
+            recipientType: userType
+          }
+        });
+        
+        alert(`📤 Payment request sent to Super Admin for approval!\n\nAmount: KES ${parseFloat(formData.amount).toLocaleString()}\nRecipient: ${userType === 'existing' ? recipient?.name : formData.newUserName}\nPurpose: ${formData.purpose}`);
+      }
     }
     
     setIsSubmitting(false);
@@ -63,7 +82,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
           onClick={() => setUserType('existing')}
           className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
             userType === 'existing'
-              ? 'bg-[#2d8e41] text-white'
+              ? 'bg-[#983F21] text-white'
               : 'bg-transparent text-gray-700 hover:bg-gray-200'
           }`}
         >
@@ -74,7 +93,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
           onClick={() => setUserType('new')}
           className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
             userType === 'new'
-              ? 'bg-[#2d8e41] text-white'
+              ? 'bg-[#983F21] text-white'
               : 'bg-transparent text-gray-700 hover:bg-gray-200'
           }`}
         >
@@ -92,7 +111,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
           value={formData.purpose}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
           placeholder="Enter payment purpose"
         />
       </div>
@@ -109,7 +128,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
           required
           min="1"
           step="0.01"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
           placeholder="Enter amount"
         />
       </div>
@@ -124,7 +143,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
             value={formData.to}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
           >
             <option value="">Select recipient</option>
             {recipients.map(recipient => (
@@ -146,7 +165,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
               value={formData.newUserName}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
               placeholder="Enter recipient name"
             />
           </div>
@@ -160,7 +179,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
               value={formData.newUserPhone}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
               placeholder="07xxxxxxxx or 01xxxxxxxx"
             />
           </div>
@@ -178,15 +197,15 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex-1 px-4 py-2 bg-[#2d8e41] text-white rounded-lg hover:bg-[#246b35] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-2 bg-[#983F21] text-white rounded-lg hover:bg-[#7a3219] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <div className="flex items-center justify-center">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              Processing...
+              {canMakePayment() ? 'Processing...' : 'Sending Request...'}
             </div>
           ) : (
-            'Make Payment'
+            canMakePayment() ? 'Make Payment' : 'Send Request'
           )}
         </button>
       </div>

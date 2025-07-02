@@ -81,22 +81,6 @@ const Payments: React.FC = () => {
   };
 
   const handlePaymentAction = (type: 'paybill' | 'single' | 'buygoods' | 'bulk') => {
-    if (!canMakePayment()) {
-      // Send notification to super admin
-      if (currentUser) {
-        addNotification({
-          type: 'payment_initiated',
-          message: `${type.charAt(0).toUpperCase() + type.slice(1)} payment request initiated`,
-          initiatorName: currentUser.name,
-          amount: 0, // Will be filled when form is submitted
-          actionType: 'payment',
-          details: { type }
-        });
-        alert('Payment request sent to Super Admin for approval');
-      }
-      setDropdownOpen(false);
-      return;
-    }
     setModalType(type);
     setDropdownOpen(false);
   };
@@ -125,12 +109,12 @@ const Payments: React.FC = () => {
 
       {/* Access Restriction Notice for Initiators */}
       {!canMakePayment() && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 lg:p-6">
+        <div className="bg-[#983F21] bg-opacity-10 border border-[#983F21] border-opacity-30 rounded-xl p-4 lg:p-6">
           <div className="flex items-center space-x-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+            <AlertTriangle className="w-5 h-5 text-[#983F21]" />
             <div>
-              <h3 className="text-sm font-medium text-yellow-800">Limited Access</h3>
-              <p className="text-sm text-yellow-700">Payment processing requires Super Admin approval. Click payment options to send requests.</p>
+              <h3 className="text-sm font-medium text-[#983F21]">Payment Request System</h3>
+              <p className="text-sm text-[#983F21] opacity-90">You can submit payment requests with detailed information. Click payment options to send requests to Super Admin for approval.</p>
             </div>
           </div>
         </div>
@@ -163,9 +147,9 @@ const Payments: React.FC = () => {
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
-            className="bg-[#2d8e41] text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium"
+            className="bg-[#983F21] text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg flex items-center space-x-2 hover:bg-[#7a3219] transition-colors duration-200 font-medium"
           >
-            <span>Make Payment</span>
+            <span>{canMakePayment() ? 'Make Payment' : 'Request Payment'}</span>
             <ChevronDown className="w-4 lg:w-5 h-4 lg:h-5" />
           </button>
           
@@ -174,28 +158,28 @@ const Payments: React.FC = () => {
               <div className="py-1">
                 <button
                   onClick={() => handlePaymentAction('single')}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#2d8e41] hover:text-white flex items-center space-x-2 transition-colors duration-200"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#983F21] hover:text-white flex items-center space-x-2 transition-colors duration-200"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Single Payment</span>
                 </button>
                 <button
                   onClick={() => handlePaymentAction('paybill')}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#2d8e41] hover:text-white flex items-center space-x-2 transition-colors duration-200"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#983F21] hover:text-white flex items-center space-x-2 transition-colors duration-200"
                 >
                   <Wallet className="w-4 h-4" />
                   <span>Paybill</span>
                 </button>
                 <button
                   onClick={() => handlePaymentAction('buygoods')}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#2d8e41] hover:text-white flex items-center space-x-2 transition-colors duration-200"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#983F21] hover:text-white flex items-center space-x-2 transition-colors duration-200"
                 >
                   <Download className="w-4 h-4" />
                   <span>Buy Goods</span>
                 </button>
                 <button
                   onClick={() => handlePaymentAction('bulk')}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#2d8e41] hover:text-white flex items-center space-x-2 transition-colors duration-200"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-[#983F21] hover:text-white flex items-center space-x-2 transition-colors duration-200"
                 >
                   <Filter className="w-4 h-4" />
                   <span>Bulk Payments</span>
@@ -213,8 +197,8 @@ const Payments: React.FC = () => {
             onClick={() => setActiveTab('normal')}
             className={`px-4 lg:px-6 py-2 rounded-md font-medium transition-colors duration-200 ${
               activeTab === 'normal'
-                ? 'bg-[#2d8e41] text-white'
-                : 'bg-transparent text-[#2d8e41] hover:bg-gray-200'
+                ? 'bg-[#983F21] text-white'
+                : 'bg-transparent text-[#983F21] hover:bg-gray-200'
             }`}
           >
             Normal Payments
@@ -223,8 +207,8 @@ const Payments: React.FC = () => {
             onClick={() => setActiveTab('b2b')}
             className={`px-4 lg:px-6 py-2 rounded-md font-medium transition-colors duration-200 ${
               activeTab === 'b2b'
-                ? 'bg-[#2d8e41] text-white'
-                : 'bg-transparent text-[#2d8e41] hover:bg-gray-200'
+                ? 'bg-[#983F21] text-white'
+                : 'bg-transparent text-[#983F21] hover:bg-gray-200'
             }`}
           >
             B2B Payments
@@ -243,7 +227,7 @@ const Payments: React.FC = () => {
                 placeholder="Search payments..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
               />
             </div>
           </div>
@@ -254,7 +238,7 @@ const Payments: React.FC = () => {
               placeholder="Min Amount (KES)"
               value={amountFilter}
               onChange={(e) => setAmountFilter(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
             />
           </div>
           
@@ -264,7 +248,7 @@ const Payments: React.FC = () => {
               <select
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 appearance-none bg-white"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 appearance-none bg-white"
               >
                 <option value="all">All Time</option>
                 <option value="today">Today</option>
@@ -380,7 +364,7 @@ const Payments: React.FC = () => {
       <Modal
         isOpen={modalType === 'paybill'}
         onClose={() => setModalType(null)}
-        title="Paybill Payment"
+        title={canMakePayment() ? "Paybill Payment" : "Request Paybill Payment"}
       >
         <PaybillForm onClose={() => setModalType(null)} />
       </Modal>
@@ -388,7 +372,7 @@ const Payments: React.FC = () => {
       <Modal
         isOpen={modalType === 'single'}
         onClose={() => setModalType(null)}
-        title="Single Payment"
+        title={canMakePayment() ? "Single Payment" : "Request Single Payment"}
       >
         <SinglePaymentForm onClose={() => setModalType(null)} />
       </Modal>
@@ -396,7 +380,7 @@ const Payments: React.FC = () => {
       <Modal
         isOpen={modalType === 'buygoods'}
         onClose={() => setModalType(null)}
-        title="Buy Goods Payment"
+        title={canMakePayment() ? "Buy Goods Payment" : "Request Buy Goods Payment"}
       >
         <BuyGoodsForm onClose={() => setModalType(null)} />
       </Modal>
@@ -404,7 +388,7 @@ const Payments: React.FC = () => {
       <Modal
         isOpen={modalType === 'bulk'}
         onClose={() => setModalType(null)}
-        title="Bulk Payments"
+        title={canMakePayment() ? "Bulk Payments" : "Request Bulk Payments"}
       >
         <BulkPaymentsForm onClose={() => setModalType(null)} />
       </Modal>

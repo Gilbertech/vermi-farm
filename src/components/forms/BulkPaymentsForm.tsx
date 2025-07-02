@@ -7,7 +7,7 @@ interface BulkPaymentsFormProps {
 }
 
 const BulkPaymentsForm: React.FC<BulkPaymentsFormProps> = ({ onClose }) => {
-  const { currentUser, addNotification } = useAuth();
+  const { currentUser, addNotification, canMakePayment } = useAuth();
   const [formData, setFormData] = useState({
     referenceLabel: '',
     scheduledDate: ''
@@ -26,14 +26,28 @@ const BulkPaymentsForm: React.FC<BulkPaymentsFormProps> = ({ onClose }) => {
     // Calculate total amount for notification
     const totalAmount = previewData.reduce((sum, item) => sum + item.amount, 0);
     
-    // If user is an initiator (not super admin), send notification to super admin
-    if (currentUser?.role === 'admin_initiator') {
-      addNotification({
-        type: 'payment_initiated',
-        message: `Bulk payment of KES ${totalAmount.toLocaleString()} initiated (${previewData.length} transactions)`,
-        initiatorName: currentUser.name,
-        amount: totalAmount
-      });
+    if (canMakePayment()) {
+      // Super admin can directly process bulk payments
+      alert(`✅ Bulk payment of KES ${totalAmount.toLocaleString()} processed successfully! (${previewData.length} transactions)`);
+    } else {
+      // Initiators send notification to super admin
+      if (currentUser) {
+        addNotification({
+          type: 'payment_initiated',
+          message: `Bulk payment of KES ${totalAmount.toLocaleString()} requested (${previewData.length} transactions)`,
+          initiatorName: currentUser.name,
+          amount: totalAmount,
+          actionType: 'payment',
+          details: {
+            paymentType: 'bulk',
+            bulkCount: previewData.length,
+            referenceLabel: formData.referenceLabel,
+            scheduledDate: formData.scheduledDate
+          }
+        });
+        
+        alert(`📤 Bulk payment request sent to Super Admin for approval!\n\nTotal Amount: KES ${totalAmount.toLocaleString()}\nTransactions: ${previewData.length}\nReference: ${formData.referenceLabel || 'N/A'}`);
+      }
     }
     
     setIsSubmitting(false);
@@ -76,7 +90,7 @@ const BulkPaymentsForm: React.FC<BulkPaymentsFormProps> = ({ onClose }) => {
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Upload File
         </label>
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#2d8e41] transition-colors duration-200">
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#983F21] transition-colors duration-200">
           <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
           <input
             type="file"
@@ -102,7 +116,7 @@ const BulkPaymentsForm: React.FC<BulkPaymentsFormProps> = ({ onClose }) => {
         <div className="mt-2">
           <button
             type="button"
-            className="text-sm text-[#2d8e41] hover:text-[#246b35] flex items-center space-x-1"
+            className="text-sm text-[#983F21] hover:text-[#7a3219] flex items-center space-x-1"
           >
             <Download className="w-4 h-4" />
             <span>Download sample template</span>
@@ -121,7 +135,7 @@ const BulkPaymentsForm: React.FC<BulkPaymentsFormProps> = ({ onClose }) => {
             name="referenceLabel"
             value={formData.referenceLabel}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
             placeholder="Enter reference label"
           />
         </div>
@@ -135,7 +149,7 @@ const BulkPaymentsForm: React.FC<BulkPaymentsFormProps> = ({ onClose }) => {
             name="scheduledDate"
             value={formData.scheduledDate}
             onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
           />
         </div>
       </div>
@@ -192,15 +206,15 @@ const BulkPaymentsForm: React.FC<BulkPaymentsFormProps> = ({ onClose }) => {
         <button
           type="submit"
           disabled={isSubmitting || !uploadedFile}
-          className="flex-1 px-4 py-2 bg-[#2d8e41] text-white rounded-lg hover:bg-[#246b35] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-2 bg-[#983F21] text-white rounded-lg hover:bg-[#7a3219] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <div className="flex items-center justify-center">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              Processing...
+              {canMakePayment() ? 'Processing...' : 'Sending Request...'}
             </div>
           ) : (
-            'Submit Bulk Payment'
+            canMakePayment() ? 'Submit Bulk Payment' : 'Send Request'
           )}
         </button>
       </div>

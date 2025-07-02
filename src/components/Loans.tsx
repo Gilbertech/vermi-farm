@@ -19,22 +19,13 @@ const Loans: React.FC = () => {
   const [timeFilter, setTimeFilter] = useState('all');
 
   const handleDisburseLoan = () => {
-    if (!canDisburseLoan()) {
-      // Send notification to super admin
-      if (currentUser) {
-        addNotification({
-          type: 'loan_initiated',
-          message: `Loan disbursement request initiated`,
-          initiatorName: currentUser.name,
-          amount: 0, // Will be filled when form is submitted
-          actionType: 'loan',
-          details: { type: 'loan_disbursement' }
-        });
-        alert('Loan disbursement request sent to Super Admin for approval');
-      }
-      return;
+    if (canDisburseLoan()) {
+      setIsModalOpen(true);
+    } else {
+      // For initiators, show a message that they can request loan disbursement
+      alert('You can request loan disbursement. Please fill out the loan form to send a request to Super Admin for approval.');
+      setIsModalOpen(true);
     }
-    setIsModalOpen(true);
   };
 
   const filterLoans = (type: 'group' | 'individual') => {
@@ -277,21 +268,21 @@ const Loans: React.FC = () => {
         <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Loans</h1>
         <button
           onClick={handleDisburseLoan}
-          className="bg-[#2d8e41] text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition self-start sm:self-auto"
+          className="bg-[#983F21] text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg flex items-center space-x-2 hover:bg-[#7a3219] transition self-start sm:self-auto"
         >
           <Plus className="w-4 lg:w-5 h-4 lg:h-5" />
-          <span>Disburse Loan</span>
+          <span>{canDisburseLoan() ? 'Disburse Loan' : 'Request Loan'}</span>
         </button>
       </div>
 
       {/* Access Restriction Notice for Initiators */}
       {!canDisburseLoan() && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 lg:p-6">
+        <div className="bg-[#983F21] bg-opacity-10 border border-[#983F21] border-opacity-30 rounded-xl p-4 lg:p-6">
           <div className="flex items-center space-x-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+            <AlertTriangle className="w-5 h-5 text-[#983F21]" />
             <div>
-              <h3 className="text-sm font-medium text-yellow-800">Limited Access</h3>
-              <p className="text-sm text-yellow-700">Loan disbursement requires Super Admin approval. Click "Disburse Loan" to send a request.</p>
+              <h3 className="text-sm font-medium text-[#983F21]">Loan Request System</h3>
+              <p className="text-sm text-[#983F21] opacity-90">You can submit loan disbursement requests. Click "Request Loan" to send detailed requests to Super Admin for approval.</p>
             </div>
           </div>
         </div>
@@ -429,7 +420,7 @@ const Loans: React.FC = () => {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Disburse New Loan"
+        title={canDisburseLoan() ? "Disburse New Loan" : "Request Loan Disbursement"}
       >
         <LoanForm onClose={() => setIsModalOpen(false)} />
       </Modal>

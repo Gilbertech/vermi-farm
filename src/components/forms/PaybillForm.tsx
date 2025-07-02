@@ -7,7 +7,7 @@ interface PaybillFormProps {
 }
 
 const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
-  const { currentUser, addNotification } = useAuth();
+  const { currentUser, addNotification, canMakePayment } = useAuth();
   const [formData, setFormData] = useState({
     paybillNumber: '',
     accountNumber: '',
@@ -22,14 +22,27 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // If user is an initiator (not super admin), send notification to super admin
-    if (currentUser?.role === 'admin_initiator') {
-      addNotification({
-        type: 'payment_initiated',
-        message: `Paybill payment of KES ${parseFloat(formData.amount).toLocaleString()} initiated`,
-        initiatorName: currentUser.name,
-        amount: parseFloat(formData.amount)
-      });
+    if (canMakePayment()) {
+      // Super admin can directly make payments
+      alert(`✅ Paybill payment of KES ${parseFloat(formData.amount).toLocaleString()} processed successfully!`);
+    } else {
+      // Initiators send notification to super admin
+      if (currentUser) {
+        addNotification({
+          type: 'payment_initiated',
+          message: `Paybill payment of KES ${parseFloat(formData.amount).toLocaleString()} requested`,
+          initiatorName: currentUser.name,
+          amount: parseFloat(formData.amount),
+          actionType: 'payment',
+          details: {
+            paymentType: 'paybill',
+            paybillNumber: formData.paybillNumber,
+            accountNumber: formData.accountNumber
+          }
+        });
+        
+        alert(`📤 Paybill payment request sent to Super Admin for approval!\n\nAmount: KES ${parseFloat(formData.amount).toLocaleString()}\nPaybill: ${formData.paybillNumber}\nAccount: ${formData.accountNumber}`);
+      }
     }
     
     setIsSubmitting(false);
@@ -62,7 +75,7 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
           value={formData.paybillNumber}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
           placeholder="Enter paybill number"
         />
       </div>
@@ -77,7 +90,7 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
           value={formData.accountNumber}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
           placeholder="Enter account number"
         />
       </div>
@@ -94,7 +107,7 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
           required
           min="1"
           step="0.01"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
           placeholder="Enter amount"
         />
       </div>
@@ -110,15 +123,15 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="flex-1 px-4 py-2 bg-[#2d8e41] text-white rounded-lg hover:bg-[#246b35] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-2 bg-[#983F21] text-white rounded-lg hover:bg-[#7a3219] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <div className="flex items-center justify-center">
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-              Processing...
+              {canMakePayment() ? 'Processing...' : 'Sending Request...'}
             </div>
           ) : (
-            'Make Payment'
+            canMakePayment() ? 'Make Payment' : 'Send Request'
           )}
         </button>
       </div>
