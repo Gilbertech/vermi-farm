@@ -85,8 +85,8 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
     switch (notification.type) {
       case 'loan_initiated':
         return (
-          <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <h4 className="text-sm font-semibold text-blue-800 mb-2">Loan Details</h4>
+          <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-gray-200">
+            <h4 className="text-sm font-semibold text-gray-800 mb-2">Loan Details</h4>
             <div className="space-y-1 text-xs text-blue-700">
               {details.borrowerName && (
                 <div className="flex justify-between">
@@ -121,7 +121,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
               {details.purpose && (
                 <div className="mt-2">
                   <span className="font-medium">Purpose:</span>
-                  <p className="text-blue-600 mt-1">{details.purpose}</p>
+                  <p className="text-gray-600 mt-1">{details.purpose}</p>
                 </div>
               )}
             </div>
