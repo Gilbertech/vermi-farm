@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, LogOut, User, Bell, Check, X, AlertTriangle, DollarSign, CreditCard, ArrowLeftRight, Users, Building2 } from 'lucide-react';
+import { Menu, LogOut, User, Bell, Check, X, AlertTriangle, DollarSign, CreditCard, ArrowLeftRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface TopNavbarProps {
@@ -38,9 +38,9 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'payment_initiated':
-        return <DollarSign className="w-5 h-5 text-green-600" />;
+        return <DollarSign className="w-5 h-5 text-[#2D8E41]" />;
       case 'loan_initiated':
-        return <CreditCard className="w-5 h-5 text-blue-600" />;
+        return <CreditCard className="w-5 h-5 text-[#983F21]" />;
       case 'transfer_initiated':
         return <ArrowLeftRight className="w-5 h-5 text-purple-600" />;
       default:
@@ -81,11 +81,11 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
 
   const renderNotificationDetails = (notification: any) => {
     const details = notification.details || {};
-    
+
     switch (notification.type) {
       case 'loan_initiated':
         return (
-          <div className="mt-2 p-3 bg-black-50 rounded-lg border border-gray-200">
+          <div className="mt-2 p-3 bg-[#F9F9F9] rounded-lg border border-gray-200">
             <h4 className="text-sm font-semibold text-gray-800 mb-2">Loan Details</h4>
             <div className="space-y-1 text-xs text-gray-700">
               {details.borrowerName && (
@@ -127,11 +127,11 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
             </div>
           </div>
         );
-      
+
       case 'payment_initiated':
         return (
           <div className="mt-2 p-3 bg-green-50 rounded-lg border border-green-200">
-            <h4 className="text-sm font-semibold text-green-800 mb-2">Payment Details</h4>
+            <h4 className="text-sm font-semibold text-[#2D8E41] mb-2">Payment Details</h4>
             <div className="space-y-1 text-xs text-green-700">
               {details.paymentType && (
                 <div className="flex justify-between">
@@ -172,7 +172,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
               {details.purpose && (
                 <div className="mt-2">
                   <span className="font-medium">Purpose:</span>
-                  <p className="text-green-600 mt-1">{details.purpose}</p>
+                  <p className="text-[#2D8E41] mt-1">{details.purpose}</p>
                 </div>
               )}
               {details.bulkCount && (
@@ -184,12 +184,12 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
             </div>
           </div>
         );
-      
+
       case 'transfer_initiated':
         return (
-          <div className="mt-2 p-3 bg-white-50 rounded-lg border border-black-200">
-            <h4 className="text-sm font-semibold text-black-800 mb-2">Transfer Details</h4>
-            <div className="space-y-1 text-xs text-black-700">
+          <div className="mt-2 p-3 bg-white rounded-lg border border-gray-200">
+            <h4 className="text-sm font-semibold text-[#983F21] mb-2">Transfer Details</h4>
+            <div className="space-y-1 text-xs text-gray-700">
               {details.fromPortfolio && (
                 <div className="flex justify-between">
                   <span>From:</span>
@@ -217,7 +217,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
             </div>
           </div>
         );
-      
+
       default:
         return null;
     }
@@ -235,9 +235,8 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
           </button>
           <h1 className="text-xl md:text-2xl font-bold text-gray-800">{title}</h1>
         </div>
-        
+
         <div className="flex items-center space-x-4">
-          {/* Notifications - Only for Super Admin */}
           {currentUser?.role === 'super_admin' && (
             <div className="relative">
               <button
@@ -254,7 +253,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
 
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-96 max-w-[90vw] bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[80vh] overflow-hidden">
-                  <div className="p-4 border-b border-gray-200 bg-[#2d8e41] flex items-center justify-between">
+                  <div className="p-4 border-b border-gray-200 bg-[#2D8E41] flex items-center justify-between">
                     <h3 className="text-sm font-medium text-white flex items-center space-x-2">
                       <Bell className="w-4 h-4" />
                       <span>Approval Requests ({unreadCount} pending)</span>
@@ -266,7 +265,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
                       <X className="w-4 h-4" />
                     </button>
                   </div>
-                  
+
                   <div className="overflow-y-auto max-h-96">
                     {notifications.length === 0 ? (
                       <div className="p-6 text-center text-gray-500 text-sm">
@@ -294,25 +293,24 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
                                   <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
                                 )}
                               </div>
-                              
+
                               <p className="text-sm text-gray-600 mb-1">
                                 <span className="font-medium">{notification.initiatorName}</span> requested{' '}
-                                <span className="font-semibold text-[#2d8e41]">
+                                <span className="font-semibold text-[#2D8E41]">
                                   KES {notification.amount.toLocaleString()}
                                 </span>
                               </p>
-                              
+
                               <p className="text-xs text-gray-500 mb-3">
                                 {new Date(notification.timestamp).toLocaleString()}
                               </p>
 
-                              {/* Detailed notification content */}
                               {renderNotificationDetails(notification)}
-                              
+
                               <div className="flex items-center space-x-2 mt-3">
                                 <button
                                   onClick={(e) => handleApprove(notification.id, e)}
-                                  className="bg-green-600 text-white px-3 py-1.5 rounded text-xs hover:bg-green-700 transition-colors duration-200 flex items-center space-x-1 shadow-sm"
+                                  className="bg-[#2D8E41] text-white px-3 py-1.5 rounded text-xs hover:bg-green-700 transition-colors duration-200 flex items-center space-x-1 shadow-sm"
                                 >
                                   <Check className="w-3 h-3" />
                                   <span>Approve</span>
@@ -331,7 +329,6 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
                       ))
                     )}
                   </div>
-                  
                   {notifications.length > 0 && (
                     <div className="p-3 border-t border-gray-200 bg-gray-50">
                       <p className="text-xs text-gray-500 text-center">
@@ -357,7 +354,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
               </div>
             </div>
           )}
-          
+
           <button
             onClick={logout}
             className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
