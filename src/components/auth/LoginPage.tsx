@@ -50,7 +50,8 @@ const LoginPage: React.FC = () => {
             </div>
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Vermi-Farm Admin</h1>
             <p className="text-gray-600 text-sm lg:text-base">Management Information System</p>
-            
+            <div className="w-16 h-1 bg-gradient-to-r from-[#2d8e41] to-[#983F21] mx-auto mt-3 rounded-full"></div>
+          </div>
 
           {/* Error Message */}
           {error && (
