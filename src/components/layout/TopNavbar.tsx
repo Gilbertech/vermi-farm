@@ -87,7 +87,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
         return (
           <div className="mt-2 p-3 bg-blue-50 rounded-lg border border-gray-200">
             <h4 className="text-sm font-semibold text-gray-800 mb-2">Loan Details</h4>
-            <div className="space-y-1 text-xs text-blue-700">
+            <div className="space-y-1 text-xs text-gray-700">
               {details.borrowerName && (
                 <div className="flex justify-between">
                   <span>Borrower:</span>
