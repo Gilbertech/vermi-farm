@@ -188,8 +188,8 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
       case 'transfer_initiated':
         return (
           <div className="mt-2 p-3 bg-white-50 rounded-lg border border-purple-200">
-            <h4 className="text-sm font-semibold text-purple-800 mb-2">Transfer Details</h4>
-            <div className="space-y-1 text-xs text-purple-700">
+            <h4 className="text-sm font-semibold text-black-800 mb-2">Transfer Details</h4>
+            <div className="space-y-1 text-xs text-black-700">
               {details.fromPortfolio && (
                 <div className="flex justify-between">
                   <span>From:</span>
