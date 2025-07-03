@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from './layout/Sidebar';
-import EnhancedTopNavbar from './layout/EnhancedTopNavbar';
+import TopNavbar from './layout/TopNavbar';
 import Dashboard from './Dashboard';
 import Users from './Users';
 import Groups from './Groups';
@@ -80,7 +80,7 @@ const AdminDashboard: React.FC = () => {
       />
       
       <div className="flex-1 flex flex-col overflow-hidden">
-        <EnhancedTopNavbar 
+        <TopNavbar 
           title={getPageTitle()}
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         />
