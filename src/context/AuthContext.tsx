@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Mock admin users
   const adminUsers: User[] = [
-    { id: '1', name: 'Super Admin', phone: '0712345678', role: 'super_admin' },
+    { id: '1', name: 'Super Admin', phone: '0768299985', role: 'super_admin' },
     { id: '2', name: 'Admin Initiator 1', phone: '0712345679', role: 'admin_initiator' },
     { id: '3', name: 'Admin Initiator 2', phone: '0712345680', role: 'admin_initiator' },
   ];
