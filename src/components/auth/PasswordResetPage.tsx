@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Phone, ArrowLeft, CheckCircle } from 'lucide-react';
-import { useAuth } from '../../context/EnhancedAuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 const PasswordResetPage: React.FC = () => {
   const { resetPassword, setCurrentView } = useAuth();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Phone, Lock, Shield, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
-import { useAuth } from '../../context/EnhancedAuthContext';
+import { useAuth } from '../../context/AuthContext';
 import OTPVerification from './OTPVerification';
 
 const SecureLoginPage: React.FC = () => {
