@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AppProvider } from './context/AppContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import LoginPage from './components/auth/LoginPage';
+import { EnhancedAuthProvider, useAuth } from './context/EnhancedAuthContext';
+import SecureLoginPage from './components/auth/SecureLoginPage';
 import PasswordResetPage from './components/auth/PasswordResetPage';
 import AdminDashboard from './components/AdminDashboard';
 
@@ -21,16 +21,18 @@ const LoadingScreen: React.FC = () => {
         </div>
         
         <h1 className="text-3xl font-bold text-[#2d8e41] mb-4">Vermi-Farm Initiative</h1>
-        <p className="text-lg text-[#983F21] mb-6 font-medium">Management Information System</p>
+        <p className="text-lg text-[#983F21] mb-6 font-medium">Secure Management System</p>
         
         <div className="w-64 h-2 bg-gray-200 rounded-full mx-auto mb-4">
           <div className="h-2 bg-gradient-to-r from-[#2d8e41] to-[#983F21] rounded-full animate-pulse" style={{ width: '70%' }}></div>
         </div>
         
-        <p className="text-sm text-gray-600">Loading system...</p>
+        <p className="text-sm text-gray-600">Initializing secure environment...</p>
         
         <div className="mt-8 text-xs text-[#983F21] font-medium">
-          <p>Changing Lives, One Farm at a Time</p>
+          <p>🔒 Enterprise-Grade Security</p>
+          <p>🛡️ Two-Factor Authentication</p>
+          <p>📊 Real-Time Monitoring</p>
         </div>
       </div>
     </div>
@@ -42,7 +44,7 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading time
+    // Simulate loading time for security checks
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 3000);
@@ -58,7 +60,7 @@ function AppContent() {
     if (currentView === 'reset-password') {
       return <PasswordResetPage />;
     }
-    return <LoginPage />;
+    return <SecureLoginPage />;
   }
 
   return <AdminDashboard />;
@@ -66,11 +68,11 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
+    <EnhancedAuthProvider>
       <AppProvider>
         <AppContent />
       </AppProvider>
-    </AuthProvider>
+    </EnhancedAuthProvider>
   );
 }
 

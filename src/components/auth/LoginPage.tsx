@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Phone, Lock } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/EnhancedAuthContext';
 
 const LoginPage: React.FC = () => {
   const { login, setCurrentView } = useAuth();
