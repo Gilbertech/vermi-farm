@@ -58,13 +58,13 @@ const BuyGoodsForm: React.FC<BuyGoodsFormProps> = ({ onClose }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Warning Banner */}
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center space-x-3">
-        <AlertTriangle className="w-5 h-5 text-red-600" />
-        <p className="text-sm text-red-800">Warning: Please enter correct business details.</p>
+      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center space-x-3">
+        <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+        <p className="text-sm text-red-800 dark:text-red-300">Warning: Please enter correct business details.</p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Business Number
         </label>
         <input
@@ -73,13 +73,13 @@ const BuyGoodsForm: React.FC<BuyGoodsFormProps> = ({ onClose }) => {
           value={formData.businessNumber}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Enter business number"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Amount (KES)
         </label>
         <input
@@ -90,7 +90,7 @@ const BuyGoodsForm: React.FC<BuyGoodsFormProps> = ({ onClose }) => {
           required
           min="1"
           step="0.01"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Enter amount"
         />
       </div>
@@ -99,7 +99,7 @@ const BuyGoodsForm: React.FC<BuyGoodsFormProps> = ({ onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+          className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
         >
           Back
         </button>

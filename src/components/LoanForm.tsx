@@ -79,7 +79,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Loan Type
         </label>
         <select
@@ -87,7 +87,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           value={formData.loanType}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         >
           <option value="group">Group Loan</option>
           <option value="individual">Individual Loan</option>
@@ -95,7 +95,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Group
         </label>
         <select
@@ -103,7 +103,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           value={formData.groupId}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         >
           <option value="">Select a group</option>
           {groups.map(group => (
@@ -113,7 +113,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Borrower
         </label>
         <select
@@ -122,7 +122,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           onChange={handleChange}
           required
           disabled={!formData.groupId}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent disabled:bg-gray-100"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-800 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         >
           <option value="">Select a borrower</option>
           {filteredUsers.map(user => (
@@ -132,7 +132,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Loan Amount (KES)
         </label>
         <input
@@ -143,12 +143,12 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           required
           min="1"
           step="0.01"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Interest Rate (%)
         </label>
         <input
@@ -160,12 +160,12 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           min="0"
           max="100"
           step="0.1"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Due Date
         </label>
         <input
@@ -174,12 +174,12 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           value={formData.dueDate}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Purpose of Loan
         </label>
         <textarea
@@ -188,7 +188,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
           onChange={handleChange}
           required
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Describe the purpose of this loan..."
         />
       </div>
@@ -197,7 +197,7 @@ const LoanForm: React.FC<LoanFormProps> = ({ onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+          className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
         >
           Cancel
         </button>

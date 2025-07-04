@@ -76,14 +76,14 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Toggle Buttons */}
-      <div className="flex bg-gray-100 rounded-lg p-1">
+      <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
         <button
           type="button"
           onClick={() => setUserType('existing')}
           className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
             userType === 'existing'
               ? 'bg-[#983F21] text-white'
-              : 'bg-transparent text-gray-700 hover:bg-gray-200'
+              : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           }`}
         >
           To Existing User/Group
@@ -94,7 +94,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
           className={`flex-1 px-4 py-2 rounded-md font-medium transition-colors duration-200 ${
             userType === 'new'
               ? 'bg-[#983F21] text-white'
-              : 'bg-transparent text-gray-700 hover:bg-gray-200'
+              : 'bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           }`}
         >
           To New User
@@ -102,7 +102,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Purpose of Payment
         </label>
         <input
@@ -111,13 +111,13 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
           value={formData.purpose}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Enter payment purpose"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Amount (KES)
         </label>
         <input
@@ -128,14 +128,14 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
           required
           min="1"
           step="0.01"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Enter amount"
         />
       </div>
 
       {userType === 'existing' ? (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             To
           </label>
           <select
@@ -143,7 +143,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
             value={formData.to}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
             <option value="">Select recipient</option>
             {recipients.map(recipient => (
@@ -156,7 +156,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
       ) : (
         <>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Name
             </label>
             <input
@@ -165,12 +165,12 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
               value={formData.newUserName}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Enter recipient name"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Phone Number
             </label>
             <input
@@ -179,7 +179,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
               value={formData.newUserPhone}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="07xxxxxxxx or 01xxxxxxxx"
             />
           </div>
@@ -190,7 +190,7 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+          className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
         >
           Back
         </button>

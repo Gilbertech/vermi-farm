@@ -40,21 +40,21 @@ const TransferForm: React.FC<TransferFormProps> = ({ fromPortfolio, toPortfolio,
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="bg-gray-50 p-4 rounded-lg">
+      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-gray-500">From:</span>
-            <p className="font-medium text-gray-800 capitalize">{fromPortfolio} Portfolio</p>
+            <span className="text-gray-500 dark:text-gray-400">From:</span>
+            <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">{fromPortfolio} Portfolio</p>
           </div>
           <div>
-            <span className="text-gray-500">To:</span>
-            <p className="font-medium text-gray-800 capitalize">{toPortfolio} Portfolio</p>
+            <span className="text-gray-500 dark:text-gray-400">To:</span>
+            <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">{toPortfolio} Portfolio</p>
           </div>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Transfer Amount (KES)
         </label>
         <input
@@ -65,13 +65,13 @@ const TransferForm: React.FC<TransferFormProps> = ({ fromPortfolio, toPortfolio,
           required
           min="1"
           step="0.01"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Enter amount to transfer"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Reference Number (Optional)
         </label>
         <input
@@ -79,13 +79,13 @@ const TransferForm: React.FC<TransferFormProps> = ({ fromPortfolio, toPortfolio,
           name="reference"
           value={formData.reference}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Enter reference number"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Description
         </label>
         <textarea
@@ -94,7 +94,7 @@ const TransferForm: React.FC<TransferFormProps> = ({ fromPortfolio, toPortfolio,
           onChange={handleChange}
           required
           rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Enter transfer description"
         />
       </div>
@@ -103,7 +103,7 @@ const TransferForm: React.FC<TransferFormProps> = ({ fromPortfolio, toPortfolio,
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+          className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
         >
           Cancel
         </button>

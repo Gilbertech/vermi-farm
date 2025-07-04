@@ -60,13 +60,13 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Warning Banner */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-center space-x-3">
-        <AlertTriangle className="w-5 h-5 text-yellow-600" />
-        <p className="text-sm text-yellow-800">Please ensure you have entered the correct details.</p>
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 flex items-center space-x-3">
+        <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+        <p className="text-sm text-yellow-800 dark:text-yellow-300">Please ensure you have entered the correct details.</p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Paybill Number
         </label>
         <input
@@ -75,13 +75,13 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
           value={formData.paybillNumber}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Enter paybill number"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Account Number
         </label>
         <input
@@ -90,13 +90,13 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
           value={formData.accountNumber}
           onChange={handleChange}
           required
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Enter account number"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Amount (KES)
         </label>
         <input
@@ -107,7 +107,7 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
           required
           min="1"
           step="0.01"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           placeholder="Enter amount"
         />
       </div>
@@ -116,7 +116,7 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200"
+          className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
         >
           Back
         </button>
