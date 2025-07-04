@@ -35,27 +35,25 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center p-4 transition-colors duration-200">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl p-6 lg:p-8 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 lg:p-8 border border-gray-100 dark:border-gray-700">
           {/* Logo and Title */}
           <div className="text-center mb-8">
             <div className="relative inline-block mb-4">
               <img
                 src="https://i.postimg.cc/MTpyCg68/logo.png"
                 alt="Vermi-Farm Logo"
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover  border-4 border-white"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover  border-4 border-white dark:border-gray-600"
               />
-            
             </div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Vermi-Farm Admin</h1>
-            <p className="text-gray-600 text-sm lg:text-base">Management Information System</p>
-            
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white mb-2">Vermi-Farm Admin</h1>
+            <p className="text-gray-600 dark:text-gray-300 text-sm lg:text-base">Management Information System</p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-red-500 rounded-full flex-shrink-0"></div>
                 <span>{error}</span>
@@ -66,11 +64,11 @@ const LoginPage: React.FC = () => {
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Phone Number
               </label>
               <div className="relative">
-                <Phone className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Phone className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                 <input
                   type="tel"
                   name="phone"
@@ -78,17 +76,17 @@ const LoginPage: React.FC = () => {
                   onChange={handleChange}
                   placeholder="07xxxxxxxx or 01xxxxxxxx"
                   required
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200 bg-gray-50 focus:bg-white"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Lock className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
@@ -96,12 +94,12 @@ const LoginPage: React.FC = () => {
                   onChange={handleChange}
                   placeholder="Enter your password"
                   required
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200 bg-gray-50 focus:bg-white"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200 bg-gray-50 dark:bg-gray-700 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -128,15 +126,15 @@ const LoginPage: React.FC = () => {
           <div className="text-center mt-6">
             <button
               onClick={() => setCurrentView('reset-password')}
-              className="text-[#2d8e41] hover:text-[#246b35] font-medium transition-colors duration-200 text-sm"
+              className="text-[#2d8e41] dark:text-green-400 hover:text-[#246b35] dark:hover:text-green-300 font-medium transition-colors duration-200 text-sm"
             >
               Forgot your password?
             </button>
           </div>
 
           {/* Footer */}
-          <div className="text-center mt-6 pt-4 border-t border-gray-200">
-            <p className="text-xs text-gray-500">
+          <div className="text-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               © 2025 Vermi-Farm Initiative. All rights reserved.
             </p>
           </div>

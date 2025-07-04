@@ -96,27 +96,27 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center p-4 transition-colors duration-200">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl p-6 lg:p-8 border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 lg:p-8 border border-gray-100 dark:border-gray-700">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="relative inline-block mb-4">
               <img
                 src="https://i.postimg.cc/MTpyCg68/logo.png"
                 alt="Vermi-Farm Logo"
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white dark:border-gray-600"
               />
             </div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Verify Your Identity</h1>
-            <p className="text-gray-600 text-sm lg:text-base">
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white mb-2">Verify Your Identity</h1>
+            <p className="text-gray-600 dark:text-gray-300 text-sm lg:text-base">
               We've sent a 6-digit code to <strong>{phone}</strong>
             </p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
               <div className="flex items-center space-x-2">
                 <div className="w-4 h-4 bg-red-500 rounded-full flex-shrink-0"></div>
                 <span>{error}</span>
@@ -127,7 +127,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
           {/* OTP Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-4 text-center">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 text-center">
                 Enter 6-digit verification code
               </label>
               <div className="flex justify-center space-x-2">
@@ -140,7 +140,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200"
+                    className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
                 ))}
               </div>
@@ -168,14 +168,14 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
           {/* Timer and Resend */}
           <div className="text-center mt-6">
             {timeLeft > 0 ? (
-              <p className="text-sm text-gray-600">
-                Code expires in <span className="font-semibold text-[#2d8e41]">{formatTime(timeLeft)}</span>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Code expires in <span className="font-semibold text-[#2d8e41] dark:text-green-400">{formatTime(timeLeft)}</span>
               </p>
             ) : (
               <button
                 onClick={handleResendOTP}
                 disabled={!canResend}
-                className="text-[#2d8e41] hover:text-[#246b35] font-medium transition-colors duration-200 text-sm flex items-center justify-center mx-auto"
+                className="text-[#2d8e41] dark:text-green-400 hover:text-[#246b35] dark:hover:text-green-300 font-medium transition-colors duration-200 text-sm flex items-center justify-center mx-auto"
               >
                 <RefreshCw className="w-4 h-4 mr-1" />
                 Resend Code
@@ -187,7 +187,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
           <div className="text-center mt-6">
             <button
               onClick={onBack}
-              className="flex items-center justify-center text-gray-600 hover:text-gray-800 font-medium transition-colors duration-200 mx-auto"
+              className="flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200 mx-auto"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Login
@@ -195,8 +195,8 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
           </div>
 
           {/* Footer */}
-          <div className="text-center mt-6 pt-4 border-t border-gray-200">
-            <p className="text-xs text-gray-500">
+          <div className="text-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
               © 2025 Vermi-Farm Initiative. All rights reserved.
             </p>
           </div>

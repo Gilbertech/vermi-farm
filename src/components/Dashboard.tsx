@@ -63,8 +63,8 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Dashboard</h1>
-        <div className="text-sm text-gray-500">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
           Last updated: {new Date().toLocaleString()}
         </div>
       </div>
@@ -76,51 +76,51 @@ const Dashboard: React.FC = () => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-        <div className="bg-white p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
+        <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Recent Activity</h3>
           <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-gray-700">New user registered</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">New user registered</span>
               </div>
-              <span className="text-xs text-gray-500">2 min ago</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">2 min ago</span>
             </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-sm text-gray-700">Loan disbursed</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Loan disbursed</span>
               </div>
-              <span className="text-xs text-gray-500">5 min ago</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">5 min ago</span>
             </div>
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-center space-x-3">
                 <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <span className="text-sm text-gray-700">New group created</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">New group created</span>
               </div>
-              <span className="text-xs text-gray-500">1 hour ago</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">1 hour ago</span>
             </div>
           </div>
         </div>
         
-        <div className="bg-white p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">System Status</h3>
+        <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">System Status</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">System Health</span>
-              <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Healthy</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">System Health</span>
+              <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 text-xs rounded-full">Healthy</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Database</span>
-              <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Connected</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Database</span>
+              <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 text-xs rounded-full">Connected</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Payment Gateway</span>
-              <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Active</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Payment Gateway</span>
+              <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 text-xs rounded-full">Active</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Last Backup</span>
-              <span className="text-xs text-gray-500">30 min ago</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Last Backup</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">30 min ago</span>
             </div>
           </div>
         </div>
