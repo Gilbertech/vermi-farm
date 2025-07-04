@@ -50,7 +50,7 @@ const Groups: React.FC = () => {
   return (
     <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Groups</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Changing Lives, One Farm at a Time</h1>
         <button
           onClick={() => setIsModalOpen(true)}
           className="bg-[#2d8e41] text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg flex items-center space-x-2 hover:bg-[#246b35] transition-colors duration-200 font-medium self-start sm:self-auto"
