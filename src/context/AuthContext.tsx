@@ -21,13 +21,15 @@ interface Notification {
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  currentView: 'login' | 'reset-password';
+  currentView: 'login' | 'reset-password' | 'otp-verification';
   currentUser: User | null;
   notifications: Notification[];
+  pendingLogin: { phone: string; password: string } | null;
   login: (phone: string, password: string) => Promise<boolean>;
+  completeLogin: () => Promise<void>;
   logout: () => void;
   resetPassword: (phone: string) => Promise<boolean>;
-  setCurrentView: (view: 'login' | 'reset-password') => void;
+  setCurrentView: (view: 'login' | 'reset-password' | 'otp-verification') => void;
   canInitiate: () => boolean;
   canApprove: () => boolean;
   canTransferPortfolio: () => boolean;
@@ -52,13 +54,14 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentView, setCurrentView] = useState<'login' | 'reset-password'>('login');
+  const [currentView, setCurrentView] = useState<'login' | 'reset-password' | 'otp-verification'>('login');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [pendingLogin, setPendingLogin] = useState<{ phone: string; password: string } | null>(null);
 
-  // Mock admin users
+  // Mock admin users - updated super admin phone number
   const adminUsers: User[] = [
-    { id: '1', name: 'Super Admin', phone: '0712345678', role: 'super_admin' },
+    { id: '1', name: 'Super Admin', phone: '0768299985', role: 'super_admin' },
     { id: '2', name: 'Admin Initiator 1', phone: '0712345679', role: 'admin_initiator' },
     { id: '3', name: 'Admin Initiator 2', phone: '0712345680', role: 'admin_initiator' },
   ];
@@ -79,8 +82,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Mock authentication
     const user = adminUsers.find(u => u.phone === phone);
     if (user && password === 'admin123') {
+      // Store pending login for OTP verification
+      setPendingLogin({ phone, password });
+      setCurrentView('otp-verification');
+      
+      // Simulate sending OTP
+      alert(`OTP sent to ${phone}. Use any 6-digit code for demo.`);
+      return true;
+    }
+    
+    throw new Error('Invalid phone number or password');
+  };
+
+  const completeLogin = async (): Promise<void> => {
+    if (!pendingLogin) {
+      throw new Error('No pending login found');
+    }
+
+    const user = adminUsers.find(u => u.phone === pendingLogin.phone);
+    if (user) {
       setIsAuthenticated(true);
       setCurrentUser(user);
+      setPendingLogin(null);
+      setCurrentView('login');
       
       // Add some sample notifications for super admin
       if (user.role === 'super_admin') {
@@ -91,7 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             message: 'Payment request initiated',
             initiatorName: 'Admin Initiator 1',
             amount: 15000,
-            timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
+            timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
             read: false,
             actionType: 'payment',
             details: { type: 'single_payment', recipient: 'John Doe' }
@@ -102,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             message: 'Loan disbursement request initiated',
             initiatorName: 'Admin Initiator 2',
             amount: 25000,
-            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
             read: false,
             actionType: 'loan',
             details: { type: 'group_loan', groupName: 'Nairobi Farmers' }
@@ -113,7 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             message: 'Portfolio transfer request initiated',
             initiatorName: 'Admin Initiator 1',
             amount: 50000,
-            timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 minutes ago
+            timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
             read: false,
             actionType: 'transfer',
             details: { 
@@ -127,11 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ];
         setNotifications(sampleNotifications);
       }
-      
-      return true;
     }
-    
-    throw new Error('Invalid phone number or password');
   };
 
   const logout = () => {
@@ -139,6 +159,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentUser(null);
     setCurrentView('login');
     setNotifications([]);
+    setPendingLogin(null);
   };
 
   const resetPassword = async (phone: string): Promise<boolean> => {
@@ -180,9 +201,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     setNotifications(prev => [newNotification, ...prev]);
     
-    // Simulate real-time notification (in real app, this would be via WebSocket or push notification)
+    // Simulate real-time notification
     if (currentUser?.role === 'super_admin') {
-      // Show browser notification if permission granted
       if (Notification.permission === 'granted') {
         new Notification('Vermi-Farm Admin', {
           body: `New ${notification.actionType} request: KES ${notification.amount.toLocaleString()} from ${notification.initiatorName}`,
@@ -207,10 +227,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const approveAction = (notificationId: string) => {
     const notification = notifications.find(n => n.id === notificationId);
     if (notification) {
-      // Remove notification after approval
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       
-      // Show success message with details
       const actionName = notification.actionType.charAt(0).toUpperCase() + notification.actionType.slice(1);
       let detailsText = '';
       
@@ -222,15 +240,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       alert(`✅ ${actionName} of KES ${notification.amount.toLocaleString()} approved successfully!\n\nInitiated by: ${notification.initiatorName}\nAmount: KES ${notification.amount.toLocaleString()}\nTime: ${new Date(notification.timestamp).toLocaleString()}${detailsText}`);
-      
-      // In real app, this would trigger the actual action via API
     }
   };
 
   const rejectAction = (notificationId: string) => {
     const notification = notifications.find(n => n.id === notificationId);
     if (notification) {
-      // Remove notification after rejection
       setNotifications(prev => prev.filter(n => n.id !== notificationId));
       
       const actionName = notification.actionType.charAt(0).toUpperCase() + notification.actionType.slice(1);
@@ -251,7 +266,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       currentView,
       currentUser,
       notifications,
+      pendingLogin,
       login,
+      completeLogin,
       logout,
       resetPassword,
       setCurrentView,
