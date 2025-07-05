@@ -51,13 +51,13 @@ const Accounts: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'success':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
       case 'failed':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -67,18 +67,18 @@ const Accounts: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">Accounts</h1>
+      <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Accounts</h1>
 
       {/* Tab Navigation */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-8 px-6">
             <button
               onClick={() => setActiveTab('number')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
                 activeTab === 'number'
                   ? 'border-[#2d8e41] text-[#2d8e41]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
               Account Number
@@ -88,7 +88,7 @@ const Accounts: React.FC = () => {
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
                 activeTab === 'balance'
                   ? 'border-[#2d8e41] text-[#2d8e41]'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
               Account Balance
@@ -109,12 +109,12 @@ const Accounts: React.FC = () => {
                   <p className="text-3xl font-bold">4703932</p>
                 </div>
                 
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
                   <div className="flex items-center space-x-3 mb-4">
-                    <DollarSign className="w-8 h-8 text-gray-600" />
-                    <h3 className="text-xl font-semibold text-gray-800">Account Name</h3>
+                    <DollarSign className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Account Name</h3>
                   </div>
-                  <p className="text-3xl font-bold text-gray-800">Vermifarm</p>
+                  <p className="text-3xl font-bold text-gray-800 dark:text-gray-200">Vermifarm</p>
                 </div>
               </div>
             </div>
@@ -124,17 +124,17 @@ const Accounts: React.FC = () => {
             <div className="space-y-6">
               {/* Balance Overview */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-green-50 rounded-lg p-6">
-                  <h3 className="text-2xl font-bold text-gray-800">KES {totalBalance.toLocaleString()}</h3>
-                  <p className="text-gray-600">Current Balance</p>
+                <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
+                  <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">KES {totalBalance.toLocaleString()}</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Current Balance</p>
                 </div>
-                <div className="bg-blue-50 rounded-lg p-6">
-                  <h3 className="text-2xl font-bold text-gray-800">{transactions.filter(t => t.status === 'success').length}</h3>
-                  <p className="text-gray-600">Successful Transactions</p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+                  <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{transactions.filter(t => t.status === 'success').length}</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Successful Transactions</p>
                 </div>
-                <div className="bg-yellow-50 rounded-lg p-6">
-                  <h3 className="text-2xl font-bold text-gray-800">{transactions.filter(t => t.status === 'pending').length}</h3>
-                  <p className="text-gray-600">Pending Transactions</p>
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-6">
+                  <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{transactions.filter(t => t.status === 'pending').length}</h3>
+                  <p className="text-gray-600 dark:text-gray-400">Pending Transactions</p>
                 </div>
               </div>
 
@@ -142,13 +142,13 @@ const Accounts: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <div className="relative">
-                    <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                     <input
                       type="text"
                       placeholder="Search transactions..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     />
                   </div>
                 </div>
@@ -159,17 +159,17 @@ const Accounts: React.FC = () => {
                     placeholder="Filter by Amount (KES)"
                     value={amountFilter}
                     onChange={(e) => setAmountFilter(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                   />
                 </div>
                 
                 <div>
                   <div className="relative">
-                    <Filter className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <Filter className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                     <select
                       value={dateFilter}
                       onChange={(e) => setDateFilter(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 appearance-none bg-white"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                       <option value="all">All Time</option>
                       <option value="today">Today</option>
@@ -181,41 +181,41 @@ const Accounts: React.FC = () => {
               </div>
 
               {/* Transactions Table */}
-              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Mpesa Receipt
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Sender
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Amount
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Completed At
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Status
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {filteredTransactions.map((transaction, index) => (
-                        <tr key={transaction.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <tr key={transaction.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-[#f9fafb] dark:bg-gray-750'}`}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                             {transaction.mpesaReceipt}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                             {transaction.sender}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 font-semibold">
                             KES {transaction.amount.toLocaleString()}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                             {new Date(transaction.completedAt).toLocaleString()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">

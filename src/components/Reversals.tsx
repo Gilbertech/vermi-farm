@@ -75,13 +75,13 @@ const Reversals: React.FC = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
       case 'approved':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'rejected':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
 
@@ -102,31 +102,31 @@ const Reversals: React.FC = () => {
 
   return (
     <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
-      <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Reversal Requests</h1>
+      <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Reversal Requests</h1>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:p-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search by transaction code, user, or type..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
           </div>
           
           <div>
             <div className="relative">
-              <Filter className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Filter className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 appearance-none bg-white"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="all">All Status</option>
                 <option value="pending">Pending</option>
@@ -139,38 +139,38 @@ const Reversals: React.FC = () => {
       </div>
 
       {/* Reversal Requests Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
-            <thead className="bg-white border-b border-gray-200">
+            <thead className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Tx Code</th>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Initiated By</th>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Transaction Type</th>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Amount</th>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Transaction Time</th>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Status</th>
-                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black">Actions</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black dark:text-white">Tx Code</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black dark:text-white">Initiated By</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black dark:text-white">Transaction Type</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black dark:text-white">Amount</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black dark:text-white">Transaction Time</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black dark:text-white">Status</th>
+                <th className="px-4 lg:px-6 py-4 text-left text-sm font-semibold text-black dark:text-white">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredRequests.map((request, index) => {
                 const isEven = index % 2 === 0;
                 
                 return (
                   <tr 
                     key={request.id} 
-                    className={`hover:bg-gray-50 transition-colors duration-200 ${
-                      isEven ? 'bg-white' : 'bg-[#f9fafb]'
+                    className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 ${
+                      isEven ? 'bg-white dark:bg-gray-800' : 'bg-[#f9fafb] dark:bg-gray-750'
                     }`}
                   >
-                    <td className="px-4 lg:px-6 py-4 text-sm font-medium text-gray-900">{request.txCode}</td>
-                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">{request.initiatedBy}</td>
-                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">{request.transactionType}</td>
-                    <td className="px-4 lg:px-6 py-4 text-sm font-semibold text-gray-900">
+                    <td className="px-4 lg:px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">{request.txCode}</td>
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{request.initiatedBy}</td>
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{request.transactionType}</td>
+                    <td className="px-4 lg:px-6 py-4 text-sm font-semibold text-gray-900 dark:text-gray-100">
                       KES {request.amount.toLocaleString()}
                     </td>
-                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900">
+                    <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                       {new Date(request.transactionTime).toLocaleString()}
                     </td>
                     <td className="px-4 lg:px-6 py-4">
@@ -216,7 +216,7 @@ const Reversals: React.FC = () => {
 
         {filteredRequests.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No reversal requests found matching your criteria</p>
+            <p className="text-gray-500 dark:text-gray-400">No reversal requests found matching your criteria</p>
           </div>
         )}
       </div>
@@ -231,38 +231,38 @@ const Reversals: React.FC = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-500">Transaction Code</label>
-                <p className="text-gray-900 font-medium">{selectedReversal.txCode}</p>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Transaction Code</label>
+                <p className="text-gray-900 dark:text-gray-100 font-medium">{selectedReversal.txCode}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">Initiated By</label>
-                <p className="text-gray-900">{selectedReversal.initiatedBy}</p>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Initiated By</label>
+                <p className="text-gray-900 dark:text-gray-100">{selectedReversal.initiatedBy}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">Transaction Type</label>
-                <p className="text-gray-900">{selectedReversal.transactionType}</p>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Transaction Type</label>
+                <p className="text-gray-900 dark:text-gray-100">{selectedReversal.transactionType}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">Amount</label>
-                <p className="text-gray-900 font-semibold">KES {selectedReversal.amount.toLocaleString()}</p>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Amount</label>
+                <p className="text-gray-900 dark:text-gray-100 font-semibold">KES {selectedReversal.amount.toLocaleString()}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">From</label>
-                <p className="text-gray-900">{selectedReversal.from}</p>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">From</label>
+                <p className="text-gray-900 dark:text-gray-100">{selectedReversal.from}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500">To</label>
-                <p className="text-gray-900">{selectedReversal.to}</p>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">To</label>
+                <p className="text-gray-900 dark:text-gray-100">{selectedReversal.to}</p>
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-500">Reason for Reversal</label>
-              <p className="text-gray-900 mt-1 p-3 bg-gray-50 rounded-lg">{selectedReversal.reason}</p>
+              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Reason for Reversal</label>
+              <p className="text-gray-900 dark:text-gray-100 mt-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">{selectedReversal.reason}</p>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-500">Status</label>
+              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400">Status</label>
               <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full mt-1 ${getStatusColor(selectedReversal.status)}`}>
                 {selectedReversal.status.charAt(0).toUpperCase() + selectedReversal.status.slice(1)}
               </span>
