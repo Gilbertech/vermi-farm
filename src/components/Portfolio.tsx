@@ -288,31 +288,31 @@ const Portfolio: React.FC = () => {
     
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 mb-6 lg:mb-8">
-        <div className="bg-blue-50 rounded-lg p-4 lg:p-6">
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 lg:p-6">
           <div className="flex items-center justify-between mb-4">
-            <TrendingUp className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600" />
-            <span className="text-xs lg:text-sm text-green-600 font-medium">{stats.primary.trend}</span>
+            <TrendingUp className="w-6 h-6 lg:w-8 lg:h-8 text-blue-600 dark:text-blue-400" />
+            <span className="text-xs lg:text-sm text-green-600 dark:text-green-400 font-medium">{stats.primary.trend}</span>
           </div>
-          <h3 className="text-lg lg:text-2xl font-bold text-gray-800">{stats.primary.value}</h3>
-          <p className="text-sm lg:text-base text-gray-600">{stats.primary.label}</p>
+          <h3 className="text-lg lg:text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.primary.value}</h3>
+          <p className="text-sm lg:text-base text-gray-600 dark:text-gray-400">{stats.primary.label}</p>
         </div>
         
-        <div className="bg-green-50 rounded-lg p-4 lg:p-6">
+        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 lg:p-6">
           <div className="flex items-center justify-between mb-4">
-            <DollarSign className="w-6 h-6 lg:w-8 lg:h-8 text-green-600" />
-            <span className="text-xs lg:text-sm text-green-600 font-medium">{stats.secondary.trend}</span>
+            <DollarSign className="w-6 h-6 lg:w-8 lg:h-8 text-green-600 dark:text-green-400" />
+            <span className="text-xs lg:text-sm text-green-600 dark:text-green-400 font-medium">{stats.secondary.trend}</span>
           </div>
-          <h3 className="text-lg lg:text-2xl font-bold text-gray-800">{stats.secondary.value}</h3>
-          <p className="text-sm lg:text-base text-gray-600">{stats.secondary.label}</p>
+          <h3 className="text-lg lg:text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.secondary.value}</h3>
+          <p className="text-sm lg:text-base text-gray-600 dark:text-gray-400">{stats.secondary.label}</p>
         </div>
         
-        <div className="bg-orange-50 rounded-lg p-4 lg:p-6">
+        <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 lg:p-6">
           <div className="flex items-center justify-between mb-4">
-            <Wallet className="w-6 h-6 lg:w-8 lg:h-8 text-[#983F21]" />
-            <span className="text-xs lg:text-sm text-red-600 font-medium">{stats.tertiary.trend}</span>
+            <Wallet className="w-6 h-6 lg:w-8 lg:h-8 text-[#983F21] dark:text-orange-400" />
+            <span className="text-xs lg:text-sm text-red-600 dark:text-red-400 font-medium">{stats.tertiary.trend}</span>
           </div>
-          <h3 className="text-lg lg:text-2xl font-bold text-gray-800">{stats.tertiary.value}</h3>
-          <p className="text-sm lg:text-base text-gray-600">{stats.tertiary.label}</p>
+          <h3 className="text-lg lg:text-2xl font-bold text-gray-800 dark:text-gray-100">{stats.tertiary.value}</h3>
+          <p className="text-sm lg:text-base text-gray-600 dark:text-gray-400">{stats.tertiary.label}</p>
         </div>
       </div>
     );
@@ -321,10 +321,10 @@ const Portfolio: React.FC = () => {
   return (
     <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800">Portfolio</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Portfolio</h1>
         <button
           onClick={() => setShowAmounts(!showAmounts)}
-          className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 self-start sm:self-auto"
+          className="flex items-center space-x-2 px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-200 self-start sm:self-auto"
         >
           {showAmounts ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           <span>{showAmounts ? 'Hide Amounts' : 'Show Amounts'}</span>
@@ -359,16 +359,16 @@ const Portfolio: React.FC = () => {
 
       {/* Pending Transfers Section */}
       {canApprove() && pendingTransfers.filter(t => t.status === 'pending').length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 lg:p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Pending Transfer Approvals</h3>
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 lg:p-6">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Pending Transfer Approvals</h3>
           <div className="space-y-3">
             {pendingTransfers.filter(t => t.status === 'pending').map(transfer => (
-              <div key={transfer.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white p-4 rounded-lg gap-4">
+              <div key={transfer.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-gray-800 p-4 rounded-lg gap-4">
                 <div className="flex-1">
-                  <p className="font-medium text-gray-800">
+                  <p className="font-medium text-gray-800 dark:text-gray-200">
                     KES {transfer.amount?.toLocaleString()} from {transfer.fromPortfolio} to {transfer.toPortfolio}
                   </p>
-                  <p className="text-sm text-gray-600">Initiated by: {transfer.initiatedBy}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Initiated by: {transfer.initiatedBy}</p>
                 </div>
                 <div className="flex space-x-2">
                   <button
@@ -393,8 +393,8 @@ const Portfolio: React.FC = () => {
       )}
 
       {/* Tab Navigation */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        <div className="border-b border-gray-200 dark:border-gray-700">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between px-4 lg:px-6 py-4 gap-4">
             <nav className="flex space-x-2 lg:space-x-8 overflow-x-auto pb-2 lg:pb-0">
               {portfolioTabs.map((tab) => {
@@ -406,7 +406,7 @@ const Portfolio: React.FC = () => {
                     className={`py-2 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-xs lg:text-sm transition-colors duration-200 whitespace-nowrap flex items-center space-x-1 lg:space-x-2 ${
                       activeTab === tab.id
                         ? 'border-[#2d8e41] text-[#2d8e41]'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                     }`}
                   >
                     <Icon className="w-3 h-3 lg:w-4 lg:h-4" />
@@ -430,16 +430,16 @@ const Portfolio: React.FC = () => {
                 </button>
                 
                 {transferDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
                     <div className="py-1">
-                      <div className="px-4 py-2 text-xs text-gray-500 border-b border-gray-200">
+                      <div className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
                         {canTransferPortfolio() ? 'Transfer to:' : 'Request transfer to:'}
                       </div>
                       {portfolioTabs.filter(tab => tab.id !== activeTab).map(tab => (
                         <button
                           key={tab.id}
                           onClick={() => handleTransfer(tab.id)}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center space-x-2"
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center space-x-2"
                         >
                           <tab.icon className="w-4 h-4" />
                           <span>{tab.label}</span>
@@ -461,13 +461,13 @@ const Portfolio: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
               <div className="relative">
-                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                 <input
                   type="text"
                   placeholder="Search transactions..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 />
               </div>
             </div>
@@ -478,17 +478,17 @@ const Portfolio: React.FC = () => {
                 placeholder="Min Amount (KES)"
                 value={amountFilter}
                 onChange={(e) => setAmountFilter(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
             
             <div>
               <div className="relative">
-                <Calendar className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Calendar className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                 <select
                   value={timeFilter}
                   onChange={(e) => setTimeFilter(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 appearance-none bg-white"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent transition-colors duration-200 appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="all">All Time</option>
                   <option value="today">Today</option>
@@ -500,39 +500,39 @@ const Portfolio: React.FC = () => {
           </div>
 
           {/* Portfolio Transactions Table */}
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full min-w-[600px]">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tx Code</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">To</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fees</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Download</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tx Code</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">From</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">To</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fees</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Download</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredTransactions.map((transaction, index) => (
-                    <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white' : 'bg-[#f9fafb]'}>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-[#f9fafb] dark:bg-gray-750'}>
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                         {transaction.txCode}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {transaction.from}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {transaction.to}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
                         {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {showAmounts ? `KES ${transaction.fees}` : '****'}
                       </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {new Date(transaction.time).toLocaleString()}
                       </td>
                       <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
@@ -552,7 +552,7 @@ const Portfolio: React.FC = () => {
 
             {filteredTransactions.length === 0 && (
               <div className="text-center py-12">
-                <p className="text-gray-500">No transactions found for this portfolio</p>
+                <p className="text-gray-500 dark:text-gray-400">No transactions found for this portfolio</p>
               </div>
             )}
           </div>
