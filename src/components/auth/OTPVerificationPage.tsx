@@ -12,41 +12,38 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [timeLeft, setTimeLeft] = useState(300);
   const [canResend, setCanResend] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [demoOTP, setDemoOTP] = useState('');
+  const [otpExpired, setOtpExpired] = useState(false);
   const maxAttempts = 3;
 
-  // Generate demo OTP on component mount
+  const generateNewOTP = () => {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    setDemoOTP(otp);
+    setOtpExpired(false);
+    console.log(`Demo OTP for ${phone}: ${otp}`);
+    if (import.meta.env.DEV) {
+      alert(`🔐 Demo OTP: ${otp}`);
+    }
+  };
+
   useEffect(() => {
-    const generateDemoOTP = () => {
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      setDemoOTP(otp);
-      console.log(`Demo OTP for ${phone}: ${otp}`);
-
-      // Show demo OTP in development
-      if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
-        setTimeout(() => {
-          alert(`🔐 Demo OTP for testing: ${otp}\n\nAlternatively, you can use:\n• 123456 (test code)\n• 000000 (test code)\n\nThis alert will be removed in production.`);
-        }, 1000);
-      }
-    };
-
-    generateDemoOTP();
+    generateNewOTP();
   }, [phone]);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
+          setOtpExpired(true);
           setCanResend(true);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, []);
 
@@ -63,16 +60,14 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     setOtp(newOtp);
     setError('');
     if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-${index + 1}`);
-      nextInput?.focus();
+      document.getElementById(`otp-${index + 1}`)?.focus();
     }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === 'Backspace') {
       if (!otp[index] && index > 0) {
-        const prevInput = document.getElementById(`otp-${index - 1}`);
-        prevInput?.focus();
+        document.getElementById(`otp-${index - 1}`)?.focus();
       } else {
         const newOtp = [...otp];
         newOtp[index] = '';
@@ -83,14 +78,10 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (pastedData.length === 6) {
-      setOtp(pastedData.split(''));
-      setError('');
-      setTimeout(() => {
-        const lastInput = document.getElementById('otp-5');
-        lastInput?.focus();
-      }, 100);
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pasted.length === 6) {
+      setOtp(pasted.split(''));
+      setTimeout(() => document.getElementById('otp-5')?.focus(), 100);
     }
   };
 
@@ -103,8 +94,8 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       return;
     }
 
-    if (attempts >= maxAttempts) {
-      setError('Maximum attempts exceeded. Please request a new OTP.');
+    if (otpExpired || attempts >= maxAttempts) {
+      setError('OTP expired or attempts exceeded. Please resend a new code.');
       return;
     }
 
@@ -118,50 +109,40 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     setError('');
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((res) => setTimeout(res, 1000));
       const validCodes = ['123456', '000000', demoOTP];
 
       if (validCodes.includes(otpCode)) {
         await completeLogin();
       } else {
-        setAttempts(prev => prev + 1);
-        const remainingAttempts = maxAttempts - attempts - 1;
-
-        if (remainingAttempts > 0) {
-          setError(`❌ Invalid OTP code. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`);
-        } else {
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+        if (newAttempts >= maxAttempts) {
+          setOtpExpired(true);
+          setCanResend(true);
           setError('❌ Maximum attempts exceeded. Please request a new OTP.');
+        } else {
+          setError(`❌ Invalid OTP code. ${maxAttempts - newAttempts} attempt(s) left.`);
         }
-
         setOtp(['', '', '', '', '', '']);
-        const firstInput = document.getElementById('otp-0');
-        firstInput?.focus();
+        document.getElementById('otp-0')?.focus();
       }
     } catch (err) {
       setError('❌ Verification failed. Please try again.');
-      setOtp(['', '', '', '', '', '']);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleResendOTP = async () => {
-    setCanResend(false);
-    setTimeLeft(300);
-    setError('');
-    setAttempts(0);
-    setOtp(['', '', '', '', '', '']);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
-    setDemoOTP(newOTP);
-    console.log(`New Demo OTP for ${phone}: ${newOTP}`);
-
-    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
-      alert(`🔐 New Demo OTP: ${newOTP}\n\nThis will be removed in production.`);
+  const handleResendOTP = () => {
+    if (canResend) {
+      generateNewOTP();
+      setCanResend(false);
+      setAttempts(0);
+      setTimeLeft(300);
+      setOtp(['', '', '', '', '', '']);
+      alert(`📱 OTP re-sent to ${phone}`);
     }
-
-    alert(`📱 New OTP sent to ${phone}`);
   };
 
   return (
@@ -187,13 +168,13 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
             )}
           </div>
 
-          {typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV && (
+          {import.meta.env.DEV && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
               <div className="flex items-center space-x-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <div>
                   <p className="font-medium">🧪 Demo Mode Active</p>
-                  <p className="text-xs">Use the OTP from the alert or try: 123456, 000000</p>
+                  <p className="text-xs">Use the OTP from alert or test codes: 123456, 000000</p>
                 </div>
               </div>
             </div>
@@ -226,7 +207,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    disabled={isLoading || attempts >= maxAttempts}
+                    disabled={isLoading || otpExpired || attempts >= maxAttempts}
                     autoComplete="one-time-code"
                   />
                 ))}
@@ -238,7 +219,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
 
             <button
               type="submit"
-              disabled={isLoading || otp.join('').length !== 6 || attempts >= maxAttempts}
+              disabled={isLoading || otp.join('').length !== 6 || otpExpired || attempts >= maxAttempts}
               className="w-full bg-gradient-to-r from-[#2d8e41] to-[#246b35] text-white py-3 rounded-lg font-medium hover:from-[#246b35] hover:to-[#1d5429] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               {isLoading ? (
