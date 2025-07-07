@@ -12,7 +12,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [timeLeft, setTimeLeft] = useState(60); // 1 minute
   const [canResend, setCanResend] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [demoOTP, setDemoOTP] = useState('');
@@ -25,10 +25,10 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       setDemoOTP(otp);
       console.log(`Demo OTP for ${phone}: ${otp}`);
       
-      // Show demo OTP in development
+      // Show demo OTP in development - only once
       if (import.meta.env.DEV) {
         setTimeout(() => {
-          alert(`🔐 Demo OTP for testing: ${otp}\n\nAlternatively, you can use:\n• 123456 (test code)\n• 000000 (test code)\n\nThis alert will be removed in production.`);
+          alert(`🔐 Demo OTP for testing: ${otp}\n\nThis alert will be removed in production.`);
         }, 1000);
       }
     };
@@ -126,10 +126,8 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       // Simulate OTP verification delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Verify against demo OTP or accept specific test codes
-      const validCodes = ['123456', '000000', demoOTP];
-      
-      if (validCodes.includes(otpCode)) {
+      // Verify against demo OTP only
+      if (demoOTP === otpCode) {
         await completeLogin();
         // Success message will be handled by the auth context
       } else {
@@ -158,7 +156,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
 
   const handleResendOTP = async () => {
     setCanResend(false);
-    setTimeLeft(300);
+    setTimeLeft(60); // Reset to 1 minute
     setError('');
     setAttempts(0);
     setOtp(['', '', '', '', '', '']);
@@ -209,7 +207,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <div>
                   <p className="font-medium">🧪 Demo Mode Active</p>
-                  <p className="text-xs">Use the OTP from the alert or try: 123456, 000000</p>
+                  <p className="text-xs">Use the OTP from the alert</p>
                 </div>
               </div>
             </div>
@@ -283,7 +281,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
                   <div 
                     className="bg-[#2d8e41] h-1 rounded-full transition-all duration-1000"
-                    style={{ width: `${(timeLeft / 300) * 100}%` }}
+                    style={{ width: `${(timeLeft / 60) * 100}%` }}
                   ></div>
                 </div>
               </div>
