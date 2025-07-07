@@ -15,25 +15,13 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   const [timeLeft, setTimeLeft] = useState(300);
   const [canResend, setCanResend] = useState(false);
   const [attempts, setAttempts] = useState(0);
-  const [generatedOTP, setGeneratedOTP] = useState(() => {
-    const otpArray = new Uint32Array(1);
-    window.crypto.getRandomValues(otpArray);
-    const otp = (otpArray[0] % 1000000).toString().padStart(6, '0');
-    if (import.meta.env.DEV) {
-      setTimeout(() => {
-        alert(`🔐 OTP Code: ${otp}\nThis is for testing only.`);
-      }, 500);
-    }
-    return otp;
-  });
+  const [generatedOTP, setGeneratedOTP] = useState('');
   const [otpExpired, setOtpExpired] = useState(false);
   const maxAttempts = 3;
 
   useEffect(() => {
-    setOtpExpired(false);
-    setCanResend(false);
-    setTimeLeft(300);
-  }, [generatedOTP]);
+    generateOTP();
+  }, [phone]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -48,6 +36,22 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const generateOTP = () => {
+    const otpArray = new Uint32Array(1);
+    window.crypto.getRandomValues(otpArray);
+    const otp = (otpArray[0] % 1000000).toString().padStart(6, '0');
+    setGeneratedOTP(otp);
+    setOtpExpired(false);
+    setCanResend(false);
+    setTimeLeft(300);
+
+    if (import.meta.env.DEV) {
+      setTimeout(() => {
+        alert(`🔐 OTP Code: ${otp}\n(This is for testing only)`);
+      }, 500);
+    }
+  };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -136,20 +140,9 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
 
   const handleResendOTP = () => {
     if (canResend) {
-      const otpArray = new Uint32Array(1);
-      window.crypto.getRandomValues(otpArray);
-      const newOtp = (otpArray[0] % 1000000).toString().padStart(6, '0');
-      setGeneratedOTP(newOtp);
-      setCanResend(false);
+      generateOTP();
       setAttempts(0);
-      setTimeLeft(300);
       setOtp(['', '', '', '', '', '']);
-      setOtpExpired(false);
-      if (import.meta.env.DEV) {
-        setTimeout(() => {
-          alert(`📱 OTP re-sent to ${phone}: ${newOtp}`);
-        }, 500);
-      }
     }
   };
 
