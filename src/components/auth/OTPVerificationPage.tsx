@@ -60,8 +60,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1 || !/^
-\d*$/.test(value)) return;
+    if (value.length > 1 || !/^\d*$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
