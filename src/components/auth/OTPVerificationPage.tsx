@@ -16,7 +16,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   const [canResend, setCanResend] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [demoOTP, setDemoOTP] = useState('');
-  const [hasShownInitialOTP, setHasShownInitialOTP] = useState(false);
+  const [showOTPDisplay, setShowOTPDisplay] = useState(false);
   const maxAttempts = 3;
 
   // Generate demo OTP on component mount
@@ -26,17 +26,18 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       setDemoOTP(otp);
       console.log(`Demo OTP for ${phone}: ${otp}`);
       
-      // Show demo OTP in development - only once
-      if (import.meta.env.DEV && !hasShownInitialOTP) {
-        setHasShownInitialOTP(true);
+      // Show demo OTP in development - display in UI instead of alert
+      if (import.meta.env.DEV) {
+        setShowOTPDisplay(true);
+        // Auto-hide after 10 seconds
         setTimeout(() => {
-          alert(`🔐 Demo OTP for testing: ${otp}\n\nThis alert will be removed in production.`);
-        }, 1000);
+          setShowOTPDisplay(false);
+        }, 10000);
       }
     };
 
     generateDemoOTP();
-  }, [phone, hasShownInitialOTP]);
+  }, [phone]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -171,11 +172,12 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     setDemoOTP(newOTP);
     console.log(`New Demo OTP for ${phone}: ${newOTP}`);
     
-    // Single alert with both OTP and confirmation
+    // Show new OTP in UI instead of alert
     if (import.meta.env.DEV) {
-      alert(`🔐 New Demo OTP: ${newOTP}\n\n📱 OTP sent to ${phone}\n\nThis will be removed in production.`);
-    } else {
-      alert(`📱 New OTP sent to ${phone}`);
+      setShowOTPDisplay(true);
+      setTimeout(() => {
+        setShowOTPDisplay(false);
+      }, 10000);
     }
   };
 
@@ -203,6 +205,27 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
             )}
           </div>
 
+          {/* Demo OTP Display */}
+          {import.meta.env.DEV && showOTPDisplay && (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg mb-6 text-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">🔐 Demo OTP: {demoOTP}</p>
+                    <p className="text-xs">Use this code to verify (auto-hides in 10s)</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowOTPDisplay(false)}
+                  className="text-green-500 hover:text-green-700 ml-2"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Demo Notice */}
           {import.meta.env.DEV && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
@@ -210,7 +233,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <div>
                   <p className="font-medium">🧪 Demo Mode Active</p>
-                  <p className="text-xs">Use the OTP from the alert</p>
+                  <p className="text-xs">The OTP will appear above when generated</p>
                 </div>
               </div>
             </div>
