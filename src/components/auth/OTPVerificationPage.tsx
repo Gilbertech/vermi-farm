@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Shield, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -134,8 +133,9 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
         await completeLogin();
         // Success message will be handled by the auth context
       } else {
-        setAttempts(prev => prev + 1);
-        const remainingAttempts = maxAttempts - attempts - 1;
+        const newAttempts = attempts + 1;
+        setAttempts(newAttempts);
+        const remainingAttempts = maxAttempts - newAttempts;
         
         if (remainingAttempts > 0) {
           setError(`❌ Invalid OTP code. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`);
