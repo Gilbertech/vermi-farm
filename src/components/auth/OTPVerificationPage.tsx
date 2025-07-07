@@ -170,10 +170,10 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     console.log(`New Demo OTP for ${phone}: ${newOTP}`);
     
     if (import.meta.env.DEV) {
-      alert(`🔐 New Demo OTP: ${newOTP}\n\nThis will be removed in production.`);
+      alert(`🔐 New Demo OTP: ${newOTP}\n\n📱 OTP sent to ${phone}`);
+    } else {
+      alert(`📱 New OTP sent to ${phone}`);
     }
-    
-    alert(`📱 New OTP sent to ${phone}`);
   };
 
   return (
