@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Shield, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Shield, RefreshCw, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface OTPVerificationPageProps {
@@ -24,9 +24,9 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
       setDemoOTP(otp);
       console.log(`Demo OTP for ${phone}: ${otp}`);
-      
+
       // Show demo OTP in development
-      if (import.meta.env.DEV) {
+      if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
         setTimeout(() => {
           alert(`🔐 Demo OTP for testing: ${otp}\n\nAlternatively, you can use:\n• 123456 (test code)\n• 000000 (test code)\n\nThis alert will be removed in production.`);
         }, 1000);
@@ -57,15 +57,11 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) return;
-    if (!/^\d*$/.test(value)) return; // Only allow digits
-    
+    if (value.length > 1 || !/^\d*$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-    setError(''); // Clear error when user types
-
-    // Auto-focus next input
+    setError('');
     if (value && index < 5) {
       const nextInput = document.getElementById(`otp-${index + 1}`);
       nextInput?.focus();
@@ -91,7 +87,6 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     if (pastedData.length === 6) {
       setOtp(pastedData.split(''));
       setError('');
-      // Auto-focus last input
       setTimeout(() => {
         const lastInput = document.getElementById('otp-5');
         lastInput?.focus();
@@ -102,7 +97,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const otpCode = otp.join('');
-    
+
     if (otpCode.length !== 6) {
       setError('Please enter the complete 6-digit code');
       return;
@@ -123,26 +118,21 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     setError('');
 
     try {
-      // Simulate OTP verification delay
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Verify against demo OTP or accept specific test codes
       const validCodes = ['123456', '000000', demoOTP];
-      
+
       if (validCodes.includes(otpCode)) {
         await completeLogin();
-        // Success message will be handled by the auth context
       } else {
         setAttempts(prev => prev + 1);
         const remainingAttempts = maxAttempts - attempts - 1;
-        
+
         if (remainingAttempts > 0) {
           setError(`❌ Invalid OTP code. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`);
         } else {
           setError('❌ Maximum attempts exceeded. Please request a new OTP.');
         }
-        
-        // Clear OTP inputs on error
+
         setOtp(['', '', '', '', '', '']);
         const firstInput = document.getElementById('otp-0');
         firstInput?.focus();
@@ -161,19 +151,16 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     setError('');
     setAttempts(0);
     setOtp(['', '', '', '', '', '']);
-    
-    // Simulate resending OTP
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Generate new demo OTP
+
     const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
     setDemoOTP(newOTP);
     console.log(`New Demo OTP for ${phone}: ${newOTP}`);
-    
-    if (import.meta.env.DEV) {
+
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
       alert(`🔐 New Demo OTP: ${newOTP}\n\nThis will be removed in production.`);
     }
-    
+
     alert(`📱 New OTP sent to ${phone}`);
   };
 
@@ -181,7 +168,6 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center p-4 transition-colors duration-200">
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 lg:p-8 border border-gray-100 dark:border-gray-700">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="relative inline-block mb-4">
               <img
@@ -194,15 +180,14 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
             <p className="text-gray-600 dark:text-gray-300 text-sm lg:text-base">
               We've sent a 6-digit code to <strong>{phone}</strong>
             </p>
-            {pendingLogin && (
+            {pendingLogin?.user?.name && (
               <p className="text-sm text-[#2d8e41] dark:text-green-400 mt-2">
                 Logging in as: <strong>{pendingLogin.user.name}</strong>
               </p>
             )}
           </div>
 
-          {/* Demo Notice */}
-          {import.meta.env.DEV && (
+          {typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
               <div className="flex items-center space-x-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -214,7 +199,6 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
             </div>
           )}
 
-          {/* Error Message */}
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
               <div className="flex items-center space-x-2">
@@ -224,7 +208,6 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
             </div>
           )}
 
-          {/* OTP Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 text-center">
@@ -272,7 +255,6 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
             </button>
           </form>
 
-          {/* Timer and Resend */}
           <div className="text-center mt-6">
             {timeLeft > 0 ? (
               <div className="space-y-2">
@@ -280,7 +262,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
                   Code expires in <span className="font-semibold text-[#2d8e41] dark:text-green-400">{formatTime(timeLeft)}</span>
                 </p>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
-                  <div 
+                  <div
                     className="bg-[#2d8e41] h-1 rounded-full transition-all duration-1000"
                     style={{ width: `${(timeLeft / 300) * 100}%` }}
                   ></div>
@@ -298,7 +280,6 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
             )}
           </div>
 
-          {/* Attempts Counter */}
           {attempts > 0 && (
             <div className="text-center mt-4">
               <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -307,7 +288,6 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
             </div>
           )}
 
-          {/* Back Button */}
           <div className="text-center mt-6">
             <button
               onClick={onBack}
@@ -318,7 +298,6 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
             </button>
           </div>
 
-          {/* Footer */}
           <div className="text-center mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
             <p className="text-xs text-gray-500 dark:text-gray-400">
               © 2025 Vermi-Farm Initiative. All rights reserved.
