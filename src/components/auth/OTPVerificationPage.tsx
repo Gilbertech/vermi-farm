@@ -27,7 +27,9 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       console.log(`Demo OTP for ${phone}: ${otp}`);
       
       // Show demo OTP in development - display in UI instead of alert
-      if (import.meta.env.DEV) {
+      // Force demo mode for testing - remove this line when ready for production
+      const isDemoMode = import.meta.env.DEV || true;
+      if (isDemoMode) {
         setShowOTPDisplay(true);
         // Auto-hide after 10 seconds
         setTimeout(() => {
@@ -173,7 +175,9 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     console.log(`New Demo OTP for ${phone}: ${newOTP}`);
     
     // Show new OTP in UI instead of alert
-    if (import.meta.env.DEV) {
+    // Force demo mode for testing - remove this line when ready for production
+    const isDemoMode = import.meta.env.DEV || true;
+    if (isDemoMode) {
       setShowOTPDisplay(true);
       setTimeout(() => {
         setShowOTPDisplay(false);
@@ -206,7 +210,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
           </div>
 
           {/* Demo OTP Display */}
-          {import.meta.env.DEV && showOTPDisplay && (
+          {(import.meta.env.DEV || true) && showOTPDisplay && (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg mb-6 text-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -227,7 +231,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
           )}
 
           {/* Demo Notice */}
-          {import.meta.env.DEV && (
+          {(import.meta.env.DEV || true) && (
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
               <div className="flex items-center space-x-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
