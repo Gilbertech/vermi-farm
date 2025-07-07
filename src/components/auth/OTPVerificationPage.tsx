@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Shield, RefreshCw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Shield, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface OTPVerificationPageProps {
@@ -8,27 +8,33 @@ interface OTPVerificationPageProps {
 }
 
 const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack }) => {
-  const { completeLogin } = useAuth();
+  const { completeLogin, pendingLogin } = useAuth();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const [canResend, setCanResend] = useState(false);
   const [attempts, setAttempts] = useState(0);
+  const [demoOTP, setDemoOTP] = useState('');
   const maxAttempts = 3;
 
-  // Generate a demo OTP for testing (in production, this would come from backend)
-  const [demoOTP] = useState(() => {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    console.log(`Demo OTP for ${phone}: ${otp}`);
-    // Show demo OTP in development
-    if (import.meta.env.DEV) {
-      setTimeout(() => {
-        alert(`Demo OTP for testing: ${otp}\n\nThis will be removed in production.`);
-      }, 1000);
-    }
-    return otp;
-  });
+  // Generate demo OTP on component mount
+  useEffect(() => {
+    const generateDemoOTP = () => {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      setDemoOTP(otp);
+      console.log(`Demo OTP for ${phone}: ${otp}`);
+      
+      // Show demo OTP in development
+      if (import.meta.env.DEV) {
+        setTimeout(() => {
+          alert(`🔐 Demo OTP for testing: ${otp}\n\nAlternatively, you can use:\n• 123456 (test code)\n• 000000 (test code)\n\nThis alert will be removed in production.`);
+        }, 1000);
+      }
+    };
+
+    generateDemoOTP();
+  }, [phone]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -85,6 +91,11 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     if (pastedData.length === 6) {
       setOtp(pastedData.split(''));
       setError('');
+      // Auto-focus last input
+      setTimeout(() => {
+        const lastInput = document.getElementById('otp-5');
+        lastInput?.focus();
+      }, 100);
     }
   };
 
@@ -102,6 +113,12 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       return;
     }
 
+    if (!pendingLogin) {
+      setError('Session expired. Please login again.');
+      onBack();
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
@@ -110,24 +127,29 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Verify against demo OTP or accept specific test codes
-      const testCodes = ['123456', '000000', demoOTP];
-      if (testCodes.includes(otpCode)) {
+      const validCodes = ['123456', '000000', demoOTP];
+      
+      if (validCodes.includes(otpCode)) {
         await completeLogin();
+        // Success message will be handled by the auth context
       } else {
         setAttempts(prev => prev + 1);
         const remainingAttempts = maxAttempts - attempts - 1;
+        
         if (remainingAttempts > 0) {
-          setError(`Invalid OTP code. ${remainingAttempts} attempts remaining.`);
+          setError(`❌ Invalid OTP code. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`);
         } else {
-          setError('Maximum attempts exceeded. Please request a new OTP.');
+          setError('❌ Maximum attempts exceeded. Please request a new OTP.');
         }
+        
         // Clear OTP inputs on error
         setOtp(['', '', '', '', '', '']);
         const firstInput = document.getElementById('otp-0');
         firstInput?.focus();
       }
     } catch (err) {
-      setError('Verification failed. Please try again.');
+      setError('❌ Verification failed. Please try again.');
+      setOtp(['', '', '', '', '', '']);
     } finally {
       setIsLoading(false);
     }
@@ -145,13 +167,14 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     
     // Generate new demo OTP
     const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    setDemoOTP(newOTP);
     console.log(`New Demo OTP for ${phone}: ${newOTP}`);
     
     if (import.meta.env.DEV) {
-      alert(`New Demo OTP: ${newOTP}\n\nThis will be removed in production.`);
+      alert(`🔐 New Demo OTP: ${newOTP}\n\nThis will be removed in production.`);
     }
     
-    alert(`New OTP sent to ${phone}`);
+    alert(`📱 New OTP sent to ${phone}`);
   };
 
   return (
@@ -171,6 +194,11 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
             <p className="text-gray-600 dark:text-gray-300 text-sm lg:text-base">
               We've sent a 6-digit code to <strong>{phone}</strong>
             </p>
+            {pendingLogin && (
+              <p className="text-sm text-[#2d8e41] dark:text-green-400 mt-2">
+                Logging in as: <strong>{pendingLogin.user.name}</strong>
+              </p>
+            )}
           </div>
 
           {/* Demo Notice */}
@@ -179,8 +207,8 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
               <div className="flex items-center space-x-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0" />
                 <div>
-                  <p className="font-medium">Demo Mode</p>
-                  <p className="text-xs">Use the OTP shown in the alert or try: 123456, 000000</p>
+                  <p className="font-medium">🧪 Demo Mode Active</p>
+                  <p className="text-xs">Use the OTP from the alert or try: 123456, 000000</p>
                 </div>
               </div>
             </div>
@@ -208,12 +236,15 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
                     key={index}
                     id={`otp-${index}`}
                     type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     maxLength={1}
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     disabled={isLoading || attempts >= maxAttempts}
+                    autoComplete="one-time-code"
                   />
                 ))}
               </div>
@@ -235,7 +266,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
               ) : (
                 <div className="flex items-center justify-center">
                   <Shield className="w-5 h-5 mr-2" />
-                  Verify Code
+                  Verify & Login
                 </div>
               )}
             </button>
@@ -244,9 +275,17 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
           {/* Timer and Resend */}
           <div className="text-center mt-6">
             {timeLeft > 0 ? (
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Code expires in <span className="font-semibold text-[#2d8e41] dark:text-green-400">{formatTime(timeLeft)}</span>
-              </p>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Code expires in <span className="font-semibold text-[#2d8e41] dark:text-green-400">{formatTime(timeLeft)}</span>
+                </p>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+                  <div 
+                    className="bg-[#2d8e41] h-1 rounded-full transition-all duration-1000"
+                    style={{ width: `${(timeLeft / 300) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
             ) : (
               <button
                 onClick={handleResendOTP}

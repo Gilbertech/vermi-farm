@@ -24,7 +24,7 @@ interface AuthContextType {
   currentView: 'login' | 'reset-password' | 'otp-verification';
   currentUser: User | null;
   notifications: Notification[];
-  pendingLogin: { phone: string; password: string } | null;
+  pendingLogin: { phone: string; password: string; user: User } | null;
   login: (phone: string, password: string) => Promise<boolean>;
   completeLogin: () => Promise<void>;
   logout: () => void;
@@ -57,9 +57,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentView, setCurrentView] = useState<'login' | 'reset-password' | 'otp-verification'>('login');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [pendingLogin, setPendingLogin] = useState<{ phone: string; password: string } | null>(null);
+  const [pendingLogin, setPendingLogin] = useState<{ phone: string; password: string; user: User } | null>(null);
 
-  // Mock admin users - updated super admin phone number
+  // Mock admin users with correct phone numbers
   const adminUsers: User[] = [
     { id: '1', name: 'Super Admin', phone: '0768299985', role: 'super_admin' },
     { id: '2', name: 'Admin Initiator 1', phone: '0712345679', role: 'admin_initiator' },
@@ -79,79 +79,89 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // Mock authentication
+    // Find user by phone number
     const user = adminUsers.find(u => u.phone === phone);
-    if (user && password === 'admin123') {
-      // Store pending login for OTP verification
-      setPendingLogin({ phone, password });
-      setCurrentView('otp-verification');
-      
-      // Simulate sending OTP
-      alert(`OTP sent to ${phone}. Use any 6-digit code for demo.`);
-      return true;
-    }
     
-    throw new Error('Invalid phone number or password');
+    if (!user) {
+      throw new Error('User not found. Please check your phone number.');
+    }
+
+    // Check password (in production, this would be hashed)
+    if (password !== 'admin123') {
+      throw new Error('Invalid password. Please try again.');
+    }
+
+    // Store pending login with user info for OTP verification
+    setPendingLogin({ phone, password, user });
+    setCurrentView('otp-verification');
+    
+    // Simulate sending OTP
+    console.log(`OTP sent to ${phone} for user: ${user.name}`);
+    
+    return true;
   };
 
   const completeLogin = async (): Promise<void> => {
     if (!pendingLogin) {
-      throw new Error('No pending login found');
+      throw new Error('No pending login found. Please start the login process again.');
     }
 
-    const user = adminUsers.find(u => u.phone === pendingLogin.phone);
-    if (user) {
-      setIsAuthenticated(true);
-      setCurrentUser(user);
-      setPendingLogin(null);
-      setCurrentView('login');
-      
-      // Add some sample notifications for super admin
-      if (user.role === 'super_admin') {
-        const sampleNotifications: Notification[] = [
-          {
-            id: '1',
-            type: 'payment_initiated',
-            message: 'Payment request initiated',
-            initiatorName: 'Admin Initiator 1',
-            amount: 15000,
-            timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-            read: false,
-            actionType: 'payment',
-            details: { type: 'single_payment', recipient: 'John Doe' }
-          },
-          {
-            id: '2',
-            type: 'loan_initiated',
-            message: 'Loan disbursement request initiated',
-            initiatorName: 'Admin Initiator 2',
-            amount: 25000,
-            timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            read: false,
-            actionType: 'loan',
-            details: { type: 'group_loan', groupName: 'Nairobi Farmers' }
-          },
-          {
-            id: '3',
-            type: 'transfer_initiated',
-            message: 'Portfolio transfer request initiated',
-            initiatorName: 'Admin Initiator 1',
-            amount: 50000,
-            timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-            read: false,
-            actionType: 'transfer',
-            details: { 
-              type: 'portfolio_transfer',
-              fromPortfolio: 'revenue',
-              toPortfolio: 'investment',
-              description: 'Quarterly investment allocation',
-              reference: 'Q1-2024-INV'
-            }
+    // Simulate OTP verification delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Complete the login process
+    setIsAuthenticated(true);
+    setCurrentUser(pendingLogin.user);
+    setPendingLogin(null);
+    setCurrentView('login');
+    
+    // Add sample notifications for super admin
+    if (pendingLogin.user.role === 'super_admin') {
+      const sampleNotifications: Notification[] = [
+        {
+          id: '1',
+          type: 'payment_initiated',
+          message: 'Payment request initiated',
+          initiatorName: 'Admin Initiator 1',
+          amount: 15000,
+          timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+          read: false,
+          actionType: 'payment',
+          details: { type: 'single_payment', recipient: 'John Doe' }
+        },
+        {
+          id: '2',
+          type: 'loan_initiated',
+          message: 'Loan disbursement request initiated',
+          initiatorName: 'Admin Initiator 2',
+          amount: 25000,
+          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          read: false,
+          actionType: 'loan',
+          details: { type: 'group_loan', groupName: 'Nairobi Farmers' }
+        },
+        {
+          id: '3',
+          type: 'transfer_initiated',
+          message: 'Portfolio transfer request initiated',
+          initiatorName: 'Admin Initiator 1',
+          amount: 50000,
+          timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+          read: false,
+          actionType: 'transfer',
+          details: { 
+            type: 'portfolio_transfer',
+            fromPortfolio: 'revenue',
+            toPortfolio: 'investment',
+            description: 'Quarterly investment allocation',
+            reference: 'Q1-2024-INV'
           }
-        ];
-        setNotifications(sampleNotifications);
-      }
+        }
+      ];
+      setNotifications(sampleNotifications);
     }
+
+    console.log(`Login completed for ${pendingLogin.user.name} (${pendingLogin.user.role})`);
   };
 
   const logout = () => {
@@ -160,6 +170,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCurrentView('login');
     setNotifications([]);
     setPendingLogin(null);
+    console.log('User logged out');
   };
 
   const resetPassword = async (phone: string): Promise<boolean> => {
@@ -167,8 +178,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('Please enter a valid Kenyan phone number (07xxxxxxxx or 01xxxxxxxx)');
     }
 
+    // Check if user exists
+    const user = adminUsers.find(u => u.phone === phone);
+    if (!user) {
+      throw new Error('No account found with this phone number.');
+    }
+
     // Simulate SMS sending
     await new Promise(resolve => setTimeout(resolve, 2000));
+    console.log(`Password reset instructions sent to ${phone}`);
     return true;
   };
 

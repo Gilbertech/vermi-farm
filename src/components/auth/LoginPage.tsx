@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Phone, Lock } from 'lucide-react';
+import { Eye, EyeOff, Phone, Lock, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const LoginPage: React.FC = () => {
@@ -18,7 +18,11 @@ const LoginPage: React.FC = () => {
     setError('');
 
     try {
-      await login(formData.phone, formData.password);
+      const success = await login(formData.phone, formData.password);
+      if (success) {
+        // Login successful, user will be redirected to OTP page
+        console.log('Login successful, redirecting to OTP verification');
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -32,6 +36,8 @@ const LoginPage: React.FC = () => {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    if (error) setError('');
   };
 
   return (
@@ -44,12 +50,29 @@ const LoginPage: React.FC = () => {
               <img
                 src="https://i.postimg.cc/MTpyCg68/logo.png"
                 alt="Vermi-Farm Logo"
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover  border-4 border-white dark:border-gray-600"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white dark:border-gray-600"
               />
             </div>
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white mb-2">Vermi-Farm Admin</h1>
             <p className="text-gray-600 dark:text-gray-300 text-sm lg:text-base">Management Information System</p>
           </div>
+
+          {/* Demo Credentials Info */}
+          {import.meta.env.DEV && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
+              <div className="flex items-start space-x-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium">🧪 Demo Credentials</p>
+                  <div className="text-xs mt-1 space-y-1">
+                    <p><strong>Super Admin:</strong> 0768299985 / admin123</p>
+                    <p><strong>Initiator:</strong> 0712345679 / admin123</p>
+                    <p><strong>Initiator:</strong> 0712345680 / admin123</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Error Message */}
           {error && (
