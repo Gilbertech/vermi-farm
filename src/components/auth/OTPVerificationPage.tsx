@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Shield, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -17,10 +17,14 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   const [attempts, setAttempts] = useState(0);
   const [generatedOTP, setGeneratedOTP] = useState('');
   const [otpExpired, setOtpExpired] = useState(false);
+  const otpGeneratedRef = useRef(false);
   const maxAttempts = 3;
 
   useEffect(() => {
-    generateOTP();
+    if (!otpGeneratedRef.current) {
+      generateOTP();
+      otpGeneratedRef.current = true;
+    }
   }, [phone]);
 
   useEffect(() => {
@@ -48,7 +52,9 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
 
     if (import.meta.env.DEV) {
       setTimeout(() => {
-        window.alert(`🔐 OTP Code: ${otp}\n(This is for testing only)`);
+        if (!otpGeneratedRef.current) {
+          window.alert(`🔐 OTP Code: ${otp}\n(This is for testing only)`);
+        }
       }, 500);
     }
   };
@@ -140,6 +146,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
 
   const handleResendOTP = () => {
     if (canResend) {
+      otpGeneratedRef.current = false;
       generateOTP();
       setAttempts(0);
       setOtp(['', '', '', '', '', '']);
