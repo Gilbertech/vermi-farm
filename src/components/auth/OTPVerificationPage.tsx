@@ -16,6 +16,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   const [canResend, setCanResend] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [demoOTP, setDemoOTP] = useState('');
+  const [hasShownInitialOTP, setHasShownInitialOTP] = useState(false);
   const maxAttempts = 3;
 
   // Generate demo OTP on component mount
@@ -26,7 +27,8 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       console.log(`Demo OTP for ${phone}: ${otp}`);
       
       // Show demo OTP in development - only once
-      if (import.meta.env.DEV) {
+      if (import.meta.env.DEV && !hasShownInitialOTP) {
+        setHasShownInitialOTP(true);
         setTimeout(() => {
           alert(`🔐 Demo OTP for testing: ${otp}\n\nThis alert will be removed in production.`);
         }, 1000);
@@ -34,7 +36,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     };
 
     generateDemoOTP();
-  }, [phone]);
+  }, [phone, hasShownInitialOTP]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -169,8 +171,9 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     setDemoOTP(newOTP);
     console.log(`New Demo OTP for ${phone}: ${newOTP}`);
     
+    // Single alert with both OTP and confirmation
     if (import.meta.env.DEV) {
-      alert(`🔐 New Demo OTP: ${newOTP}\n\n📱 OTP sent to ${phone}`);
+      alert(`🔐 New Demo OTP: ${newOTP}\n\n📱 OTP sent to ${phone}\n\nThis will be removed in production.`);
     } else {
       alert(`📱 New OTP sent to ${phone}`);
     }
