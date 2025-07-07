@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Shield, RefreshCw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Shield, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface OTPVerificationPageProps {
@@ -12,19 +12,24 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [timeLeft, setTimeLeft] = useState(300);
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const [canResend, setCanResend] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [generatedOTP, setGeneratedOTP] = useState('');
   const maxAttempts = 3;
 
-  // Only generate OTP ONCE on mount
+  // Generate OTP once
   useEffect(() => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedOTP(otp);
     console.log(`Generated OTP for ${phone}: ${otp}`);
+
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV) {
+      alert(`🔐 Your OTP Code is: ${otp}`);
+    }
   }, [phone]);
 
+  // Timer
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -35,11 +40,12 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
         return prev - 1;
       });
     }, 1000);
+
     return () => clearInterval(timer);
   }, []);
 
   const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d?$/.test(value)) return;
+    if (!/^[0-9]?$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
@@ -110,7 +116,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     setAttempts(0);
     setTimeLeft(300);
     setCanResend(false);
-    alert(`📱 Code resent to ${phone} (Same code still valid)`);
+    alert(`📱 Code resent to ${phone} (same code still valid)`);
   };
 
   const formatTime = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
