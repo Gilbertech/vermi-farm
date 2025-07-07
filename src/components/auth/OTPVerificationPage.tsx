@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Shield, RefreshCw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Shield, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface OTPVerificationPageProps {
@@ -12,42 +12,46 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [timeLeft, setTimeLeft] = useState(60); // 1 minute
+  const [timeLeft, setTimeLeft] = useState(300);
   const [canResend, setCanResend] = useState(false);
   const [attempts, setAttempts] = useState(0);
-  const [currentOTP, setCurrentOTP] = useState<string | null>(null);
-  const [otpGenerated, setOtpGenerated] = useState(false);
+  const [generatedOTP, setGeneratedOTP] = useState('');
+  const [otpExpired, setOtpExpired] = useState(false);
   const maxAttempts = 3;
 
-  const generateOTP = () => {
+  const generateSecureOTP = () => {
     const otpArray = new Uint32Array(1);
     window.crypto.getRandomValues(otpArray);
     const otp = (otpArray[0] % 1000000).toString().padStart(6, '0');
-    setCurrentOTP(otp);
-    setOtpGenerated(true);
-    setTimeLeft(60);
-    setCanResend(false);
+
+    setGeneratedOTP(otp);
+    setOtpExpired(false);
     console.log(`Generated OTP for ${phone}: ${otp}`);
+
+    if (import.meta.env.DEV) {
+      setTimeout(() => {
+        alert(`🔐 OTP Code: ${otp}\nThis is for testing only.`);
+      }, 500);
+    }
   };
 
   useEffect(() => {
-    if (!otpGenerated) generateOTP();
+    generateSecureOTP();
   }, [phone]);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          clearInterval(timer);
+          setOtpExpired(true);
           setCanResend(true);
-          setCurrentOTP(null);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [otpGenerated]);
+  }, []);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -56,20 +60,23 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    if (!/^[0-9]{0,1}$/.test(value)) return;
+    if (value.length > 1 || !/^
+\d*$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
     setError('');
-    if (value && index < 5) document.getElementById(`otp-${index + 1}`)?.focus();
+    if (value && index < 5) {
+      document.getElementById(`otp-${index + 1}`)?.focus();
+    }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === 'Backspace') {
-      const newOtp = [...otp];
-      if (!newOtp[index] && index > 0) {
+      if (!otp[index] && index > 0) {
         document.getElementById(`otp-${index - 1}`)?.focus();
       } else {
+        const newOtp = [...otp];
         newOtp[index] = '';
         setOtp(newOtp);
       }
@@ -94,14 +101,14 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       return;
     }
 
-    if (!pendingLogin) {
-      setError('Session expired. Please login again.');
-      onBack();
+    if (otpExpired || attempts >= maxAttempts) {
+      setError('OTP expired or attempts exceeded. Please resend a new code.');
       return;
     }
 
-    if (!currentOTP) {
-      setError('OTP expired. Please request a new one.');
+    if (!pendingLogin) {
+      setError('Session expired. Please login again.');
+      onBack();
       return;
     }
 
@@ -110,22 +117,22 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
 
     try {
       await new Promise((res) => setTimeout(res, 1000));
-      if (otpCode === currentOTP) {
+      if (otpCode === generatedOTP) {
         await completeLogin();
       } else {
         const newAttempts = attempts + 1;
         setAttempts(newAttempts);
         if (newAttempts >= maxAttempts) {
-          setError('❌ Maximum attempts exceeded. Please request a new OTP.');
-          setCurrentOTP(null);
+          setOtpExpired(true);
           setCanResend(true);
+          setError('❌ Maximum attempts exceeded. Please request a new OTP.');
         } else {
           setError(`❌ Invalid OTP code. ${maxAttempts - newAttempts} attempt(s) left.`);
         }
         setOtp(['', '', '', '', '', '']);
         document.getElementById('otp-0')?.focus();
       }
-    } catch {
+    } catch (err) {
       setError('❌ Verification failed. Please try again.');
     } finally {
       setIsLoading(false);
@@ -134,23 +141,25 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
 
   const handleResendOTP = () => {
     if (canResend) {
-      generateOTP();
+      generateSecureOTP();
+      setCanResend(false);
       setAttempts(0);
+      setTimeLeft(300);
       setOtp(['', '', '', '', '', '']);
       alert(`📱 OTP re-sent to ${phone}`);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center p-4 transition-colors duration-200">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 via-green-100 to-green-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700">
       <div className="w-full max-w-md">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 lg:p-8 border border-gray-100 dark:border-gray-700">
           <div className="text-center mb-8">
-            <div className="relative inline-block mb-4">
+            <div className="inline-block mb-4">
               <img
                 src="https://i.postimg.cc/MTpyCg68/logo.png"
                 alt="Vermi-Farm Logo"
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white dark:border-gray-600"
+                className="w-20 h-20 rounded-full border-4 border-white dark:border-gray-600"
               />
             </div>
             <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white mb-2">Verify Your Identity</h1>
@@ -167,44 +176,42 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
               <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 bg-red-500 rounded-full flex-shrink-0"></div>
+                <div className="w-4 h-4 bg-red-500 rounded-full"></div>
                 <span>{error}</span>
               </div>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 text-center">
-                Enter 6-digit verification code
-              </label>
-              <div className="flex justify-center space-x-2" onPaste={handlePaste}>
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    id={`otp-${index}`}
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    maxLength={1}
-                    value={digit}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    disabled={isLoading || !currentOTP || attempts >= maxAttempts}
-                    autoComplete="one-time-code"
-                  />
-                ))}
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-                Paste your 6-digit code or enter manually
-              </p>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 text-center">
+              Enter 6-digit verification code
+            </label>
+            <div className="flex justify-center space-x-2" onPaste={handlePaste}>
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  id={`otp-${index}`}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(index, e)}
+                  className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  disabled={isLoading || otpExpired || attempts >= maxAttempts}
+                  autoComplete="one-time-code"
+                />
+              ))}
             </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+              Paste your 6-digit code or enter manually
+            </p>
 
             <button
               type="submit"
-              disabled={isLoading || otp.join('').length !== 6 || !currentOTP || attempts >= maxAttempts}
-              className="w-full bg-gradient-to-r from-[#2d8e41] to-[#246b35] text-white py-3 rounded-lg font-medium hover:from-[#246b35] hover:to-[#1d5429] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              disabled={isLoading || otp.join('').length !== 6 || otpExpired || attempts >= maxAttempts}
+              className="w-full bg-gradient-to-r from-[#2d8e41] to-[#246b35] text-white py-3 rounded-lg font-medium hover:from-[#246b35] hover:to-[#1d5429] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
@@ -222,22 +229,22 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
 
           <div className="text-center mt-6">
             {timeLeft > 0 ? (
-              <div className="space-y-2">
+              <>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Code expires in <span className="font-semibold text-[#2d8e41] dark:text-green-400">{formatTime(timeLeft)}</span>
                 </p>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 mt-2">
                   <div
                     className="bg-[#2d8e41] h-1 rounded-full transition-all duration-1000"
-                    style={{ width: `${(timeLeft / 60) * 100}%` }}
+                    style={{ width: `${(timeLeft / 300) * 100}%` }}
                   ></div>
                 </div>
-              </div>
+              </>
             ) : (
               <button
                 onClick={handleResendOTP}
                 disabled={!canResend}
-                className="text-[#2d8e41] dark:text-green-400 hover:text-[#246b35] dark:hover:text-green-300 font-medium transition-colors duration-200 text-sm flex items-center justify-center mx-auto disabled:opacity-50"
+                className="text-[#2d8e41] dark:text-green-400 hover:text-[#246b35] dark:hover:text-green-300 font-medium text-sm flex items-center justify-center mx-auto disabled:opacity-50"
               >
                 <RefreshCw className="w-4 h-4 mr-1" />
                 Resend Code
@@ -256,7 +263,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
           <div className="text-center mt-6">
             <button
               onClick={onBack}
-              className="flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium transition-colors duration-200 mx-auto"
+              className="flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 font-medium mx-auto"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Login
