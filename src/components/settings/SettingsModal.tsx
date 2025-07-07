@@ -19,6 +19,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
   const [verificationCode, setVerificationCode] = useState('');
   const [backupCodes, setBackupCodes] = useState<string[]>([]);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [secretKey, setSecretKey] = useState('');
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
     newPassword: '',
@@ -51,16 +52,29 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
     { id: 3, device: 'Firefox on Ubuntu', location: 'Mombasa, Kenya', lastActive: '2025-01-18 16:45:00', current: false }
   ];
 
+  const generateSecretKey = () => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    let result = '';
+    for (let i = 0; i < 32; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
   const generateQRCode = async (secret: string) => {
     try {
-      const otpAuthUrl = `otpauth://totp/Vermi-Farm:${currentUser?.name}?secret=${secret}&issuer=Vermi-Farm`;
+      const issuer = 'Vermi-Farm';
+      const accountName = currentUser?.name || 'User';
+      const otpAuthUrl = `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}`;
+      
       const qrCodeDataURL = await QRCode.toDataURL(otpAuthUrl, {
         width: 200,
         margin: 2,
         color: {
           dark: '#2d8e41',
           light: '#ffffff'
-        }
+        },
+        errorCorrectionLevel: 'M'
       });
       setQrCodeDataURL(qrCodeDataURL);
     } catch (error) {
@@ -70,10 +84,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
 
   const handleEnable2FA = async () => {
     if (!twoFactorEnabled) {
-      // Generate a random secret for 2FA
-      const secret = Array.from({ length: 16 }, () => 
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'[Math.floor(Math.random() * 32)]
-      ).join('');
+      // Generate a new secret key
+      const secret = generateSecretKey();
+      setSecretKey(secret);
       
       // Generate backup codes
       const codes = Array.from({ length: 8 }, () => 
@@ -93,12 +106,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
         setBackupCodes([]);
         setVerificationCode('');
         setQrCodeDataURL('');
+        setSecretKey('');
       }
     }
   };
 
   const handleVerify2FA = () => {
     if (verificationCode.length === 6) {
+      // In a real app, this would verify the TOTP code against the secret
+      // For demo purposes, we'll accept any 6-digit code
       setTwoFactorEnabled(true);
       setShowQRCode(false);
       alert('2FA has been successfully enabled! Your account is now more secure.');
@@ -266,9 +282,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                     <li>• Authy</li>
                     <li>• Any TOTP-compatible app</li>
                   </ul>
-                  <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                    Manual entry key: JBSWY3DPEHPK3PXP
-                  </p>
+                  {secretKey && (
+                    <div className="mt-3">
+                      <p className="text-xs text-gray-500 dark:text-gray-500 mb-1">Manual entry key:</p>
+                      <div className="flex items-center space-x-2">
+                        <code className="text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded font-mono">
+                          {secretKey}
+                        </code>
+                        <button
+                          onClick={() => copyToClipboard(secretKey)}
+                          className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                        >
+                          {copiedCode === secretKey ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -280,13 +309,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
                   type="text"
                   placeholder="Enter 6-digit code"
                   value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   maxLength={6}
-                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-center"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-center font-mono"
                 />
                 <button
                   onClick={handleVerify2FA}
-                  className="px-4 py-2 bg-[#2d8e41] text-white rounded-lg hover:bg-[#246b35] transition-colors"
+                  disabled={verificationCode.length !== 6}
+                  className="px-4 py-2 bg-[#2d8e41] text-white rounded-lg hover:bg-[#246b35] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Verify
                 </button>
@@ -294,25 +324,27 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose }) => {
             </div>
 
             {/* Backup Codes */}
-            <div className="p-4 border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-              <h4 className="font-medium mb-2 text-yellow-800 dark:text-yellow-400">Backup Codes</h4>
-              <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-3">
-                Save these backup codes in a safe place. You can use them to access your account if you lose your phone.
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {backupCodes.map((code, index) => (
-                  <div key={index} className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded border">
-                    <span className="font-mono text-sm text-gray-900 dark:text-gray-100">{code}</span>
-                    <button
-                      onClick={() => copyToClipboard(code)}
-                      className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
-                    >
-                      {copiedCode === code ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                  </div>
-                ))}
+            {backupCodes.length > 0 && (
+              <div className="p-4 border border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                <h4 className="font-medium mb-2 text-yellow-800 dark:text-yellow-400">Backup Codes</h4>
+                <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-3">
+                  Save these backup codes in a safe place. You can use them to access your account if you lose your phone.
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {backupCodes.map((code, index) => (
+                    <div key={index} className="flex items-center justify-between bg-white dark:bg-gray-800 p-2 rounded border">
+                      <span className="font-mono text-sm text-gray-900 dark:text-gray-100">{code}</span>
+                      <button
+                        onClick={() => copyToClipboard(code)}
+                        className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                      >
+                        {copiedCode === code ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 

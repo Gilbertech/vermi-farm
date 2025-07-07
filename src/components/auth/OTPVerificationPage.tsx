@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Shield, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Shield, RefreshCw, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface OTPVerificationPageProps {
@@ -14,6 +14,21 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   const [error, setError] = useState('');
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
   const [canResend, setCanResend] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const maxAttempts = 3;
+
+  // Generate a demo OTP for testing (in production, this would come from backend)
+  const [demoOTP] = useState(() => {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log(`Demo OTP for ${phone}: ${otp}`);
+    // Show demo OTP in development
+    if (import.meta.env.DEV) {
+      setTimeout(() => {
+        alert(`Demo OTP for testing: ${otp}\n\nThis will be removed in production.`);
+      }, 1000);
+    }
+    return otp;
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -37,10 +52,12 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
 
   const handleOtpChange = (index: number, value: string) => {
     if (value.length > 1) return;
+    if (!/^\d*$/.test(value)) return; // Only allow digits
     
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
+    setError(''); // Clear error when user types
 
     // Auto-focus next input
     if (value && index < 5) {
@@ -50,9 +67,24 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-${index - 1}`);
-      prevInput?.focus();
+    if (e.key === 'Backspace') {
+      if (!otp[index] && index > 0) {
+        const prevInput = document.getElementById(`otp-${index - 1}`);
+        prevInput?.focus();
+      } else {
+        const newOtp = [...otp];
+        newOtp[index] = '';
+        setOtp(newOtp);
+      }
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pastedData.length === 6) {
+      setOtp(pastedData.split(''));
+      setError('');
     }
   };
 
@@ -65,21 +97,37 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       return;
     }
 
+    if (attempts >= maxAttempts) {
+      setError('Maximum attempts exceeded. Please request a new OTP.');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
     try {
-      // Simulate OTP verification
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Simulate OTP verification delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // For demo purposes, accept any 6-digit code
-      if (otpCode.length === 6) {
+      // Verify against demo OTP or accept specific test codes
+      const testCodes = ['123456', '000000', demoOTP];
+      if (testCodes.includes(otpCode)) {
         await completeLogin();
       } else {
-        throw new Error('Invalid OTP code');
+        setAttempts(prev => prev + 1);
+        const remainingAttempts = maxAttempts - attempts - 1;
+        if (remainingAttempts > 0) {
+          setError(`Invalid OTP code. ${remainingAttempts} attempts remaining.`);
+        } else {
+          setError('Maximum attempts exceeded. Please request a new OTP.');
+        }
+        // Clear OTP inputs on error
+        setOtp(['', '', '', '', '', '']);
+        const firstInput = document.getElementById('otp-0');
+        firstInput?.focus();
       }
     } catch (err) {
-      setError('Invalid OTP code. Please try again.');
+      setError('Verification failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -89,9 +137,20 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     setCanResend(false);
     setTimeLeft(300);
     setError('');
+    setAttempts(0);
+    setOtp(['', '', '', '', '', '']);
     
     // Simulate resending OTP
     await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Generate new demo OTP
+    const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    console.log(`New Demo OTP for ${phone}: ${newOTP}`);
+    
+    if (import.meta.env.DEV) {
+      alert(`New Demo OTP: ${newOTP}\n\nThis will be removed in production.`);
+    }
+    
     alert(`New OTP sent to ${phone}`);
   };
 
@@ -114,6 +173,19 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
             </p>
           </div>
 
+          {/* Demo Notice */}
+          {import.meta.env.DEV && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
+              <div className="flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <div>
+                  <p className="font-medium">Demo Mode</p>
+                  <p className="text-xs">Use the OTP shown in the alert or try: 123456, 000000</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Error Message */}
           {error && (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
@@ -130,7 +202,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4 text-center">
                 Enter 6-digit verification code
               </label>
-              <div className="flex justify-center space-x-2">
+              <div className="flex justify-center space-x-2" onPaste={handlePaste}>
                 {otp.map((digit, index) => (
                   <input
                     key={index}
@@ -141,14 +213,18 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     className="w-12 h-12 text-center text-xl font-bold border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#2d8e41] focus:border-[#2d8e41] transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    disabled={isLoading || attempts >= maxAttempts}
                   />
                 ))}
               </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+                Paste your 6-digit code or enter manually
+              </p>
             </div>
 
             <button
               type="submit"
-              disabled={isLoading || otp.join('').length !== 6}
+              disabled={isLoading || otp.join('').length !== 6 || attempts >= maxAttempts}
               className="w-full bg-gradient-to-r from-[#2d8e41] to-[#246b35] text-white py-3 rounded-lg font-medium hover:from-[#246b35] hover:to-[#1d5429] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
               {isLoading ? (
@@ -175,13 +251,22 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
               <button
                 onClick={handleResendOTP}
                 disabled={!canResend}
-                className="text-[#2d8e41] dark:text-green-400 hover:text-[#246b35] dark:hover:text-green-300 font-medium transition-colors duration-200 text-sm flex items-center justify-center mx-auto"
+                className="text-[#2d8e41] dark:text-green-400 hover:text-[#246b35] dark:hover:text-green-300 font-medium transition-colors duration-200 text-sm flex items-center justify-center mx-auto disabled:opacity-50"
               >
                 <RefreshCw className="w-4 h-4 mr-1" />
                 Resend Code
               </button>
             )}
           </div>
+
+          {/* Attempts Counter */}
+          {attempts > 0 && (
+            <div className="text-center mt-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Attempts: {attempts}/{maxAttempts}
+              </p>
+            </div>
+          )}
 
           {/* Back Button */}
           <div className="text-center mt-6">
