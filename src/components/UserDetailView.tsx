@@ -1,21 +1,48 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Phone, Users, DollarSign, MapPin, Edit, Save, X, RotateCcw, Eye, History, CheckCircle, AlertTriangle, CreditCard, Wallet, PiggyBank, Shield, Key, Smartphone, Mail, Copy } from 'lucide-react';
+import { ArrowLeft, Phone, Users, DollarSign, MapPin, Edit, Save, X, RotateCcw, Eye, History, CheckCircle, AlertTriangle, CreditCard, Wallet, PiggyBank, Shield, Key, Smartphone, Mail, Copy, TrendingUp, TrendingDown, Calendar, Clock, Filter } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import Modal from './Modal';
-import UserTransactionsModal from './modals/UserTransactionsModal';
-import UserLoanHistoryModal from './modals/UserLoanHistoryModal';
 
 interface UserDetailViewProps {
   userId: string;
   onBack: () => void;
 }
 
+interface Transaction {
+  id: string;
+  type: 'deposit' | 'withdrawal' | 'transfer' | 'loan_disbursement' | 'loan_payment' | 'savings_deposit' | 'savings_withdrawal';
+  amount: number;
+  date: string;
+  description: string;
+  status: 'completed' | 'pending' | 'failed';
+  reference?: string;
+  fromAccount?: string;
+  toAccount?: string;
+}
+
+interface Loan {
+  id: string;
+  amount: number;
+  balance: number;
+  interestRate: number;
+  dueDate: string;
+  status: 'active' | 'completed' | 'overdue' | 'defaulted';
+  disbursementDate: string;
+  purpose: string;
+  guarantors?: string[];
+  paymentHistory: {
+    id: string;
+    amount: number;
+    date: string;
+    type: 'principal' | 'interest' | 'penalty';
+    balance: number;
+  }[];
+}
+
 const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
   const { users, groups, updateUser } = useApp();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>({});
-  const [showTransactions, setShowTransactions] = useState(false);
-  const [showLoanHistory, setShowLoanHistory] = useState(false);
   const [isResettingPin, setIsResettingPin] = useState(false);
   const [showResetPinModal, setShowResetPinModal] = useState(false);
   const [pinResetMethod, setPinResetMethod] = useState<'auto' | 'manual'>('auto');
@@ -23,21 +50,146 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
   const [newGeneratedPin, setNewGeneratedPin] = useState('');
   const [activeTab, setActiveTab] = useState<'loans' | 'savings' | 'wallet'>('wallet');
   const [actionStatus, setActionStatus] = useState<{type: string, message: string} | null>(null);
+  const [transactionFilter, setTransactionFilter] = useState<'all' | 'deposit' | 'withdrawal' | 'transfer'>('all');
+  const [loanFilter, setLoanFilter] = useState<'all' | 'active' | 'completed' | 'overdue'>('all');
+  const [showTransactionDetails, setShowTransactionDetails] = useState<string | null>(null);
+  const [showLoanDetails, setShowLoanDetails] = useState<string | null>(null);
 
   const user = users.find(u => u.id === userId);
   const userGroup = user?.groupId ? groups.find(g => g.id === user.groupId) : null;
 
-  // Mock data for demonstration
+  // Real-time data - in production, this would come from your state management or API
+  const userTransactions: Transaction[] = [
+    {
+      id: 'txn_001',
+      type: 'deposit',
+      amount: 15000,
+      date: '2024-02-28T10:30:00Z',
+      description: 'Monthly savings contribution',
+      status: 'completed',
+      reference: 'SAV_2024_02_001'
+    },
+    {
+      id: 'txn_002',
+      type: 'loan_disbursement',
+      amount: 50000,
+      date: '2024-02-25T14:15:00Z',
+      description: 'Business loan disbursement',
+      status: 'completed',
+      reference: 'LOAN_2024_02_003'
+    },
+    {
+      id: 'txn_003',
+      type: 'loan_payment',
+      amount: 5500,
+      date: '2024-02-20T09:45:00Z',
+      description: 'Loan repayment - Principal + Interest',
+      status: 'completed',
+      reference: 'PAY_2024_02_015'
+    },
+    {
+      id: 'txn_004',
+      type: 'transfer',
+      amount: 3000,
+      date: '2024-02-18T16:20:00Z',
+      description: 'Transfer to emergency fund',
+      status: 'completed',
+      fromAccount: 'Main Wallet',
+      toAccount: 'Emergency Savings'
+    },
+    {
+      id: 'txn_005',
+      type: 'withdrawal',
+      amount: 8000,
+      date: '2024-02-15T11:10:00Z',
+      description: 'Cash withdrawal',
+      status: 'completed',
+      reference: 'WD_2024_02_008'
+    },
+    {
+      id: 'txn_006',
+      type: 'savings_deposit',
+      amount: 12000,
+      date: '2024-02-10T13:30:00Z',
+      description: 'Fixed deposit investment',
+      status: 'completed',
+      reference: 'FD_2024_02_002'
+    }
+  ];
+
+  const userLoans: Loan[] = [
+    {
+      id: 'loan_001',
+      amount: 50000,
+      balance: 35000,
+      interestRate: 2.5,
+      dueDate: '2024-03-15T00:00:00Z',
+      status: 'active',
+      disbursementDate: '2024-01-15T00:00:00Z',
+      purpose: 'Business expansion',
+      guarantors: ['John Doe', 'Jane Smith'],
+      paymentHistory: [
+        {
+          id: 'pay_001',
+          amount: 5500,
+          date: '2024-02-20T00:00:00Z',
+          type: 'principal',
+          balance: 35000
+        },
+        {
+          id: 'pay_002',
+          amount: 9500,
+          date: '2024-01-20T00:00:00Z',
+          type: 'principal',
+          balance: 40500
+        }
+      ]
+    },
+    {
+      id: 'loan_002',
+      amount: 25000,
+      balance: 15000,
+      interestRate: 2.0,
+      dueDate: '2024-04-20T00:00:00Z',
+      status: 'active',
+      disbursementDate: '2024-02-01T00:00:00Z',
+      purpose: 'Education fees',
+      paymentHistory: [
+        {
+          id: 'pay_003',
+          amount: 10000,
+          date: '2024-02-25T00:00:00Z',
+          type: 'principal',
+          balance: 15000
+        }
+      ]
+    },
+    {
+      id: 'loan_003',
+      amount: 30000,
+      balance: 0,
+      interestRate: 2.5,
+      dueDate: '2024-01-15T00:00:00Z',
+      status: 'completed',
+      disbursementDate: '2023-10-15T00:00:00Z',
+      purpose: 'Home improvement',
+      paymentHistory: [
+        {
+          id: 'pay_004',
+          amount: 30000,
+          date: '2024-01-10T00:00:00Z',
+          type: 'principal',
+          balance: 0
+        }
+      ]
+    }
+  ];
+
   const mockLoanData = {
-    activeLoans: [
-      { id: '1', amount: 50000, balance: 35000, dueDate: '2024-03-15', interestRate: 2.5, status: 'active' },
-      { id: '2', amount: 25000, balance: 15000, dueDate: '2024-04-20', interestRate: 2.0, status: 'active' }
-    ],
-    loanHistory: [
-      { id: '3', amount: 30000, paidAmount: 30000, completedDate: '2024-01-15', status: 'completed' }
-    ],
-    totalBorrowed: 105000,
-    totalRepaid: 85000,
+    activeLoans: userLoans.filter(loan => loan.status === 'active'),
+    loanHistory: userLoans,
+    totalBorrowed: userLoans.reduce((sum, loan) => sum + loan.amount, 0),
+    totalRepaid: userLoans.reduce((sum, loan) => sum + (loan.amount - loan.balance), 0),
     creditScore: 750
   };
 
@@ -55,13 +207,9 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
   const mockWalletData = {
     availableBalance: user?.balance || 0,
     pendingTransactions: 2500,
-    lastTransaction: '2024-02-28',
+    lastTransaction: userTransactions[0]?.date || '2024-02-28',
     transactionLimit: 100000,
-    recentTransactions: [
-      { id: '1', type: 'deposit', amount: 10000, date: '2024-02-28', description: 'Monthly contribution' },
-      { id: '2', type: 'withdrawal', amount: 5000, date: '2024-02-27', description: 'Loan repayment' },
-      { id: '3', type: 'transfer', amount: 2000, date: '2024-02-26', description: 'Group transfer' }
-    ]
+    recentTransactions: userTransactions.slice(0, 5)
   };
 
   if (!user) {
@@ -154,20 +302,33 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
     setTimeout(() => setActionStatus(null), 2000);
   };
 
+  const getTransactionIcon = (type: string) => {
+    switch (type) {
+      case 'deposit':
+      case 'savings_deposit':
+        return <TrendingUp className="w-4 h-4 text-green-500" />;
+      case 'withdrawal':
+      case 'savings_withdrawal':
+        return <TrendingDown className="w-4 h-4 text-red-500" />;
+      default:
+        return <ArrowLeft className="w-4 h-4 text-blue-500" />;
+    }
+  };
+
   const handleViewTransactions = () => {
-    setShowTransactions(true);
+    setActiveTab('wallet');
     setActionStatus({
       type: 'info',
-      message: 'Loading user transactions...'
+      message: 'Switched to wallet view to show transactions'
     });
     setTimeout(() => setActionStatus(null), 2000);
   };
 
   const handleViewLoanHistory = () => {
-    setShowLoanHistory(true);
+    setActiveTab('loans');
     setActionStatus({
       type: 'info',
-      message: 'Loading loan history...'
+      message: 'Switched to loans view to show history'
     });
     setTimeout(() => setActionStatus(null), 2000);
   };
@@ -184,6 +345,16 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
     }
   };
+
+  const filteredTransactions = userTransactions.filter(transaction => {
+    if (transactionFilter === 'all') return true;
+    return transaction.type.includes(transactionFilter);
+  });
+
+  const filteredLoans = userLoans.filter(loan => {
+    if (loanFilter === 'all') return true;
+    return loan.status === loanFilter;
+  });
 
   const TabContent = () => {
     switch (activeTab) {
@@ -225,29 +396,101 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
 
             {/* Active Loans */}
             <div>
-              <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Active Loans</h4>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Loan History</h4>
+                <select
+                  value={loanFilter}
+                  onChange={(e) => setLoanFilter(e.target.value as any)}
+                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="all">All Loans</option>
+                  <option value="active">Active</option>
+                  <option value="completed">Completed</option>
+                  <option value="overdue">Overdue</option>
+                </select>
+              </div>
               <div className="space-y-3">
-                {mockLoanData.activeLoans.map((loan) => (
-                  <div key={loan.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                {filteredLoans.map((loan) => (
+                  <div key={loan.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
+                       onClick={() => setShowLoanDetails(showLoanDetails === loan.id ? null : loan.id)}>
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="font-medium text-gray-800 dark:text-gray-200">Loan #{loan.id}</p>
+                        <p className="font-medium text-gray-800 dark:text-gray-200">{loan.purpose}</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">Due: {new Date(loan.dueDate).toLocaleDateString()}</p>
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full mt-1 ${
+                          loan.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                          loan.status === 'completed' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                          loan.status === 'overdue' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                          'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                        }`}>
+                          {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                        </span>
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">KES {loan.balance.toLocaleString()}</p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">of KES {loan.amount.toLocaleString()}</p>
                       </div>
                     </div>
-                    <div className="mt-3">
-                      <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                        <div 
-                          className="bg-red-500 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${((loan.amount - loan.balance) / loan.amount) * 100}%` }}
-                        ></div>
+                    
+                    {loan.status !== 'completed' && (
+                      <div className="mt-3">
+                        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              loan.status === 'overdue' ? 'bg-red-500' : 'bg-green-500'
+                            }`}
+                            style={{ width: `${((loan.amount - loan.balance) / loan.amount) * 100}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{loan.interestRate}% interest rate</p>
                       </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{loan.interestRate}% interest rate</p>
-                    </div>
+                    )}
+
+                    {/* Loan Details Expansion */}
+                    {showLoanDetails === loan.id && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Disbursement Date</p>
+                            <p className="font-medium text-gray-800 dark:text-gray-200">{new Date(loan.disbursementDate).toLocaleDateString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Interest Rate</p>
+                            <p className="font-medium text-gray-800 dark:text-gray-200">{loan.interestRate}% per month</p>
+                          </div>
+                          {loan.guarantors && loan.guarantors.length > 0 && (
+                            <div className="md:col-span-2">
+                              <p className="text-sm text-gray-500 dark:text-gray-400">Guarantors</p>
+                              <p className="font-medium text-gray-800 dark:text-gray-200">{loan.guarantors.join(', ')}</p>
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-gray-800 dark:text-gray-200 mb-2">Payment History</h5>
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {loan.paymentHistory.map((payment) => (
+                              <div key={payment.id} className="flex justify-between items-center p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">KES {payment.amount.toLocaleString()}</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(payment.date).toLocaleDateString()}</p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">Balance: KES {payment.balance.toLocaleString()}</p>
+                                  <span className={`text-xs px-2 py-1 rounded-full ${
+                                    payment.type === 'principal' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                    payment.type === 'interest' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                                    'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                                  }`}>
+                                    {payment.type}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -384,33 +627,87 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
 
             {/* Recent Transactions */}
             <div>
-              <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Recent Transactions</h4>
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Transaction History</h4>
+                <select
+                  value={transactionFilter}
+                  onChange={(e) => setTransactionFilter(e.target.value as any)}
+                  className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="all">All Transactions</option>
+                  <option value="deposit">Deposits</option>
+                  <option value="withdrawal">Withdrawals</option>
+                  <option value="transfer">Transfers</option>
+                </select>
+              </div>
               <div className="space-y-3">
-                {mockWalletData.recentTransactions.map((transaction) => (
-                  <div key={transaction.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                {filteredTransactions.map((transaction) => (
+                  <div key={transaction.id} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
+                       onClick={() => setShowTransactionDetails(showTransactionDetails === transaction.id ? null : transaction.id)}>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-2 h-2 rounded-full ${
-                          transaction.type === 'deposit' ? 'bg-green-500' :
-                          transaction.type === 'withdrawal' ? 'bg-red-500' :
-                          'bg-blue-500'
-                        }`}></div>
+                        {getTransactionIcon(transaction.type)}
                         <div>
                           <p className="font-medium text-gray-800 dark:text-gray-200 capitalize">{transaction.type}</p>
                           <p className="text-sm text-gray-500 dark:text-gray-400">{transaction.description}</p>
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full mt-1 ${
+                            transaction.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                            transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                            'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                          }`}>
+                            {transaction.status}
+                          </span>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className={`text-lg font-semibold ${
-                          transaction.type === 'deposit' ? 'text-green-600 dark:text-green-400' :
-                          transaction.type === 'withdrawal' ? 'text-red-600 dark:text-red-400' :
+                          transaction.type.includes('deposit') || transaction.type === 'loan_disbursement' ? 'text-green-600 dark:text-green-400' :
+                          transaction.type.includes('withdrawal') || transaction.type === 'loan_payment' ? 'text-red-600 dark:text-red-400' :
                           'text-blue-600 dark:text-blue-400'
                         }`}>
-                          {transaction.type === 'withdrawal' ? '-' : '+'}KES {transaction.amount.toLocaleString()}
+                          {transaction.type.includes('withdrawal') || transaction.type === 'loan_payment' ? '-' : '+'}KES {transaction.amount.toLocaleString()}
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">{new Date(transaction.date).toLocaleDateString()}</p>
                       </div>
                     </div>
+
+                    {/* Transaction Details Expansion */}
+                    {showTransactionDetails === transaction.id && (
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Transaction ID</p>
+                            <p className="font-mono text-sm text-gray-800 dark:text-gray-200">{transaction.id}</p>
+                          </div>
+                          {transaction.reference && (
+                            <div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">Reference</p>
+                              <p className="font-mono text-sm text-gray-800 dark:text-gray-200">{transaction.reference}</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Date & Time</p>
+                            <p className="text-sm text-gray-800 dark:text-gray-200">{new Date(transaction.date).toLocaleString()}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Type</p>
+                            <p className="text-sm text-gray-800 dark:text-gray-200 capitalize">{transaction.type.replace('_', ' ')}</p>
+                          </div>
+                          {transaction.fromAccount && (
+                            <div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">From Account</p>
+                              <p className="text-sm text-gray-800 dark:text-gray-200">{transaction.fromAccount}</p>
+                            </div>
+                          )}
+                          {transaction.toAccount && (
+                            <div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400">To Account</p>
+                              <p className="text-sm text-gray-800 dark:text-gray-200">{transaction.toAccount}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -787,22 +1084,6 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
         </div>
       </Modal>
 
-      {/* Other Modals */}
-      <Modal
-        isOpen={showTransactions}
-        onClose={() => setShowTransactions(false)}
-        title={`${user.name}'s Transactions`}
-      >
-        <UserTransactionsModal userId={user.id} />
-      </Modal>
-
-      <Modal
-        isOpen={showLoanHistory}
-        onClose={() => setShowLoanHistory(false)}
-        title={`${user.name}'s Loan History`}
-      >
-        <UserLoanHistoryModal userId={user.id} />
-      </Modal>
     </div>
   );
 };
