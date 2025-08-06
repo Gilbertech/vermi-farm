@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
+import { authApi } from '../services/api';
+import { supabase } from '../lib/supabase';
 
 interface User {
   id: string;
@@ -76,29 +78,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('Please enter a valid Kenyan phone number (07xxxxxxxx or 01xxxxxxxx)');
     }
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Find user by phone number
-    const user = adminUsers.find(u => u.phone === phone);
-    
-    if (!user) {
-      throw new Error('User not found. Please check your phone number.');
-    }
+    try {
+      const response = await authApi.login(phone, password);
+      
+      if (!response.success) {
+        throw new Error(response.error || 'Login failed');
+      }
 
-    // Check password (in production, this would be hashed)
-    if (password !== 'admin123') {
-      throw new Error('Invalid password. Please try again.');
-    }
+      if (response.data?.requires_otp) {
+        // Store pending login with user info for OTP verification
+        setPendingLogin({ 
+          phone, 
+          password, 
+          user: {
+            id: response.data.user.id,
+            name: response.data.user.name,
+            phone: response.data.user.phone,
+            role: response.data.user.role
+          }
+        });
+        setCurrentView('otp-verification');
+        
+        console.log(`OTP sent to ${phone} for user: ${response.data.user.name}`);
+        return true;
+      }
 
-    // Store pending login with user info for OTP verification
-    setPendingLogin({ phone, password, user });
-    setCurrentView('otp-verification');
-    
-    // Simulate sending OTP
-    console.log(`OTP sent to ${phone} for user: ${user.name}`);
-    
-    return true;
+      return false;
+    } catch (error) {
+      throw error;
+    }
   };
 
   const completeLogin = async (): Promise<void> => {
@@ -106,62 +114,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('No pending login found. Please start the login process again.');
     }
 
-    // Simulate OTP verification delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    // Complete the login process
-    setIsAuthenticated(true);
-    setCurrentUser(pendingLogin.user);
-    setPendingLogin(null);
-    setCurrentView('login');
-    
-    // Add sample notifications for super admin
-    if (pendingLogin.user.role === 'super_admin') {
-      const sampleNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'payment_initiated',
-          message: 'Payment request initiated',
-          initiatorName: 'Admin Initiator 1',
-          amount: 15000,
-          timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-          read: false,
-          actionType: 'payment',
-          details: { type: 'single_payment', recipient: 'John Doe' }
-        },
-        {
-          id: '2',
-          type: 'loan_initiated',
-          message: 'Loan disbursement request initiated',
-          initiatorName: 'Admin Initiator 2',
-          amount: 25000,
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          read: false,
-          actionType: 'loan',
-          details: { type: 'group_loan', groupName: 'Nairobi Farmers' }
-        },
-        {
-          id: '3',
-          type: 'transfer_initiated',
-          message: 'Portfolio transfer request initiated',
-          initiatorName: 'Admin Initiator 1',
-          amount: 50000,
-          timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-          read: false,
-          actionType: 'transfer',
-          details: { 
-            type: 'portfolio_transfer',
-            fromPortfolio: 'revenue',
-            toPortfolio: 'investment',
-            description: 'Quarterly investment allocation',
-            reference: 'Q1-2024-INV'
+    try {
+      // This will be called after OTP verification in the OTP component
+      // Complete the login process
+      setIsAuthenticated(true);
+      setCurrentUser(pendingLogin.user);
+      setPendingLogin(null);
+      setCurrentView('login');
+      
+      // Add sample notifications for super admin
+      if (pendingLogin.user.role === 'super_admin') {
+        const sampleNotifications: Notification[] = [
+          {
+            id: '1',
+            type: 'payment_initiated',
+            message: 'Payment request initiated',
+            initiatorName: 'Admin Initiator 1',
+            amount: 15000,
+            timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+            read: false,
+            actionType: 'payment',
+            details: { type: 'single_payment', recipient: 'John Doe' }
           }
-        }
-      ];
-      setNotifications(sampleNotifications);
-    }
+        ];
+        setNotifications(sampleNotifications);
+      }
 
-    console.log(`Login completed for ${pendingLogin.user.name} (${pendingLogin.user.role})`);
+      console.log(`Login completed for ${pendingLogin.user.name} (${pendingLogin.user.role})`);
+    } catch (error) {
+      throw new Error('Failed to complete login');
+    }
   };
 
   const logout = () => {

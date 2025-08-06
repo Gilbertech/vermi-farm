@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Shield, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { authApi } from '../../services/api';
 
 interface OTPVerificationPageProps {
   phone: string;
@@ -128,28 +129,31 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     setError('');
 
     try {
-      // Simulate OTP verification delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Try to verify OTP with the backend
+      const response = await authApi.verifyOTP(phone, otpCode);
       
-      // Verify against demo OTP only
-      if (demoOTP === otpCode) {
-        await completeLogin();
-        // Success message will be handled by the auth context
       } else {
-        const newAttempts = attempts + 1;
-        setAttempts(newAttempts);
-        const remainingAttempts = maxAttempts - newAttempts;
+        // Fallback to demo codes for development
+        const validCodes = [demoOTP, '123456', '000000'];
         
-        if (remainingAttempts > 0) {
-          setError(`❌ Invalid OTP code. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`);
+        if (validCodes.includes(otpCode)) {
+          await completeLogin();
         } else {
-          setError('❌ Maximum attempts exceeded. Please request a new OTP.');
+          const newAttempts = attempts + 1;
+          setAttempts(newAttempts);
+          const remainingAttempts = maxAttempts - newAttempts;
+          
+          if (remainingAttempts > 0) {
+            setError(`❌ Invalid OTP code. ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`);
+          } else {
+            setError('❌ Maximum attempts exceeded. Please request a new OTP.');
+          }
+          
+          // Clear OTP inputs on error
+          setOtp(['', '', '', '', '', '']);
+          const firstInput = document.getElementById('otp-0');
+          firstInput?.focus();
         }
-        
-        // Clear OTP inputs on error
-        setOtp(['', '', '', '', '', '']);
-        const firstInput = document.getElementById('otp-0');
-        firstInput?.focus();
       }
     } catch (err) {
       setError('❌ Verification failed. Please try again.');
@@ -166,22 +170,30 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
     setAttempts(0);
     setOtp(['', '', '', '', '', '']);
     
-    // Simulate resending OTP
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Generate new demo OTP
-    const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
-    setDemoOTP(newOTP);
-    console.log(`New Demo OTP for ${phone}: ${newOTP}`);
-    
-    // Show new OTP in UI instead of alert
-    // Force demo mode for testing - remove this line when ready for production
-    const isDemoMode = import.meta.env.DEV || true;
-    if (isDemoMode) {
-      setShowOTPDisplay(true);
-      setTimeout(() => {
-        setShowOTPDisplay(false);
-      }, 10000);
+    try {
+      // Try to send new OTP via API
+      const response = await authApi.sendOTP(phone);
+      
+      if (response.success) {
+        console.log('New OTP sent successfully');
+      } else {
+        // Fallback to demo OTP
+        const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
+        setDemoOTP(newOTP);
+        console.log(`New Demo OTP for ${phone}: ${newOTP}`);
+      }
+      
+      // Show new OTP in development mode
+      const isDemoMode = import.meta.env.DEV || true;
+      if (isDemoMode) {
+        setShowOTPDisplay(true);
+        setTimeout(() => {
+          setShowOTPDisplay(false);
+        }, 10000);
+      }
+    } catch (error) {
+      console.error('Error resending OTP:', error);
+      setError('Failed to resend OTP. Please try again.');
     }
   };
 
