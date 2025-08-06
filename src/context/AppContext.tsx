@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useRealTimeData } from '../hooks/useRealTimeData';
-import { usersApi, groupsApi, transactionsApi, loansApi, analyticsApi } from '../services/api';
 
 interface User {
   id: string;
@@ -59,8 +57,6 @@ interface AppContextType {
   groups: Group[];
   transactions: Transaction[];
   loans: Loan[];
-  isLoading: boolean;
-  error: string | null;
   stats: {
     totalUsers: number;
     totalGroups: number;
@@ -80,7 +76,6 @@ interface AppContextType {
   addLoan: (loan: Omit<Loan, 'id' | 'createdAt'>) => void;
   updateUser: (id: string, updates: Partial<User>) => void;
   resetUserPin: (userId: string) => void;
-  refreshData: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -94,256 +89,241 @@ export const useApp = () => {
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { 
-    users, 
-    groups, 
-    transactions, 
-    loans, 
-    isLoading, 
-    error,
-    setUsers,
-    setGroups,
-    setTransactions,
-    setLoans
-  } = useRealTimeData();
-  
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    totalGroups: 0,
-    completedTransactions: 0,
-    totalTransacted: 0,
-    totalLoanDisbursed: 0,
-    totalLoanRepaid: 0,
-    totalEarned: 0
-  });
+  const [users, setUsers] = useState<User[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loans, setLoans] = useState<Loan[]>([]);
 
-  // Update stats when data changes
+  // Initialize with sample data
   useEffect(() => {
-    const completedTransactions = transactions.filter(t => t.status === 'completed');
-    const totalTransacted = completedTransactions.reduce((sum, t) => sum + t.amount, 0);
-    const totalLoanDisbursed = loans.reduce((sum, l) => sum + l.amount, 0);
-    const totalLoanRepaid = loans.reduce((sum, l) => sum + l.repaid_amount, 0);
-    const totalEarned = loans.reduce((sum, l) => sum + (l.amount * l.interest_rate / 100), 0);
+    const sampleUsers: User[] = [
+      {
+        id: '1',
+        name: 'John Doe',
+        email: 'john@example.com',
+        phone: '+254712345678',
+        role: 'chairperson',
+        groupId: '1',
+        balance: 5000,
+        status: 'active',
+        createdAt: '2024-01-15T10:00:00Z'
+      },
+      {
+        id: '2',
+        name: 'Jane Smith',
+        email: 'jane@example.com',
+        phone: '+254787654321',
+        role: 'secretary',
+        groupId: '1',
+        balance: 3500,
+        status: 'active',
+        createdAt: '2024-01-16T14:30:00Z'
+      },
+      {
+        id: '3',
+        name: 'Mike Johnson',
+        email: 'mike@example.com',
+        phone: '+254798765432',
+        role: 'chairperson',
+        groupId: '2',
+        balance: 7200,
+        status: 'active',
+        createdAt: '2024-01-17T09:15:00Z'
+      },
+      {
+        id: '4',
+        name: 'Sarah Wilson',
+        email: 'sarah@example.com',
+        phone: '+254756789123',
+        role: 'treasurer',
+        groupId: '1',
+        balance: 4200,
+        status: 'active',
+        createdAt: '2024-01-18T11:20:00Z'
+      }
+    ];
 
-    setStats({
-      totalUsers: users.length,
-      totalGroups: groups.length,
-      completedTransactions: completedTransactions.length,
-      totalTransacted,
-      totalLoanDisbursed,
-      totalLoanRepaid,
-      totalEarned
-    });
+    const sampleGroups: Group[] = [
+      {
+        id: '1',
+        name: 'Nairobi Farmers',
+        regNo: 'NF001',
+        location: 'Nairobi, Kenya',
+        description: 'Urban farming group in Nairobi focusing on sustainable agriculture',
+        adminId: '1',
+        members: ['1', '2', '4'],
+        totalBalance: 12700,
+        loanLimit: 50000,
+        interestRate: 5,
+        activeLoans: 2,
+        totalDisbursed: 25000,
+        createdAt: '2024-01-15T08:00:00Z'
+      },
+      {
+        id: '2',
+        name: 'Mombasa Collective',
+        regNo: 'MC002',
+        location: 'Mombasa, Kenya',
+        description: 'Coastal farming cooperative specializing in coconut and cashew farming',
+        adminId: '3',
+        members: ['3'],
+        totalBalance: 7200,
+        loanLimit: 75000,
+        interestRate: 4.5,
+        activeLoans: 1,
+        totalDisbursed: 15000,
+        createdAt: '2024-01-17T08:00:00Z'
+      }
+    ];
+
+    const sampleTransactions: Transaction[] = [
+      {
+        id: '1',
+        type: 'deposit',
+        amount: 2000,
+        userId: '1',
+        groupId: '1',
+        description: 'Monthly contribution',
+        status: 'completed',
+        createdAt: '2024-01-20T10:00:00Z'
+      },
+      {
+        id: '2',
+        type: 'loan',
+        amount: 15000,
+        userId: '2',
+        groupId: '1',
+        description: 'Equipment purchase loan',
+        status: 'completed',
+        createdAt: '2024-01-22T14:00:00Z'
+      }
+    ];
+
+    const sampleLoans: Loan[] = [
+      {
+        id: '1',
+        userId: '2',
+        groupId: '1',
+        amount: 15000,
+        repaidAmount: 3000,
+        interestRate: 5,
+        dueDate: '2024-07-22T00:00:00Z',
+        status: 'active',
+        type: 'group',
+        createdAt: '2024-01-22T14:00:00Z'
+      },
+      {
+        id: '2',
+        userId: '3',
+        groupId: '2',
+        amount: 8000,
+        repaidAmount: 1000,
+        interestRate: 4.5,
+        dueDate: '2024-08-15T00:00:00Z',
+        status: 'active',
+        type: 'individual',
+        createdAt: '2024-01-25T10:00:00Z'
+      }
+    ];
+
+    setUsers(sampleUsers);
+    setGroups(sampleGroups);
+    setTransactions(sampleTransactions);
+    setLoans(sampleLoans);
   }, []);
 
-  const addUser = async (userData: Omit<User, 'id' | 'createdAt'>) => {
-    try {
-      const response = await usersApi.createUser({
-        name: userData.name,
-        email: userData.email,
-        phone: userData.phone,
-        role: userData.role,
-        group_id: userData.groupId,
-        balance: userData.balance,
-        status: userData.status
-      });
-
-      if (!response.success) {
-        throw new Error(response.error);
-      }
-
-      // Real-time subscription will update the state
-    } catch (error) {
-      console.error('Error adding user:', error);
-      alert('Failed to add user. Please try again.');
-    }
+  const addUser = (userData: Omit<User, 'id' | 'createdAt'>) => {
+    const newUser: User = {
+      ...userData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+    setUsers(prev => [...prev, newUser]);
   };
 
-  const addGroup = async (groupData: Omit<Group, 'id' | 'createdAt'>) => {
-    try {
-      const response = await groupsApi.createGroup({
-        name: groupData.name,
-        reg_no: groupData.regNo,
-        location: groupData.location,
-        description: groupData.description,
-        admin_id: groupData.adminId,
-        total_balance: groupData.totalBalance,
-        loan_limit: groupData.loanLimit,
-        interest_rate: groupData.interestRate
-      });
-
-      if (!response.success) {
-        throw new Error(response.error);
-      }
-
-      // Real-time subscription will update the state
-    } catch (error) {
-      console.error('Error adding group:', error);
-      alert('Failed to add group. Please try again.');
-    }
+  const addGroup = (groupData: Omit<Group, 'id' | 'createdAt'>) => {
+    const newGroup: Group = {
+      ...groupData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+    setGroups(prev => [...prev, newGroup]);
   };
 
-  const updateGroup = async (id: string, updates: Partial<Group>) => {
-    try {
-      const response = await groupsApi.updateGroup(id, {
-        name: updates.name,
-        reg_no: updates.regNo,
-        location: updates.location,
-        description: updates.description
-      });
-
-      if (!response.success) {
-        throw new Error(response.error);
-      }
-
-      // Real-time subscription will update the state
-    } catch (error) {
-      console.error('Error updating group:', error);
-      alert('Failed to update group. Please try again.');
-    }
+  const updateGroup = (id: string, updates: Partial<Group>) => {
+    setGroups(prev => prev.map(group => 
+      group.id === id ? { ...group, ...updates } : group
+    ));
   };
 
-  const updateGroupExecutives = async (groupId: string, executives: { secretary: string; chairperson: string; treasurer: string }) => {
-    try {
-      const response = await groupsApi.updateExecutives(groupId, executives);
+  const updateGroupExecutives = (groupId: string, executives: { secretary: string; chairperson: string; treasurer: string }) => {
+    // Reset all users' roles in this group to 'member'
+    setUsers(prev => prev.map(user => 
+      user.groupId === groupId && ['secretary', 'chairperson', 'treasurer'].includes(user.role)
+        ? { ...user, role: 'member' as const }
+        : user
+    ));
 
-      if (!response.success) {
-        throw new Error(response.error);
-      }
-
-      // Real-time subscription will update the state
-    } catch (error) {
-      console.error('Error updating executives:', error);
-      alert('Failed to update executives. Please try again.');
-    }
+    // Set new executive roles
+    setUsers(prev => prev.map(user => {
+      if (user.id === executives.secretary) return { ...user, role: 'secretary' as const };
+      if (user.id === executives.chairperson) return { ...user, role: 'chairperson' as const };
+      if (user.id === executives.treasurer) return { ...user, role: 'treasurer' as const };
+      return user;
+    }));
   };
 
-  const updateGroupLoanLimit = async (groupId: string, loanLimit: number) => {
-    try {
-      const response = await groupsApi.updateGroup(groupId, { loan_limit: loanLimit });
-
-      if (!response.success) {
-        throw new Error(response.error);
-      }
-
-      // Real-time subscription will update the state
-    } catch (error) {
-      console.error('Error updating loan limit:', error);
-      alert('Failed to update loan limit. Please try again.');
-    }
+  const updateGroupLoanLimit = (groupId: string, loanLimit: number) => {
+    setGroups(prev => prev.map(group => 
+      group.id === groupId ? { ...group, loanLimit } : group
+    ));
   };
 
-  const updateGroupInterestRate = async (groupId: string, interestRate: number) => {
-    try {
-      const response = await groupsApi.updateGroup(groupId, { interest_rate: interestRate });
-
-      if (!response.success) {
-        throw new Error(response.error);
-      }
-
-      // Real-time subscription will update the state
-    } catch (error) {
-      console.error('Error updating interest rate:', error);
-      alert('Failed to update interest rate. Please try again.');
-    }
+  const updateGroupInterestRate = (groupId: string, interestRate: number) => {
+    setGroups(prev => prev.map(group => 
+      group.id === groupId ? { ...group, interestRate } : group
+    ));
   };
 
-  const addTransaction = async (transactionData: Omit<Transaction, 'id' | 'createdAt'>) => {
-    try {
-      const response = await transactionsApi.createTransaction({
-        tx_code: `TXN${Date.now()}`,
-        type: transactionData.type,
-        amount: transactionData.amount,
-        fees: 0,
-        user_id: transactionData.userId,
-        group_id: transactionData.groupId,
-        from_account: transactionData.userId,
-        to_account: transactionData.groupId || 'system',
-        description: transactionData.description,
-        status: transactionData.status
-      });
-
-      if (!response.success) {
-        throw new Error(response.error);
-      }
-
-      // Real-time subscription will update the state
-    } catch (error) {
-      console.error('Error adding transaction:', error);
-      alert('Failed to add transaction. Please try again.');
-    }
+  const addTransaction = (transactionData: Omit<Transaction, 'id' | 'createdAt'>) => {
+    const newTransaction: Transaction = {
+      ...transactionData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+    setTransactions(prev => [...prev, newTransaction]);
   };
 
-  const addLoan = async (loanData: Omit<Loan, 'id' | 'createdAt'>) => {
-    try {
-      const response = await loansApi.createLoan({
-        user_id: loanData.userId,
-        group_id: loanData.groupId,
-        amount: loanData.amount,
-        repaid_amount: loanData.repaidAmount,
-        interest_rate: loanData.interestRate,
-        due_date: loanData.dueDate,
-        status: loanData.status,
-        type: loanData.type,
-        purpose: (loanData as any).purpose
-      });
-
-      if (!response.success) {
-        throw new Error(response.error);
-      }
-
-      // Real-time subscription will update the state
-    } catch (error) {
-      console.error('Error adding loan:', error);
-      alert('Failed to add loan. Please try again.');
-    }
+  const addLoan = (loanData: Omit<Loan, 'id' | 'createdAt'>) => {
+    const newLoan: Loan = {
+      ...loanData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString()
+    };
+    setLoans(prev => [...prev, newLoan]);
   };
 
-  const updateUser = async (id: string, updates: Partial<User>) => {
-    try {
-      const response = await usersApi.updateUser(id, {
-        name: updates.name,
-        email: updates.email,
-        phone: updates.phone,
-        role: updates.role,
-        group_id: updates.groupId,
-        balance: updates.balance,
-        status: updates.status
-      });
-
-      if (!response.success) {
-        throw new Error(response.error);
-      }
-
-      // Real-time subscription will update the state
-    } catch (error) {
-      console.error('Error updating user:', error);
-      alert('Failed to update user. Please try again.');
-    }
+  const updateUser = (id: string, updates: Partial<User>) => {
+    setUsers(prev => prev.map(user => 
+      user.id === id ? { ...user, ...updates } : user
+    ));
   };
 
-  const resetUserPin = async (userId: string) => {
-    try {
-      const response = await usersApi.resetUserPin(userId);
-
-      if (!response.success) {
-        throw new Error(response.error);
-      }
-
-      alert(`PIN reset successfully! New PIN: ${response.data?.new_pin}`);
-    } catch (error) {
-      console.error('Error resetting PIN:', error);
-      alert('Failed to reset PIN. Please try again.');
-    }
+  const resetUserPin = (userId: string) => {
+    // In a real app, this would make an API call
+    console.log(`PIN reset for user ${userId}`);
   };
 
-  const refreshData = async () => {
-    try {
-      // Refresh all data from the database
-      window.location.reload(); // Simple refresh for now
-    } catch (error) {
-      console.error('Error refreshing data:', error);
-    }
+  const stats = {
+    totalUsers: users.length,
+    totalGroups: groups.length,
+    completedTransactions: transactions.filter(t => t.status === 'completed').length,
+    totalTransacted: transactions
+      .filter(t => t.status === 'completed')
+      .reduce((sum, t) => sum + t.amount, 0),
+    totalLoanDisbursed: loans.reduce((sum, l) => sum + l.amount, 0),
+    totalLoanRepaid: loans.reduce((sum, l) => sum + l.repaidAmount, 0),
+    totalEarned: loans.reduce((sum, l) => sum + (l.amount * l.interestRate / 100), 0)
   };
 
   return (
@@ -352,8 +332,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       groups,
       transactions,
       loans,
-      isLoading,
-      error,
       stats,
       addUser,
       addGroup,
@@ -364,8 +342,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addTransaction,
       addLoan,
       updateUser,
-      resetUserPin,
-      refreshData
+      resetUserPin
     }}>
       {children}
     </AppContext.Provider>
