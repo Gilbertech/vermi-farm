@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
     { id: 'payments', icon: Wallet, label: 'Payments' },
     { id: 'statements', icon: FileText, label: 'Statements' },
     { id: 'portfolio', icon: Briefcase, label: 'Portfolio' },
-    { id: 'msaidizi-insurance', icon: Shield, label: 'Msaidizi Insurance' }
+    
   ];
 
   const handleMenuClick = (viewId: string) => {
