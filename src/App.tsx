@@ -22,7 +22,7 @@ const LoadingScreen: React.FC = () => {
           <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#2d8e41]/30 to-transparent animate-pulse"></div>
         </div>
         
-        <h1 className="text-3xl font-bold text-[#2d8e41] dark:text-green-400 mb-4">Vermi-Farm Initiative</h1>
+        <h1 className="text-3xl font-bold text-[#2d8e41] dark:text-green-400 mb-4">Vermi-Farm Yetu Village Banks</h1>
         <p className="text-lg text-[#983F21] dark:text-orange-400 mb-6 font-medium">Management Information System</p>
         
         <div className="w-64 h-2 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4">
