@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
     { id: 'payments', icon: Wallet, label: 'Payments' },
     { id: 'statements', icon: FileText, label: 'Statements' },
     { id: 'portfolio', icon: Briefcase, label: 'Portfolio' },
-    
+     { id: 'portfolio', icon: Briefcase, label: 'Portfolio' },
   ];
 
   const handleMenuClick = (viewId: string) => {
