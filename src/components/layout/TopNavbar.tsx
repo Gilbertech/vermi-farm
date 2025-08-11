@@ -98,7 +98,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
               )}
               {details.groupName && (
                 <div className="flex justify-between">
-                  <span>Group:</span>
+                  <span>Village Banks:</span>
                   <span className="font-medium">{details.groupName}</span>
                 </div>
               )}
