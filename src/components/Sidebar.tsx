@@ -10,7 +10,7 @@ import {
   FileText,
   Briefcase,
   LogOut,
-  shield,
+  
   Sprout
 } from 'lucide-react';
 
