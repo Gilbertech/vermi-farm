@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
     { id: 'loans', icon: Banknote, label: 'Payments' },
     { id: 'statements', icon: FileText, label: 'Statements' },
     { id: 'portfolio', icon: Briefcase, label: 'Portfolio' },
-    { id: 'msaidizi-insurance', icon: Shield, label: 'Msaidizi Insurance' },
+   
   ];
 
   return (
