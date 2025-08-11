@@ -265,7 +265,7 @@ const Loans: React.FC = () => {
   return (
     <div className="space-y-4 lg:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Loans</h1>
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Vermi-Farm Climate-resilient Loans</h1>
         <button
           onClick={handleDisburseLoan}
           className="bg-[#983F21] text-white px-4 lg:px-5 py-2 lg:py-2.5 rounded-lg flex items-center space-x-2 hover:bg-[#7a3219] transition self-start sm:self-auto"
