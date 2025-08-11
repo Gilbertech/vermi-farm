@@ -47,7 +47,7 @@ interface Claim {
   payoutDate?: string;
 }
 
-const msaidiziinsurance: React.FC = () => {
+const MsaidiziInsurance: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'enroll' | 'status' | 'claims' | 'learn'>('status');
   const [showEnrollForm, setShowEnrollForm] = useState(false);
 
