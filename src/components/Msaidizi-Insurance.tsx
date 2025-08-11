@@ -11,21 +11,13 @@ import {
   Plus,
   Eye,
   DollarSign,
-  Calendar,
+  
   MapPin,
   Thermometer,
   Droplets,
   Wind
 } from 'lucide-react';
-import MsaidiziInsurance from "./MsaidiziInsurance";
 
-export default function App() {
-  return (
-    <div>
-      <MsaidiziInsurance />
-    </div>
-  );
-}
 
 interface InsuranceCover {
   id: string;
