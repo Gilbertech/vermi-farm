@@ -11,7 +11,7 @@ import {
   Briefcase,
   Sprout,
   X,
-  shield,
+  Shield,
   Wallet
 } from 'lucide-react';
 
