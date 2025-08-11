@@ -6,7 +6,7 @@ import LoginPage from './components/auth/LoginPage';
 import PasswordResetPage from './components/auth/PasswordResetPage';
 import OTPVerificationPage from './components/auth/OTPVerificationPage';
 import AdminDashboard from './components/AdminDashboard';
-import MsaidiziInsurance from "./components/Msaidizi-Insurance";
+import Msaidizi-Insurance from "./components/Msaidizi-Insurance";
 
 
 // Loading Screen Component
