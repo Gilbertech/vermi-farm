@@ -10,6 +10,7 @@ import {
   FileText,
   Briefcase,
   LogOut,
+  shield,
   Sprout
 } from 'lucide-react';
 
@@ -29,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView }) => {
     { id: 'loans', icon: Banknote, label: 'Payments' },
     { id: 'statements', icon: FileText, label: 'Statements' },
     { id: 'portfolio', icon: Briefcase, label: 'Portfolio' },
-    { id: 'msaidizi-insurance', icon: Shield, label: 'Msaidizi Insurance' }
+    { id: 'msaidizi-insurance', icon: Shield, label: 'Msaidizi Insurance' },
   ];
 
   return (
