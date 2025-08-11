@@ -11,7 +11,7 @@ import Statements from './Statements';
 import Accounts from './Accounts';
 import Reversals from './Reversals';
 import Payments from './Payments';
-
+import MsaidiziInsurance from './Msaidizi-Insurance';
 const AdminDashboard: React.FC = () => {
   const [activeView, setActiveView] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
