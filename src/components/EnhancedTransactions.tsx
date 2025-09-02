@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Filter, Download, ArrowUpRight, ArrowDownLeft, Clock, Eye, EyeOff } from 'lucide-react';
+import { Search,  Download, ArrowUpRight, ArrowDownLeft, Clock, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { generateReceipt } from '../utils/receiptGenerator';
 
 const EnhancedTransactions: React.FC = () => {
-  const { transactions, users, groups } = useApp();
+  useApp();
   const [activeTab, setActiveTab] = useState<'inwallet' | 'outwallet' | 'withdrawals'>('inwallet');
   const [searchTerm, setSearchTerm] = useState('');
   const [amountFilter, setAmountFilter] = useState('');

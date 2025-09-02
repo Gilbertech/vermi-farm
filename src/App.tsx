@@ -7,41 +7,65 @@ import PasswordResetPage from './components/auth/PasswordResetPage';
 import OTPVerificationPage from './components/auth/OTPVerificationPage';
 import AdminDashboard from './components/AdminDashboard';
 
-// Loading Screen Component
-const LoadingScreen: React.FC = () => {
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center transition-colors duration-200">
-      <div className="text-center">
-        <div className="relative inline-block mb-8">
-          <img
-            src="https://i.postimg.cc/MTpyCg68/logo.png"
-            alt="Vermi-Farm Logo"
-            className="w-32 h-32 rounded-full object-cover mx-auto shadow-2xl border-4 border-white animate-spin"
-            style={{ animationDuration: '3s' }}
-          />
-          <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#2d8e41]/30 to-transparent animate-pulse"></div>
-        </div>
-        
-        <h1 className="text-3xl font-bold text-[#2d8e41] dark:text-green-400 mb-4">Vermi-Farm Yetu Village Banks</h1>
-        <p className="text-lg text-[#983F21] dark:text-orange-400 mb-6 font-medium">Management Information System</p>
-        
-        <div className="w-64 h-2 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4">
-          <div className="h-2 bg-gradient-to-r from-[#2d8e41] to-[#983F21] rounded-full animate-pulse" style={{ width: '70%' }}></div>
-        </div>
-        
-        <p className="text-sm text-gray-600 dark:text-gray-400">Loading system...</p>
-        
-        <div className="mt-8 text-xs text-[#983F21] dark:text-orange-400 font-medium">
-          <p>Changing Lives, One Farm at a Time</p>
-        </div>
-      </div>
-    </div>
-  );
+// Inactivity Handler Component
+const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes
+
+const InactivityHandler: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { logout } = useAuth();
+
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        logout();
+      }, INACTIVITY_LIMIT);
+    };
+
+    const events = ['mousemove', 'keydown', 'mousedown', 'touchstart'];
+    events.forEach(event => window.addEventListener(event, resetTimer));
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeout);
+      events.forEach(event => window.removeEventListener(event, resetTimer));
+    };
+  }, [logout]);
+
+  return <>{children}</>;
 };
 
+// Loading Screen Component
+const LoadingScreen: React.FC = () => (
+  <div className="min-h-screen bg-gradient-to-br from-green-50 via-green-100 to-green-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center transition-colors duration-200">
+    <div className="text-center">
+      <div className="relative inline-block mb-8">
+        <img
+          src="https://i.postimg.cc/MTpyCg68/logo.png"
+          alt="Vermi-Farm Logo"
+          className="w-32 h-32 rounded-full object-cover mx-auto shadow-2xl border-4 border-white animate-spin"
+          style={{ animationDuration: '3s' }}
+        />
+        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#2d8e41]/30 to-transparent animate-pulse"></div>
+      </div>
+      <h1 className="text-3xl font-bold text-[#2d8e41] dark:text-green-400 mb-4">Vermi-Farm Yetu Village Banks</h1>
+      <p className="text-lg text-[#983F21] dark:text-orange-400 mb-6 font-medium">Management Information System</p>
+      <div className="w-64 h-2 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4">
+        <div className="h-2 bg-gradient-to-r from-[#2d8e41] to-[#983F21] rounded-full animate-pulse" style={{ width: '70%' }}></div>
+      </div>
+      <p className="text-sm text-gray-600 dark:text-gray-400">Loading system...</p>
+      <div className="mt-8 text-xs text-[#983F21] dark:text-orange-400 font-medium">
+        <p>Changing Lives, One Farm at a Time</p>
+      </div>
+    </div>
+  </div>
+);
+
+// AppContent must be inside AuthProvider
 function AppContent() {
   const { isAuthenticated, currentView, pendingLogin } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Simulate loading time
@@ -71,7 +95,11 @@ function AppContent() {
     return <LoginPage />;
   }
 
-  return <AdminDashboard />;
+  return (
+    <InactivityHandler>
+      <AdminDashboard />
+    </InactivityHandler>
+  );
 }
 
 function App() {

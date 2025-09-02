@@ -71,20 +71,8 @@ const addStatementFooter = (pdf: jsPDF, statementNumber: string, pageNum: number
   pdf.text('This is a computer-generated statement. For inquiries: support@vermi-farm.org | +254 799 616 744', 105, footerY + 16, { align: 'center' });
 };
 
-const addWatermarkLogo = async (pdf: jsPDF) => {
-  try {
-    const logoBase64 = await loadImageAsBase64('https://i.postimg.cc/MTpyCg68/logo.png');
-    pdf.setGState(pdf.GState({ opacity: 0.1 }));
-    pdf.addImage(logoBase64, 'PNG', 60, 80, 90, 90);
-    pdf.setGState(pdf.GState({ opacity: 1 }));
-    return logoBase64;
-  } catch (error) {
-    console.warn('Could not load logo for watermark:', error);
-    return null;
-  }
-};
 
-const addStatementHeader = (pdf: jsPDF, data: StatementData, logoBase64?: string | null) => {
+const addStatementHeader = (pdf: jsPDF, logoBase64?: string | null) => {
   // Add logo if available
   if (logoBase64) {
     try {
@@ -205,7 +193,7 @@ export const generateStatement = async (data: StatementData): Promise<void> => {
     }
     
     // Add header and account details to first page
-    addStatementHeader(pdf, data, logoBase64);
+    addStatementHeader(pdf, logoBase64);
     let yPosition = addAccountDetails(pdf, data);
     
     // Transactions section
@@ -452,7 +440,7 @@ const generateSimpleStatement = (data: StatementData): void => {
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(9);
   
-  data.transactions.forEach((transaction, index) => {
+  data.transactions.forEach((transaction) => {
     if (yPosition > 240) { // Leave space for footer
       addStatementFooter(pdf, statementNumber, currentPage, totalPages);
       pdf.addPage();

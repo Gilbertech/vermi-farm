@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Search, Calendar } from 'lucide-react';
+import { Download, Search, } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { generateReceipt } from '../../utils/receiptGenerator';
 

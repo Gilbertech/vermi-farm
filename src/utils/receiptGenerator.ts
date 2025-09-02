@@ -16,12 +16,12 @@ interface ReceiptData {
 // Constants for theme styling
 const PDF_CONFIG = {
   colors: {
-    primary: [45, 142, 65],     // #2D8E41
-    secondary: [152, 63, 33],   // #983F21
-    textMuted: [100, 100, 100],
-    completed: [45, 142, 65],
-    pending: [234, 179, 8],
-    failed: [239, 68, 68],
+    primary: [45, 142, 65] as [number, number, number],     // #2D8E41
+    secondary: [152, 63, 33] as [number, number, number],   // #983F21
+    textMuted: [100, 100, 100] as [number, number, number],
+    completed: [45, 142, 65] as [number, number, number],
+    pending: [234, 179, 8] as [number, number, number],
+    failed: [239, 68, 68] as [number, number, number],
   },
   font: 'helvetica',
 };
@@ -50,7 +50,11 @@ const loadImageAsBase64 = (url: string): Promise<string> =>
 const addFooter = (pdf: jsPDF, receiptNumber: string, pageNum: number, totalPages: number) => {
   const footerY = 280;
 
-  pdf.setDrawColor(...PDF_CONFIG.colors.primary);
+  pdf.setDrawColor(
+    PDF_CONFIG.colors.primary[0],
+    PDF_CONFIG.colors.primary[1],
+    PDF_CONFIG.colors.primary[2]
+  );
   pdf.setLineWidth(0.5);
   pdf.line(20, footerY, 190, footerY);
 
@@ -179,6 +183,5 @@ export const generateReceipt = async (data: ReceiptData): Promise<void> => {
     pdf.save(`vermi-farm-receipt-${data.transactionId}.pdf`);
   } catch (err) {
     console.error('Receipt generation failed:', err);
-    generateSimpleReceipt(data);
   }
 };

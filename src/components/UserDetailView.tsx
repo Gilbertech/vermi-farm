@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Phone, Users, DollarSign, MapPin, Edit, Save, X, RotateCcw, Eye, History, CheckCircle, AlertTriangle, CreditCard, Wallet, PiggyBank, Shield, Key, Smartphone, Mail, Copy, TrendingUp, TrendingDown, Calendar, Clock, Filter } from 'lucide-react';
+import { ArrowLeft, Phone, Users, DollarSign,  Edit, Save, X, RotateCcw, Eye, History, CheckCircle, AlertTriangle, CreditCard, Wallet, PiggyBank, Shield, Key, Smartphone, Copy, TrendingUp, TrendingDown, } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import Modal from './Modal';
 
@@ -857,7 +857,7 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Group Association</label>
+              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Village Bank Association</label>
               <div className="flex items-center space-x-2">
                 <Users className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 <p className="text-gray-800 dark:text-gray-200">{userGroup ? userGroup.name : 'No Group'}</p>
@@ -876,9 +876,21 @@ const UserDetailView: React.FC<UserDetailViewProps> = ({ userId, onBack }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Member Since</label>
-              <p className="text-gray-800 dark:text-gray-200">{new Date(user.createdAt).toLocaleDateString()}</p>
-            </div>
+  <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+    Member Since
+  </label>
+  <p className="text-gray-800 dark:text-gray-200">
+    {new Date(user.createdAt).toLocaleString([], {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })}
+  </p>
+</div>
+
           </div>
         </div>
       </div>

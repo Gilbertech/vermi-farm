@@ -6,13 +6,13 @@ import UserForm from './UserForm';
 import UserDetailView from './UserDetailView';
 
 const Users: React.FC = () => {
-  const { users, groups } = useApp();
+  const { users,  } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [createdAtFilter, setCreatedAtFilter] = useState('all');
   const [loanLimitFilter, setLoanLimitFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [showSensitiveData, setShowSensitiveData] = useState(true);
   

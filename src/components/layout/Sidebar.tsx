@@ -9,7 +9,6 @@ import {
   Banknote,
   FileText,
   Briefcase,
-  Sprout,
   X,
   Shield,
   Wallet
@@ -26,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, se
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'users', icon: Users, label: 'Users' },
-    { id: 'groups', icon: Users2, label: 'Vllage Banks' },
+    { id: 'groups', icon: Users2, label: 'Village Banks' },
     { id: 'account', icon: CreditCard, label: 'Accounts' },
     { id: 'transactions', icon: ArrowLeftRight, label: 'Transactions' },
     { id: 'reversal', icon: RotateCcw, label: 'Reversals' },

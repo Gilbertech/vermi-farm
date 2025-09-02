@@ -10,7 +10,7 @@ import LoanForm from './LoanForm';
 
 const Loans: React.FC = () => {
   const { loans, users, groups } = useApp();
-  const { canDisburseLoan, addNotification, currentUser } = useAuth();
+  const { canDisburseLoan,  } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLoan, setSelectedLoan] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -302,7 +302,7 @@ const Loans: React.FC = () => {
               }`}
             >
               {tab === 'group' ? <Building2 className="w-4 h-4" /> : <User className="w-4 h-4" />}
-              <span>{tab === 'group' ? 'Group Loans' : 'Individual Loans'}</span>
+              <span>{tab === 'group' ? 'Village Banks' : 'Individual Loans'}</span>
             </button>
           ))}
         </nav>

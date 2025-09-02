@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Users, DollarSign, MoreVertical, ArrowRight, Edit, Settings, TrendingUp, Percent, Eye } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, DollarSign, MoreVertical, ArrowRight, Edit,  TrendingUp, Percent,  } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import Modal from './Modal';
 import EditGroupForm from './EditGroupForm';
@@ -27,7 +27,7 @@ const GroupDetailView: React.FC<GroupDetailViewProps> = ({ groupId, onBack }) =>
       <div className="text-center py-12">
         <p className="text-gray-500">Group not found</p>
         <button onClick={onBack} className="mt-4 text-[#2d8e41] hover:text-[#246b35]">
-          Back to Groups
+          Back to Village Banks
         </button>
       </div>
     );

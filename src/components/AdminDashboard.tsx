@@ -11,6 +11,7 @@ import Statements from './Statements';
 import Accounts from './Accounts';
 import Reversals from './Reversals';
 import Payments from './Payments';
+import MsaidiziInsurance from './Msaidizi-Insurance'; // <-- Add this import
 
 const AdminDashboard: React.FC = () => {
   const [activeView, setActiveView] = useState('dashboard');
@@ -38,11 +39,14 @@ const AdminDashboard: React.FC = () => {
         return <Statements />;
       case 'portfolio':
         return <Portfolio />;
+      case 'msaidizi-insurance': // <-- Add this case
+        return <MsaidiziInsurance />;
       default:
         return <Dashboard />;
     }
   };
 
+  // Helper function to get the page title based on activeView
   const getPageTitle = () => {
     switch (activeView) {
       case 'dashboard':
@@ -50,7 +54,7 @@ const AdminDashboard: React.FC = () => {
       case 'users':
         return 'Users';
       case 'groups':
-        return 'Groups';
+        return 'Village Banks Associations';
       case 'account':
         return 'Accounts';
       case 'transactions':
@@ -58,13 +62,15 @@ const AdminDashboard: React.FC = () => {
       case 'reversal':
         return 'Reversals';
       case 'loans':
-        return 'Loans';
+        return 'Vermi-Farm Climate-resilient Loans';
       case 'payments':
         return 'Payments';
       case 'statements':
         return 'Statements';
       case 'portfolio':
         return 'Portfolio';
+      case 'msaidizi-insurance':
+        return 'Msaidizi Insurance';
       default:
         return 'Dashboard';
     }

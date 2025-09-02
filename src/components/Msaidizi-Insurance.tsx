@@ -11,21 +11,13 @@ import {
   Plus,
   Eye,
   DollarSign,
-  Calendar,
+  
   MapPin,
   Thermometer,
   Droplets,
   Wind
 } from 'lucide-react';
-import MsaidiziInsurance from "./MsaidiziInsurance";
 
-export default function App() {
-  return (
-    <div>
-      <MsaidiziInsurance />
-    </div>
-  );
-}
 
 interface InsuranceCover {
   id: string;
@@ -120,12 +112,16 @@ const MsaidiziInsurance: React.FC = () => {
           Get automatic payouts when weather conditions exceed your coverage thresholds.
         </p>
         <button 
-          onClick={() => setShowEnrollForm(true)}
+          onClick={() => {
+  setActiveTab('enroll');
+  setShowEnrollForm(true);
+}}
           className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
           Enroll New Cover
         </button>
+        
       </div>
 
       {showEnrollForm && (
@@ -447,7 +443,13 @@ const MsaidiziInsurance: React.FC = () => {
               </h1>
               <p className="text-gray-600 mt-1">Weather-indexed crop insurance for your farm</p>
             </div>
-            <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+            <button 
+              className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2"
+            onClick={() => {
+  setActiveTab('enroll');
+  setShowEnrollForm(true);
+}}
+            >
               <Plus className="h-4 w-4" />
               New Cover
             </button>

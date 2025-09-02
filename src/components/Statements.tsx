@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Search, Filter, Calendar, Plus } from 'lucide-react';
+import { Download, Search, Calendar, Plus } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { generateStatement } from '../utils/statementGenerator';
 import Modal from './Modal';

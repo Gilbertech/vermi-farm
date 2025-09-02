@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, PiggyBank as Piggy, ChevronDown, Search, Filter, Calendar, Download, Eye, EyeOff, ArrowUpRight, Check, X, AlertTriangle, Send } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, PieChart, BarChart3, Wallet, PiggyBank as Piggy, ChevronDown, Search, Calendar, Download, Eye, EyeOff, ArrowUpRight, Check, X, AlertTriangle, Send } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { generateReceipt } from '../utils/receiptGenerator';
@@ -7,7 +7,7 @@ import Modal from './Modal';
 import TransferForm from './forms/TransferForm';
 
 const Portfolio: React.FC = () => {
-  const { stats, loans, transactions, users } = useApp();
+  const { stats, loans,} = useApp();
   const { canInitiate, canApprove, canTransferPortfolio, currentUser, addNotification } = useAuth();
   const [activeTab, setActiveTab] = useState<'loan' | 'revenue' | 'investment' | 'expense' | 'working' | 'b2b' | 'savings'>('loan');
   const [searchTerm, setSearchTerm] = useState('');

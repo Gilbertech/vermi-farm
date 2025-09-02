@@ -8,7 +8,7 @@ import BuyGoodsForm from './forms/BuyGoodsForm';
 import BulkPaymentsForm from './forms/BulkPaymentsForm';
 
 const Payments: React.FC = () => {
-  const { canMakePayment, addNotification, currentUser } = useAuth();
+  const { canMakePayment,  } = useAuth();
   const [activeTab, setActiveTab] = useState<'normal' | 'b2b'>('normal');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [modalType, setModalType] = useState<'paybill' | 'single' | 'buygoods' | 'bulk' | null>(null);
@@ -91,9 +91,9 @@ const Payments: React.FC = () => {
 
   const filteredPayments = (activeTab === 'normal' ? normalPayments : b2bPayments).filter(payment => {
     const matchesSearch = 
-      payment.txCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (payment as any).recipientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (payment as any).initiator?.toLowerCase().includes(searchTerm.toLowerCase());
+      ('txCode' in payment && payment.txCode?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      ('recipientName' in payment && payment.recipientName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      ('initiator' in payment && payment.initiator?.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesAmount = !amountFilter || payment.amount >= parseFloat(amountFilter);
     
@@ -296,7 +296,7 @@ const Payments: React.FC = () => {
                   {activeTab === 'normal' ? (
                     <>
                       <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {payment.txCode}
+                        {(payment as typeof normalPayments[number]).txCode}
                       </td>
                       <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         {(payment as any).recipientName}

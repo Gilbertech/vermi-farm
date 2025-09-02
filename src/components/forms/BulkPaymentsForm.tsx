@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Download, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, Download, CheckCircle, } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 interface BulkPaymentsFormProps {
