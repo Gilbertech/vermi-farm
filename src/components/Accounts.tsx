@@ -1,49 +1,62 @@
 import React, { useState } from 'react';
 import { Search, Filter, DollarSign, CreditCard } from 'lucide-react';
+import { AccountService, AccountTransaction } from '../services/accountService';
+import { ApiError } from '../services/api';
 
 const Accounts: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'number' | 'balance'>('number');
   const [searchTerm, setSearchTerm] = useState('');
   const [amountFilter, setAmountFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
+  const [transactions, setTransactions] = useState<AccountTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [accountBalance, setAccountBalance] = useState(0);
 
-  // Mock transaction data
-  const transactions = [
-    {
-      id: '1',
-      mpesaReceipt: 'QGH7K8L9M0',
-      sender: 'John Doe (+254712345678)',
-      amount: 5000,
-      completedAt: '2024-01-20T10:30:00Z',
-      status: 'success'
-    },
-    {
-      id: '2',
-      mpesaReceipt: 'RTY5U6I7O8',
-      sender: 'Jane Smith (+254787654321)',
-      amount: 3500,
-      completedAt: '2024-01-20T14:15:00Z',
-      status: 'success'
-    },
-    {
-      id: '3',
-      mpesaReceipt: 'ASD2F3G4H5',
-      sender: 'Mike Johnson (+254798765432)',
-      amount: 7200,
-      completedAt: '2024-01-19T09:45:00Z',
-      status: 'pending'
-    }
-  ];
+  // Load account data
+  React.useEffect(() => {
+    const loadAccountData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const [transactionsResponse, balanceResponse] = await Promise.allSettled([
+          AccountService.getAccountTransactions({ limit: 1000 }),
+          AccountService.getAccountBalance()
+        ]);
+
+        if (transactionsResponse.status === 'fulfilled') {
+          setTransactions(transactionsResponse.value.items);
+        } else {
+          console.error('Failed to load transactions:', transactionsResponse.reason);
+        }
+
+        if (balanceResponse.status === 'fulfilled') {
+          setAccountBalance(balanceResponse.value.current_balance);
+        } else {
+          console.error('Failed to load balance:', balanceResponse.reason);
+        }
+
+      } catch (err) {
+        const errorMessage = err instanceof ApiError ? err.message : 'Failed to load account data';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAccountData();
+  }, []);
 
   const filteredTransactions = transactions.filter(transaction => {
     const matchesSearch = 
       transaction.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.mpesaReceipt.toLowerCase().includes(searchTerm.toLowerCase());
+      transaction.mpesa_receipt.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesAmount = !amountFilter || transaction.amount >= parseFloat(amountFilter);
     
     const matchesDate = dateFilter === 'all' || 
-      (dateFilter === 'today' && new Date(transaction.completedAt).toDateString() === new Date().toDateString());
+      (dateFilter === 'today' && new Date(transaction.completed_at).toDateString() === new Date().toDateString());
     
     return matchesSearch && matchesAmount && matchesDate;
   });
@@ -125,7 +138,7 @@ const Accounts: React.FC = () => {
               {/* Balance Overview */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
-                  <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">KES {totalBalance.toLocaleString()}</h3>
+                  <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">KES {accountBalance.toLocaleString()}</h3>
                   <p className="text-gray-600 dark:text-gray-400">Current Balance</p>
                 </div>
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
@@ -207,7 +220,7 @@ const Accounts: React.FC = () => {
                       {filteredTransactions.map((transaction, index) => (
                         <tr key={transaction.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-[#f9fafb] dark:bg-gray-750'}`}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                            {transaction.mpesaReceipt}
+                            {transaction.mpesa_receipt}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                             {transaction.sender}
@@ -216,7 +229,7 @@ const Accounts: React.FC = () => {
                             KES {transaction.amount.toLocaleString()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                            {new Date(transaction.completedAt).toLocaleString()}
+                            {new Date(transaction.completed_at).toLocaleString()}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}>

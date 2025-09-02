@@ -8,7 +8,7 @@ interface OTPVerificationPageProps {
 }
 
 const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack }) => {
-  const { completeLogin, pendingLogin } = useAuth();
+  const { completeLoginWithOTP, pendingLogin } = useAuth();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -133,7 +133,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
       
       // Verify against demo OTP only
       if (demoOTP === otpCode) {
-        await completeLogin();
+        await completeLoginWithOTP(otpCode);
         // Success message will be handled by the auth context
       } else {
         const newAttempts = attempts + 1;

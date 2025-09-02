@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { AlertTriangle } from 'lucide-react';
+import { PaymentService, SinglePaymentRequest } from '../../services/paymentService';
+import { ApiError } from '../../services/api';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
 
@@ -23,12 +26,27 @@ const SinglePaymentForm: React.FC<SinglePaymentFormProps> = ({ onClose }) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
     if (canMakePayment()) {
-      // Super admin can directly make payments
-      alert(`✅ Payment of KES ${parseFloat(formData.amount).toLocaleString()} processed successfully!`);
+      try {
+        const paymentRequest: SinglePaymentRequest = {
+          recipient_name: userType === 'existing' 
+            ? [...users, ...groups].find(item => item.id === formData.to)?.name || 'Unknown'
+            : formData.newUserName,
+          recipient_msisdn: userType === 'existing'
+            ? [...users, ...groups].find(item => item.id === formData.to)?.phone || 'Unknown'
+            : formData.newUserPhone,
+          amount: parseFloat(formData.amount),
+          purpose: formData.purpose
+        };
+
+        await PaymentService.createSinglePayment(paymentRequest);
+        alert(`✅ Payment of KES ${parseFloat(formData.amount).toLocaleString()} processed successfully!`);
+      } catch (err) {
+        const errorMessage = err instanceof ApiError ? err.message : 'Payment failed';
+        alert(`❌ Payment failed: ${errorMessage}`);
+        setIsSubmitting(false);
+        return;
+      }
     } else {
       // Initiators send notification to super admin
       if (currentUser) {

@@ -6,13 +6,12 @@ import UserForm from './UserForm';
 import UserDetailView from './UserDetailView';
 
 const Users: React.FC = () => {
-  const { users,  } = useApp();
+  const { users, loading, error } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [createdAtFilter, setCreatedAtFilter] = useState('all');
   const [loanLimitFilter, setLoanLimitFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [showSensitiveData, setShowSensitiveData] = useState(true);
   
@@ -173,7 +172,7 @@ const Users: React.FC = () => {
                     <td className="px-4 lg:px-6 py-4">
                       <button
                         onClick={() => handleViewUser(user.id)}
-                        disabled={isLoading}
+                        disabled={loading}
                         className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200 disabled:opacity-50"
                         title="View User Details"
                       >
@@ -231,7 +230,7 @@ const Users: React.FC = () => {
       </div>
 
       {/* Loading Skeleton */}
-      {isLoading && (
+      {loading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2d8e41] mx-auto"></div>

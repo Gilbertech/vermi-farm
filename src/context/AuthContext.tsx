@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
+import { AuthService, LoginRequest, OTPVerificationRequest, PasswordResetRequest } from '../services/authService';
+import { ApiError } from '../services/api';
 
 interface User {
   id: string;
@@ -27,6 +29,7 @@ interface AuthContextType {
   pendingLogin: { phone: string; password: string; user: User } | null;
   login: (phone: string, password: string) => Promise<boolean>;
   completeLogin: () => Promise<void>;
+  completeLoginWithOTP: (otp: string) => Promise<void>;
   logout: () => void;
   resetPassword: (phone: string) => Promise<boolean>;
   setCurrentView: (view: 'login' | 'reset-password' | 'otp-verification') => void;
@@ -76,101 +79,73 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('Please enter a valid Kenyan phone number (07xxxxxxxx or 01xxxxxxxx)');
     }
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Find user by phone number
-    const user = adminUsers.find(u => u.phone === phone);
-    
-    if (!user) {
-      throw new Error('User not found. Please check your phone number.');
+    try {
+      const loginRequest: LoginRequest = { phone, password };
+      const response = await AuthService.login(loginRequest);
+      
+      if (response.requires_otp && response.otp_sent) {
+        // Store pending login with user info for OTP verification
+        setPendingLogin({ phone, password, user: response.user as User });
+        setCurrentView('otp-verification');
+        return true;
+      } else {
+        throw new Error('OTP verification required but not sent');
+      }
+    } catch (err) {
+      if (err instanceof ApiError) {
+        throw new Error(err.message);
+      }
+      throw new Error('Login failed. Please check your credentials.');
     }
-
-    // Check password (in production, this would be hashed)
-    if (password !== 'admin123') {
-      throw new Error('Invalid password. Please try again.');
-    }
-
-    // Store pending login with user info for OTP verification
-    setPendingLogin({ phone, password, user });
-    setCurrentView('otp-verification');
-    
-    // Simulate sending OTP
-    console.log(`OTP sent to ${phone} for user: ${user.name}`);
-    
-    return true;
   };
 
-  const completeLogin = async (): Promise<void> => {
+  const completeLoginWithOTP = async (otp: string): Promise<void> => {
     if (!pendingLogin) {
       throw new Error('No pending login found. Please start the login process again.');
     }
 
-    // Simulate OTP verification delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      const otpRequest: OTPVerificationRequest = {
+        phone: pendingLogin.phone,
+        otp: otp
+      };
 
-    // Complete the login process
-    setIsAuthenticated(true);
-    setCurrentUser(pendingLogin.user);
-    setPendingLogin(null);
-    setCurrentView('login');
-    
-    // Add sample notifications for super admin
-    if (pendingLogin.user.role === 'super_admin') {
-      const sampleNotifications: Notification[] = [
-        {
-          id: '1',
-          type: 'payment_initiated',
-          message: 'Payment request initiated',
-          initiatorName: 'Admin Initiator 1',
-          amount: 15000,
-          timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-          read: false,
-          actionType: 'payment',
-          details: { type: 'single_payment', recipient: 'John Doe' }
-        },
-        {
-          id: '2',
-          type: 'loan_initiated',
-          message: 'Loan disbursement request initiated',
-          initiatorName: 'Admin Initiator 2',
-          amount: 25000,
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          read: false,
-          actionType: 'loan',
-          details: { type: 'group_loan', groupName: 'Nairobi Farmers' }
-        },
-        {
-          id: '3',
-          type: 'transfer_initiated',
-          message: 'Portfolio transfer request initiated',
-          initiatorName: 'Admin Initiator 1',
-          amount: 50000,
-          timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-          read: false,
-          actionType: 'transfer',
-          details: { 
-            type: 'portfolio_transfer',
-            fromPortfolio: 'revenue',
-            toPortfolio: 'investment',
-            description: 'Quarterly investment allocation',
-            reference: 'Q1-2024-INV'
-          }
-        }
-      ];
-      setNotifications(sampleNotifications);
+      const response = await AuthService.verifyOTP(otpRequest);
+      
+      // Complete the login process
+      setIsAuthenticated(true);
+      setCurrentUser(response.user as User);
+      setPendingLogin(null);
+      setCurrentView('login');
+      
+      console.log(`Login completed for ${response.user.name} (${response.user.role})`);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        throw new Error(err.message);
+      }
+      throw new Error('OTP verification failed');
     }
+  };
 
-    console.log(`Login completed for ${pendingLogin.user.name} (${pendingLogin.user.role})`);
+  const completeLogin = async (): Promise<void> => {
+    // This method is kept for backward compatibility
+    // The actual OTP verification should use completeLoginWithOTP
+    throw new Error('Please use completeLoginWithOTP method');
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
-    setCurrentUser(null);
-    setCurrentView('login');
-    setNotifications([]);
-    setPendingLogin(null);
-    console.log('User logged out');
+    try {
+      AuthService.logout();
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setCurrentView('login');
+      setNotifications([]);
+      setPendingLogin(null);
+      console.log('User logged out');
+    }
   };
 
   const resetPassword = async (phone: string): Promise<boolean> => {
@@ -178,16 +153,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error('Please enter a valid Kenyan phone number (07xxxxxxxx or 01xxxxxxxx)');
     }
 
-    // Check if user exists
-    const user = adminUsers.find(u => u.phone === phone);
-    if (!user) {
-      throw new Error('No account found with this phone number.');
+    try {
+      const resetRequest: PasswordResetRequest = { phone };
+      await AuthService.resetPassword(resetRequest);
+      console.log(`Password reset instructions sent to ${phone}`);
+      return true;
+    } catch (err) {
+      if (err instanceof ApiError) {
+        throw new Error(err.message);
+      }
+      throw new Error('Failed to send reset instructions');
     }
-
-    // Simulate SMS sending
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log(`Password reset instructions sent to ${phone}`);
-    return true;
   };
 
   const canInitiate = (): boolean => {
@@ -287,6 +263,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       pendingLogin,
       login,
       completeLogin,
+      completeLoginWithOTP,
       logout,
       resetPassword,
       setCurrentView,

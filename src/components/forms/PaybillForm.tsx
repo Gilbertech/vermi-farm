@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { PaymentService, PaybillPaymentRequest } from '../../services/paymentService';
+import { ApiError } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 interface PaybillFormProps {
@@ -19,12 +21,22 @@ const PaybillForm: React.FC<PaybillFormProps> = ({ onClose }) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
     if (canMakePayment()) {
-      // Super admin can directly make payments
-      alert(`✅ Paybill payment of KES ${parseFloat(formData.amount).toLocaleString()} processed successfully!`);
+      try {
+        const paymentRequest: PaybillPaymentRequest = {
+          paybill_number: formData.paybillNumber,
+          account_number: formData.accountNumber,
+          amount: parseFloat(formData.amount)
+        };
+
+        await PaymentService.createPaybillPayment(paymentRequest);
+        alert(`✅ Paybill payment of KES ${parseFloat(formData.amount).toLocaleString()} processed successfully!`);
+      } catch (err) {
+        const errorMessage = err instanceof ApiError ? err.message : 'Payment failed';
+        alert(`❌ Payment failed: ${errorMessage}`);
+        setIsSubmitting(false);
+        return;
+      }
     } else {
       // Initiators send notification to super admin
       if (currentUser) {

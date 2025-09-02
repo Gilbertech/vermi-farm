@@ -8,13 +8,15 @@ import BuyGoodsForm from './forms/BuyGoodsForm';
 import BulkPaymentsForm from './forms/BulkPaymentsForm';
 
 const Payments: React.FC = () => {
-  const { canMakePayment,  } = useAuth();
+  const { canMakePayment } = useAuth();
   const [activeTab, setActiveTab] = useState<'normal' | 'b2b'>('normal');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [modalType, setModalType] = useState<'paybill' | 'single' | 'buygoods' | 'bulk' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [amountFilter, setAmountFilter] = useState('');
   const [timeFilter, setTimeFilter] = useState('all');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const walletBalance = 49.00;
 
@@ -117,6 +119,27 @@ const Payments: React.FC = () => {
               <p className="text-sm text-[#983F21] opacity-90">You can submit payment requests with detailed information. Click payment options to send requests to Super Admin for approval.</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2d8e41] mx-auto mb-2"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading payments...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
+          <p className="text-red-600 dark:text-red-400 mb-2">Error loading payments: {error}</p>
+          <button 
+            onClick={() => setError(null)}
+            className="text-[#2d8e41] hover:text-[#246b35] font-medium"
+          >
+            Retry
+          </button>
         </div>
       )}
 

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { PortfolioService, PortfolioTransferRequest } from '../../services/portfolioService';
+import { ApiError } from '../../services/api';
 
 interface TransferFormProps {
   fromPortfolio: string;
@@ -19,15 +21,27 @@ const TransferForm: React.FC<TransferFormProps> = ({ fromPortfolio, toPortfolio,
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    onSubmit({
-      ...formData,
-      amount: parseFloat(formData.amount)
-    });
-    
-    setIsSubmitting(false);
+    try {
+      const transferRequest: PortfolioTransferRequest = {
+        from_portfolio: fromPortfolio as any,
+        to_portfolio: toPortfolio as any,
+        amount: parseFloat(formData.amount),
+        description: formData.description,
+        reference: formData.reference || undefined
+      };
+
+      await PortfolioService.transferBetweenPortfolios(transferRequest);
+      
+      onSubmit({
+        ...formData,
+        amount: parseFloat(formData.amount)
+      });
+    } catch (err) {
+      const errorMessage = err instanceof ApiError ? err.message : 'Transfer failed';
+      alert(`❌ Transfer failed: ${errorMessage}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

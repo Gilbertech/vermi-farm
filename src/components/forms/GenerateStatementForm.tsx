@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { StatementService, GenerateStatementRequest } from '../../services/statementService';
+import { ApiError } from '../../services/api';
 
 interface GenerateStatementFormProps {
   onClose: () => void;
@@ -19,11 +21,41 @@ const GenerateStatementForm: React.FC<GenerateStatementFormProps> = ({ onClose }
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    setIsSubmitting(false);
-    onClose();
+    try {
+      const generateRequest: GenerateStatementRequest = {
+        from_date: formData.from,
+        to_date: formData.to,
+        user_id: formData.userId || undefined,
+        group_id: formData.groupId || undefined,
+        format: 'pdf'
+      };
+
+      const statement = await StatementService.generateStatement(generateRequest);
+      
+      // Download the generated statement
+      try {
+        const blob = await StatementService.downloadStatement(statement.id);
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `statement-${statement.id}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (downloadErr) {
+        console.warn('Download failed, statement generated but not downloaded:', downloadErr);
+        alert('Statement generated successfully but download failed. Please check the statements list.');
+      }
+      
+      alert('Statement generated successfully!');
+      onClose();
+    } catch (err) {
+      const errorMessage = err instanceof ApiError ? err.message : 'Failed to generate statement';
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

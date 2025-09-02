@@ -1,46 +1,40 @@
 import React, { useState } from 'react';
 import { Download, Search, Calendar, Plus } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { StatementService, Statement, GenerateStatementRequest } from '../services/statementService';
+import { ApiError } from '../services/api';
 import { generateStatement } from '../utils/statementGenerator';
 import Modal from './Modal';
 import GenerateStatementForm from './forms/GenerateStatementForm';
 
 const Statements: React.FC = () => {
-  const { groups, users, transactions } = useApp();
+  const { groups, users, transactions, loading: appLoading, error: appError } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [statements, setStatements] = useState<Statement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock statements data
-  const statements = [
-    {
-      id: '1',
-      from: '2024-01-01',
-      to: '2024-01-31',
-      groupId: '1',
-      userId: '1',
-      type: 'Monthly Statement',
-      createdAt: '2024-02-01T00:00:00Z'
-    },
-    {
-      id: '2',
-      from: '2024-02-01',
-      to: '2024-02-28',
-      groupId: '1',
-      userId: '2',
-      type: 'Monthly Statement',
-      createdAt: '2024-03-01T00:00:00Z'
-    },
-    {
-      id: '3',
-      from: '2024-01-01',
-      to: '2024-01-31',
-      groupId: '2',
-      userId: '3',
-      type: 'Monthly Statement',
-      createdAt: '2024-02-01T00:00:00Z'
-    }
-  ];
+  // Load statements data
+  React.useEffect(() => {
+    const loadStatements = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await StatementService.getStatements({ limit: 1000 });
+        setStatements(response.items);
+      } catch (err) {
+        const errorMessage = err instanceof ApiError ? err.message : 'Failed to load statements';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadStatements();
+  }, []);
 
   const getGroupName = (groupId: string) => {
     const group = groups.find(g => g.id === groupId);
@@ -54,46 +48,62 @@ const Statements: React.FC = () => {
 
   const filteredStatements = statements.filter(statement => {
     const matchesSearch = 
-      getGroupName(statement.groupId).toLowerCase().includes(searchTerm.toLowerCase()) ||
-      getUserName(statement.userId).toLowerCase().includes(searchTerm.toLowerCase());
+      (statement.group_id && getGroupName(statement.group_id).toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (statement.user_id && getUserName(statement.user_id).toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesDate = dateFilter === 'all' || 
-      (dateFilter === 'month' && new Date(statement.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+      (dateFilter === 'month' && new Date(statement.created_at) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
     
     return matchesSearch && matchesDate;
   });
 
   const handleDownload = async (statement: any) => {
-    const user = users.find(u => u.id === statement.userId);
-    const group = groups.find(g => g.id === statement.groupId);
+    try {
+      // Try to download from API first
+      const blob = await StatementService.downloadStatement(statement.id);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `statement-${statement.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      // Fallback to local generation
+      console.warn('API download failed, generating locally:', err);
+      
+      const user = users.find(u => u.id === statement.user_id);
+      const group = groups.find(g => g.id === statement.group_id);
     
-    // Get transactions for the period
-    const statementTransactions = transactions
-      .filter(t => {
-        const transactionDate = new Date(t.createdAt);
-        const fromDate = new Date(statement.from);
-        const toDate = new Date(statement.to);
-        return transactionDate >= fromDate && transactionDate <= toDate;
-      })
-      .map((t, index) => ({
-        id: t.id,
-        date: t.createdAt,
-        type: t.type,
-        description: t.description,
-        amount: t.amount,
-        balance: 5000 + (index * 1000), // Mock running balance
-        status: t.status
-      }));
+      // Get transactions for the period
+      const statementTransactions = transactions
+        .filter(t => {
+          const transactionDate = new Date(t.createdAt);
+          const fromDate = new Date(statement.from_date);
+          const toDate = new Date(statement.to_date);
+          return transactionDate >= fromDate && transactionDate <= toDate;
+        })
+        .map((t, index) => ({
+          id: t.id,
+          date: t.createdAt,
+          type: t.type,
+          description: t.description,
+          amount: t.amount,
+          balance: 5000 + (index * 1000), // Mock running balance
+          status: t.status
+        }));
 
-    const statementData = {
-      fromDate: statement.from,
-      toDate: statement.to,
-      userName: user?.name,
-      groupName: group?.name,
-      transactions: statementTransactions
-    };
+      const statementData = {
+        fromDate: statement.from_date,
+        toDate: statement.to_date,
+        userName: user?.name,
+        groupName: group?.name,
+        transactions: statementTransactions
+      };
 
-    await generateStatement(statementData);
+      await generateStatement(statementData);
+    }
   };
 
   return (
@@ -171,16 +181,16 @@ const Statements: React.FC = () => {
                   >
                     <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-gray-100">{index + 1}</td>
                     <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                      {new Date(statement.from).toLocaleDateString()}
+                      {new Date(statement.from_date).toLocaleDateString()}
                     </td>
                     <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                      {new Date(statement.to).toLocaleDateString()}
+                      {new Date(statement.to_date).toLocaleDateString()}
                     </td>
                     <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-gray-100 font-medium">
-                      {getGroupName(statement.groupId)}
+                      {getGroupName(statement.group_id)}
                     </td>
                     <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                      {getUserName(statement.userId)}
+                      {getUserName(statement.user_id)}
                     </td>
                     <td className="px-4 lg:px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                       <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">

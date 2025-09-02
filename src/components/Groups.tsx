@@ -6,7 +6,7 @@ import GroupForm from './GroupForm';
 import GroupDetailView from './GroupDetailView';
 
 const Groups: React.FC = () => {
-  const { groups,  } = useApp();
+  const { groups, loading, error } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
@@ -61,8 +61,30 @@ const Groups: React.FC = () => {
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+        {/* Loading State */}
+        {loading && (
+          <div className="p-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2d8e41] mx-auto mb-2"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading groups...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="p-6 text-center">
+            <p className="text-red-600 dark:text-red-400 mb-2">Error loading groups: {error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="text-[#2d8e41] hover:text-[#246b35] font-medium"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Filters */}
-        <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
+        {!loading && !error && (
+          <div className="p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
               <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
@@ -99,9 +121,11 @@ const Groups: React.FC = () => {
               </select>
             </div>
           </div>
-        </div>
+          </div>
+        )}
 
-        <div className="overflow-x-auto">
+        {!loading && !error && (
+          <div className="overflow-x-auto">
           <table className="w-full min-w-[600px]">
             <thead className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
               <tr>
@@ -154,9 +178,10 @@ const Groups: React.FC = () => {
               })}
             </tbody>
           </table>
-        </div>
+          </div>
+        )}
 
-        {filteredGroups.length === 0 && (
+        {!loading && !error && filteredGroups.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500 dark:text-gray-400">No groups found matching your search criteria</p>
           </div>

@@ -161,12 +161,18 @@ A comprehensive web-based Management Information System designed specifically fo
    npm install
    ```
 
-3. **Start development server**
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API configuration
+   ```
+
+4. **Start development server**
    ```bash
    npm run dev
    ```
 
-4. **Build for production**
+5. **Build for production**
    ```bash
    npm run build
    ```
@@ -201,11 +207,53 @@ src/
 
 ## 🔧 **Configuration**
 
+### **API Integration**
+The application is fully integrated with REST APIs. All data operations go through the API services:
+
+- **Authentication**: JWT-based authentication with OTP verification
+- **User Management**: Complete CRUD operations for users
+- **Group Management**: Group creation, updates, and member management
+- **Transaction Processing**: Real-time transaction handling
+- **Loan Management**: Loan disbursement and repayment tracking
+- **Payment Processing**: Multiple payment types with M-Pesa integration
+- **Portfolio Management**: Inter-portfolio transfers and tracking
+- **Statement Generation**: PDF and CSV statement generation
+- **Reversal Management**: Transaction reversal workflow
+- **Analytics**: Real-time dashboard analytics
+
+### **Backend Requirements**
+The backend developer should implement the APIs documented in `BACKEND_API_DOCUMENTATION.md`. Key requirements:
+
+1. **Authentication System**: Phone-based login with OTP verification
+2. **Database Schema**: As outlined in `DATABASE_VARIABLES.md`
+3. **M-Pesa Integration**: STK Push and callback handling
+4. **SMS Service**: OTP and notification sending
+5. **File Upload**: Bulk payment file processing
+6. **Real-time Features**: WebSocket support for live updates
+7. **Security**: JWT tokens, rate limiting, input validation
+
 ### **Environment Variables**
 ```env
-VITE_API_URL=your_api_endpoint
+# API Configuration
+VITE_API_URL=https://api.vermi-farm.org/v1
+
+# M-Pesa Configuration
 VITE_MPESA_SHORTCODE=4703932
+VITE_MPESA_CONSUMER_KEY=your_mpesa_consumer_key
+VITE_MPESA_CONSUMER_SECRET=your_mpesa_consumer_secret
+
+# SMS Configuration
 VITE_SMS_API_KEY=your_sms_api_key
+VITE_SMS_SENDER_ID=VERMIFARM
+
+# Application Configuration
+VITE_APP_NAME=Vermi-Farm MIS
+VITE_APP_VERSION=1.0.0
+
+# Feature Flags
+VITE_ENABLE_DEMO_MODE=true
+VITE_ENABLE_NOTIFICATIONS=true
+VITE_ENABLE_2FA=true
 ```
 
 ### **Customization**

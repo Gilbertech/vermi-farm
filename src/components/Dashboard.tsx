@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import StatCard from './StatCard';
 
 const Dashboard: React.FC = () => {
-  const { stats, transactions, users } = useApp();
+  const { stats, transactions, users, loading, error } = useApp();
 
   const failedTransactions = transactions.filter(t => t.status === 'failed').length;
   
@@ -86,6 +86,27 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#2d8e41] mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading dashboard data...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
+          <p className="text-red-600 dark:text-red-400 mb-2">Error loading dashboard: {error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="text-[#2d8e41] hover:text-[#246b35] font-medium"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Dashboard</h1>
         <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -93,13 +114,16 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+      {!loading && !error && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
         {statCards.map((card, index) => (
           <StatCard key={index} {...card} />
         ))}
-      </div>
+        </div>
+      )}
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+      {!loading && !error && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         <div className="bg-white dark:bg-gray-800 p-4 lg:p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Daily User Growth</h3>
@@ -171,7 +195,8 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

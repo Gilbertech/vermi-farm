@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import { generateReceipt } from '../utils/receiptGenerator';
 
 const EnhancedTransactions: React.FC = () => {
-  useApp();
+  const { loading, error } = useApp();
   const [activeTab, setActiveTab] = useState<'inwallet' | 'outwallet' | 'withdrawals'>('inwallet');
   const [searchTerm, setSearchTerm] = useState('');
   const [amountFilter, setAmountFilter] = useState('');
@@ -333,8 +333,30 @@ const EnhancedTransactions: React.FC = () => {
         </div>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2d8e41] mx-auto mb-2"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading transactions...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
+          <p className="text-red-600 dark:text-red-400 mb-2">Error loading transactions: {error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="text-[#2d8e41] hover:text-[#246b35] font-medium"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Tabbed Interface */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      {!loading && !error && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="flex space-x-4 lg:space-x-8 px-4 lg:px-6 overflow-x-auto">
             <button
@@ -384,7 +406,8 @@ const EnhancedTransactions: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 };

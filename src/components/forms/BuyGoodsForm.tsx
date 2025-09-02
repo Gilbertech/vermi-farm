@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
+import { PaymentService, BuyGoodsPaymentRequest } from '../../services/paymentService';
+import { ApiError } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
 interface BuyGoodsFormProps {
@@ -18,12 +20,21 @@ const BuyGoodsForm: React.FC<BuyGoodsFormProps> = ({ onClose }) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
     if (canMakePayment()) {
-      // Super admin can directly make payments
-      alert(`✅ Buy goods payment of KES ${parseFloat(formData.amount).toLocaleString()} processed successfully!`);
+      try {
+        const paymentRequest: BuyGoodsPaymentRequest = {
+          business_number: formData.businessNumber,
+          amount: parseFloat(formData.amount)
+        };
+
+        await PaymentService.createBuyGoodsPayment(paymentRequest);
+        alert(`✅ Buy goods payment of KES ${parseFloat(formData.amount).toLocaleString()} processed successfully!`);
+      } catch (err) {
+        const errorMessage = err instanceof ApiError ? err.message : 'Payment failed';
+        alert(`❌ Payment failed: ${errorMessage}`);
+        setIsSubmitting(false);
+        return;
+      }
     } else {
       // Initiators send notification to super admin
       if (currentUser) {

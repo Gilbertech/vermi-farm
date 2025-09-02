@@ -7,7 +7,7 @@ import Modal from './Modal';
 import TransferForm from './forms/TransferForm';
 
 const Portfolio: React.FC = () => {
-  const { stats, loans,} = useApp();
+  const { stats, loans, loading, error } = useApp();
   const { canInitiate, canApprove, canTransferPortfolio, currentUser, addNotification } = useAuth();
   const [activeTab, setActiveTab] = useState<'loan' | 'revenue' | 'investment' | 'expense' | 'working' | 'b2b' | 'savings'>('loan');
   const [searchTerm, setSearchTerm] = useState('');
@@ -392,8 +392,30 @@ const Portfolio: React.FC = () => {
         </div>
       )}
 
+      {/* Loading State */}
+      {loading && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2d8e41] mx-auto mb-2"></div>
+          <p className="text-gray-600 dark:text-gray-400">Loading portfolio data...</p>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center">
+          <p className="text-red-600 dark:text-red-400 mb-2">Error loading portfolio: {error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="text-[#2d8e41] hover:text-[#246b35] font-medium"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Tab Navigation */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+      {!loading && !error && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
         <div className="border-b border-gray-200 dark:border-gray-700">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between px-4 lg:px-6 py-4 gap-4">
             <nav className="flex space-x-2 lg:space-x-8 overflow-x-auto pb-2 lg:pb-0">
@@ -557,7 +579,8 @@ const Portfolio: React.FC = () => {
             )}
           </div>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Transfer Modal - Available for both Super Admin and Initiators */}
       {(canTransferPortfolio() || canInitiate()) && (
