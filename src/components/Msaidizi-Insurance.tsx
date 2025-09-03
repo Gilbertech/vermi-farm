@@ -800,6 +800,7 @@ function startWeatherMonitoring() {
 if (require.main === module) {
   startWeatherMonitoring();
 }
+export default Msaidizi-Insurance;
 
 /* 
 API ENDPOINT SUMMARY:
