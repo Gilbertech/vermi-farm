@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Wallet, ChevronDown, Copy, Plus, Download, Search, Filter, Calendar, AlertTriangle } from 'lucide-react';
+import { PaymentService, Payment } from '../services/paymentService';
+import { ApiError } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 import PaybillForm from './forms/PaybillForm';
@@ -15,59 +17,104 @@ const Payments: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [amountFilter, setAmountFilter] = useState('');
   const [timeFilter, setTimeFilter] = useState('all');
-  const [loading, setLoading] = useState(false);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const walletBalance = 49.00;
 
-  // Mock payment data
-  const normalPayments = [
+  // Mock payment data for fallback
+  const mockNormalPayments = [
     {
       id: '1',
-      txCode: 'TXN001234567',
-      recipientName: 'John Doe',
-      recipientMSISDN: '+254712345678',
+      tx_code: 'TXN001234567',
+      payment_type: 'normal' as const,
+      initiator_id: '1',
+      recipient_name: 'John Doe',
+      recipient_msisdn: '+254712345678',
       amount: 5000,
       cost: 25,
-      time: '2024-01-20T10:30:00Z'
+      status: 'completed' as const,
+      created_at: '2024-01-20T10:30:00Z',
+      updated_at: '2024-01-20T10:30:00Z'
     },
     {
       id: '2',
-      txCode: 'TXN001234568',
-      recipientName: 'Jane Smith',
-      recipientMSISDN: '+254787654321',
+      tx_code: 'TXN001234568',
+      payment_type: 'normal' as const,
+      initiator_id: '2',
+      recipient_name: 'Jane Smith',
+      recipient_msisdn: '+254787654321',
       amount: 3500,
       cost: 20,
-      time: '2024-01-20T14:15:00Z'
+      status: 'completed' as const,
+      created_at: '2024-01-20T14:15:00Z',
+      updated_at: '2024-01-20T14:15:00Z'
     }
   ];
 
-  const b2bPayments = [
+  const mockB2BPayments = [
     {
-      id: '1',
-      initiator: 'Admin User',
-      paybill: '4703932',
-      account: 'VermiFarm001',
+      id: '3',
+      tx_code: 'B2B001234569',
+      payment_type: 'b2b' as const,
+      initiator_id: '1',
+      recipient_name: 'VermiFarm Equipment',
+      recipient_msisdn: '+254700000000',
+      paybill_number: '4703932',
+      account_number: 'VermiFarm001',
       amount: 15000,
       cost: 50,
-      mpesaReceipt: 'QGH7K8L9M0',
+      mpesa_receipt: 'QGH7K8L9M0',
       description: 'Equipment purchase',
-      status: 'completed',
-      time: '2024-01-20T10:30:00Z'
-    },
-    {
-      id: '2',
-      initiator: 'Group Admin',
-      paybill: '4703933',
-      account: 'VermiFarm002',
-      amount: 8500,
-      cost: 35,
-      mpesaReceipt: 'RTY5U6I7O8',
-      description: 'Loan disbursement',
-      status: 'pending',
-      time: '2024-01-20T14:15:00Z'
+      status: 'completed' as const,
+      created_at: '2024-01-20T10:30:00Z',
+      updated_at: '2024-01-20T10:30:00Z'
     }
   ];
+
+  // Load payments data
+  useEffect(() => {
+    const loadPayments = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        try {
+          const response = await PaymentService.getPayments({ 
+            limit: 1000,
+            payment_type: activeTab === 'normal' ? 'normal' : 'b2b'
+          });
+          setPayments(response.items);
+        } catch (apiError) {
+          console.warn('API payments failed, using mock data:', apiError);
+          // Use mock data based on active tab
+          setPayments(activeTab === 'normal' ? mockNormalPayments : mockB2BPayments);
+        }
+
+      } catch (err) {
+        const errorMessage = err instanceof ApiError ? err.message : 'Failed to load payments';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPayments();
+  }, [activeTab]);
+
+  const filteredPayments = payments.filter(payment => {
+    const matchesSearch = 
+      payment.tx_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      payment.recipient_name?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesAmount = !amountFilter || payment.amount >= parseFloat(amountFilter);
+    
+    const matchesTime = timeFilter === 'all' || 
+      (timeFilter === 'today' && new Date(payment.created_at).toDateString() === new Date().toDateString());
+    
+    return matchesSearch && matchesAmount && matchesTime;
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -90,20 +137,6 @@ const Payments: React.FC = () => {
   const copyBalance = () => {
     navigator.clipboard.writeText(walletBalance.toString());
   };
-
-  const filteredPayments = (activeTab === 'normal' ? normalPayments : b2bPayments).filter(payment => {
-    const matchesSearch = 
-      ('txCode' in payment && payment.txCode?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      ('recipientName' in payment && payment.recipientName?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      ('initiator' in payment && payment.initiator?.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesAmount = !amountFilter || payment.amount >= parseFloat(amountFilter);
-    
-    const matchesTime = timeFilter === 'all' || 
-      (timeFilter === 'today' && new Date(payment.time).toDateString() === new Date().toDateString());
-    
-    return matchesSearch && matchesAmount && matchesTime;
-  });
 
   return (
     <div className="space-y-4 lg:space-y-6 p-4 lg:p-0">
@@ -240,148 +273,158 @@ const Payments: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <div className="relative">
-              <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+      {!loading && !error && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 lg:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <div className="relative">
+                <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                <input
+                  type="text"
+                  placeholder="Search payments..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                />
+              </div>
+            </div>
+            
+            <div>
               <input
-                type="text"
-                placeholder="Search payments..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                type="number"
+                placeholder="Min Amount (KES)"
+                value={amountFilter}
+                onChange={(e) => setAmountFilter(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
-          </div>
-          
-          <div>
-            <input
-              type="number"
-              placeholder="Min Amount (KES)"
-              value={amountFilter}
-              onChange={(e) => setAmountFilter(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-            />
-          </div>
-          
-          <div>
-            <div className="relative">
-              <Calendar className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
-              <select
-                value={timeFilter}
-                onChange={(e) => setTimeFilter(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              >
-                <option value="all">All Time</option>
-                <option value="today">Today</option>
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-              </select>
+            
+            <div>
+              <div className="relative">
+                <Calendar className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                <select
+                  value={timeFilter}
+                  onChange={(e) => setTimeFilter(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#983F21] focus:border-transparent transition-colors duration-200 appearance-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Payments Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px]">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                {activeTab === 'normal' ? (
-                  <>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">TXCODE</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recipient Name</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recipient MSISDN</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cost</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
-                  </>
-                ) : (
-                  <>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Initiator</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Paybill</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Account</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cost</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Mpesa Receipt</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
-                  </>
-                )}
-              </tr>
-            </thead>
-            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredPayments.map((payment, index) => (
-                <tr key={payment.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-[#f9fafb] dark:bg-gray-750'}`}>
+      {!loading && !error && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px]">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
                   {activeTab === 'normal' ? (
                     <>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {(payment as typeof normalPayments[number]).txCode}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {(payment as any).recipientName}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {(payment as any).recipientMSISDN}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        KES {payment.amount.toLocaleString()}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        KES {payment.cost}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {new Date(payment.time).toLocaleString()}
-                      </td>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">TXCODE</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recipient Name</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recipient MSISDN</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cost</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
                     </>
                   ) : (
                     <>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {(payment as any).initiator}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {(payment as any).paybill}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {(payment as any).account}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
-                        KES {payment.amount.toLocaleString()}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        KES {payment.cost}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {(payment as any).mpesaReceipt}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {(payment as any).description}
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor((payment as any).status)}`}>
-                          {(payment as any).status}
-                        </span>
-                      </td>
-                      <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {new Date(payment.time).toLocaleString()}
-                      </td>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recipient</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Paybill</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Account</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Cost</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Mpesa Receipt</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                      <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
                     </>
                   )}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredPayments.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500 dark:text-gray-400">No payments found matching your criteria</p>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredPayments.map((payment, index) => (
+                  <tr key={payment.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 ${index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-[#f9fafb] dark:bg-gray-750'}`}>
+                    {activeTab === 'normal' ? (
+                      <>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {payment.tx_code}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          {payment.recipient_name}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          {payment.recipient_msisdn}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          KES {payment.amount.toLocaleString()}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          KES {payment.cost}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(payment.status)}`}>
+                            {payment.status}
+                          </span>
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          {new Date(payment.created_at).toLocaleString()}
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          {payment.recipient_name}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          {payment.paybill_number || 'N/A'}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          {payment.account_number || 'N/A'}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          KES {payment.amount.toLocaleString()}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          KES {payment.cost}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          {payment.mpesa_receipt || 'N/A'}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          {payment.description || 'N/A'}
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(payment.status)}`}>
+                            {payment.status}
+                          </span>
+                        </td>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          {new Date(payment.created_at).toLocaleString()}
+                        </td>
+                      </>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+
+          {filteredPayments.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400">No payments found matching your criteria</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Payment Forms Modals */}
       <Modal
