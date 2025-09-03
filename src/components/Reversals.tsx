@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Search, Filter, Check, X, Eye } from 'lucide-react';
 import { ReversalService, ReversalRequest } from '../services/reversalService';
 import { ApiError } from '../services/api';
@@ -13,52 +13,15 @@ const Reversals: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Mock reversal requests for fallback
-  const mockReversalRequests: ReversalRequest[] = [
-    {
-      id: '1',
-      tx_code: 'TXN001234567',
-      initiated_by: 'John Doe',
-      transaction_type: 'payment',
-      amount: 5000,
-      transaction_time: '2024-01-20T10:30:00Z',
-      from_account: 'John Doe',
-      to_account: 'Jane Smith',
-      reason: 'Incorrect amount sent',
-      status: 'pending',
-      created_at: '2024-01-20T11:00:00Z',
-      updated_at: '2024-01-20T11:00:00Z'
-    },
-    {
-      id: '2',
-      tx_code: 'TXN001234568',
-      initiated_by: 'Mike Johnson',
-      transaction_type: 'transfer',
-      amount: 3000,
-      transaction_time: '2024-01-19T14:15:00Z',
-      from_account: 'Mike Johnson',
-      to_account: 'Group Account',
-      reason: 'Duplicate transaction',
-      status: 'approved',
-      created_at: '2024-01-19T15:00:00Z',
-      updated_at: '2024-01-19T16:00:00Z'
-    }
-  ];
-
   // Load reversal requests
-  useEffect(() => {
+  React.useEffect(() => {
     const loadReversalRequests = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        try {
-          const response = await ReversalService.getReversalRequests({ limit: 1000 });
-          setReversalRequests(response.items);
-        } catch (apiError) {
-          console.warn('API reversal requests failed, using mock data:', apiError);
-          setReversalRequests(mockReversalRequests);
-        }
+        const response = await ReversalService.getReversalRequests({ limit: 1000 });
+        setReversalRequests(response.items);
       } catch (err) {
         const errorMessage = err instanceof ApiError ? err.message : 'Failed to load reversal requests';
         setError(errorMessage);
@@ -96,18 +59,12 @@ const Reversals: React.FC = () => {
 
   const handleApprove = async (requestId: string) => {
     try {
-      try {
-        await ReversalService.approveReversal(requestId);
-      } catch (apiError) {
-        console.warn('API approve reversal failed, updating local state:', apiError);
-      }
-      
+      await ReversalService.approveReversal(requestId);
       setReversalRequests(prev => 
         prev.map(request => 
           request.id === requestId ? { ...request, status: 'approved' } : request
         )
       );
-      alert('Reversal request approved successfully!');
     } catch (err) {
       const errorMessage = err instanceof ApiError ? err.message : 'Failed to approve reversal';
       alert(`Error: ${errorMessage}`);
@@ -116,18 +73,12 @@ const Reversals: React.FC = () => {
 
   const handleReject = async (requestId: string) => {
     try {
-      try {
-        await ReversalService.rejectReversal(requestId);
-      } catch (apiError) {
-        console.warn('API reject reversal failed, updating local state:', apiError);
-      }
-      
+      await ReversalService.rejectReversal(requestId);
       setReversalRequests(prev => 
         prev.map(request => 
           request.id === requestId ? { ...request, status: 'rejected' } : request
         )
       );
-      alert('Reversal request rejected successfully!');
     } catch (err) {
       const errorMessage = err instanceof ApiError ? err.message : 'Failed to reject reversal';
       alert(`Error: ${errorMessage}`);

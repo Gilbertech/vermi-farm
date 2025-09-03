@@ -29,7 +29,7 @@ const TopNavbar: React.FC<TopNavbarProps> = ({ title, onMenuClick }) => {
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'super_admin':
-        return 'Super Admin';
+        return 'Royford Mutegi';
       case 'admin_initiator':
         return 'Admin (Initiator)';
       default:

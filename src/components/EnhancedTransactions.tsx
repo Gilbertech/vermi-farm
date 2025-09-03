@@ -1,142 +1,81 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Download, ArrowUpRight, ArrowDownLeft, Clock, Eye, EyeOff } from 'lucide-react';
-import { TransactionService, Transaction } from '../services/transactionService';
-import { ApiError } from '../services/api';
+import React, { useState } from 'react';
+import { Search,  Download, ArrowUpRight, ArrowDownLeft, Clock, Eye, EyeOff } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import { generateReceipt } from '../utils/receiptGenerator';
 
 const EnhancedTransactions: React.FC = () => {
+  const { loading, error } = useApp();
   const [activeTab, setActiveTab] = useState<'inwallet' | 'outwallet' | 'withdrawals'>('inwallet');
   const [searchTerm, setSearchTerm] = useState('');
   const [amountFilter, setAmountFilter] = useState('');
   const [timeFilter, setTimeFilter] = useState('all');
   const [showAmounts, setShowAmounts] = useState(true);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // Mock enhanced transaction data for fallback
-  const mockTransactions = [
+  // Mock enhanced transaction data
+  const enhancedTransactions = [
     {
       id: '1',
-      tx_code: 'TXN001234567',
-      type: 'deposit' as const,
+      txCode: 'TXN001234567',
+      type: 'inwallet',
+      from: 'John Doe (+254712345678)',
+      to: 'Nairobi Farmers Group',
+      recipient: 'Nairobi Farmers Group',
+      msisdn: '+254712345678',
       amount: 5000,
       fees: 25,
-      user_id: '1',
-      group_id: '1',
-      from_account: 'John Doe (+254712345678)',
-      to_account: 'Nairobi Farmers Group',
-      description: 'Monthly contribution',
-      status: 'completed' as const,
-      mpesa_receipt: 'QGH7K8L9M0',
-      created_at: '2024-01-20T10:30:00Z',
-      updated_at: '2024-01-20T10:30:00Z'
+      txCost: 25,
+      mpesaReceipt: 'QGH7K8L9M0',
+      time: '2024-01-20T10:30:00Z',
+      status: 'success'
     },
     {
       id: '2',
-      tx_code: 'TXN001234568',
-      type: 'withdrawal' as const,
+      txCode: 'TXN001234568',
+      type: 'outwallet',
+      from: 'Nairobi Farmers Group',
+      to: 'Jane Smith',
+      recipient: 'Jane Smith',
+      msisdn: '+254787654321',
       amount: 15000,
       fees: 50,
-      user_id: '2',
-      group_id: '1',
-      from_account: 'Nairobi Farmers Group',
-      to_account: 'Jane Smith',
-      description: 'Equipment purchase',
-      status: 'completed' as const,
-      mpesa_receipt: 'RTY5U6I7O8',
-      created_at: '2024-01-20T14:15:00Z',
-      updated_at: '2024-01-20T14:15:00Z'
+      txCost: 50,
+      mpesaReceipt: 'RTY5U6I7O8',
+      time: '2024-01-20T14:15:00Z',
+      status: 'success'
     },
     {
       id: '3',
-      tx_code: 'TXN001234569',
-      type: 'withdrawal' as const,
+      txCode: 'TXN001234569',
+      type: 'withdrawals',
+      from: 'Mike Johnson',
+      to: 'M-Pesa',
       amount: 3000,
-      fees: 30,
-      user_id: '3',
-      group_id: '2',
-      from_account: 'Mike Johnson',
-      to_account: 'M-Pesa',
-      description: 'Cash withdrawal',
-      status: 'pending' as const,
-      mpesa_receipt: 'ASD2F3G4H5',
-      created_at: '2024-01-19T09:45:00Z',
-      updated_at: '2024-01-19T09:45:00Z'
+      txCost: 30,
+      mpesaReceipt: 'ASD2F3G4H5',
+      time: '2024-01-19T09:45:00Z',
+      status: 'pending'
     }
   ];
 
-  // Load transactions based on active tab
-  useEffect(() => {
-    const loadTransactions = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        try {
-          let response;
-          switch (activeTab) {
-            case 'inwallet':
-              response = await TransactionService.getInwalletTransactions({ limit: 1000 });
-              break;
-            case 'outwallet':
-              response = await TransactionService.getOutwalletTransactions({ limit: 1000 });
-              break;
-            case 'withdrawals':
-              response = await TransactionService.getWithdrawalTransactions({ limit: 1000 });
-              break;
-            default:
-              response = await TransactionService.getTransactions({ limit: 1000 });
-          }
-          
-          setTransactions(response.items);
-        } catch (apiError) {
-          console.warn(`API ${activeTab} transactions failed, using mock data:`, apiError);
-          // Filter mock data based on tab
-          const filteredMockData = mockTransactions.filter(t => {
-            switch (activeTab) {
-              case 'inwallet':
-                return t.type === 'deposit' || t.type === 'loan';
-              case 'outwallet':
-                return t.type === 'withdrawal' || t.type === 'repayment';
-              case 'withdrawals':
-                return t.type === 'withdrawal';
-              default:
-                return true;
-            }
-          });
-          setTransactions(filteredMockData);
-        }
-
-      } catch (err) {
-        const errorMessage = err instanceof ApiError ? err.message : 'Failed to load transactions';
-        setError(errorMessage);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadTransactions();
-  }, [activeTab]);
-
-  const filteredTransactions = transactions.filter(transaction => {
+  const filteredTransactions = enhancedTransactions.filter(transaction => {
+    const matchesTab = transaction.type === activeTab;
     const matchesSearch = 
-      transaction.tx_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.from_account.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.to_account.toLowerCase().includes(searchTerm.toLowerCase());
+      transaction.txCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.from.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.to.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesAmount = !amountFilter || transaction.amount >= parseFloat(amountFilter);
     
     const matchesTime = timeFilter === 'all' || 
-      (timeFilter === 'today' && new Date(transaction.created_at).toDateString() === new Date().toDateString()) ||
-      (timeFilter === 'week' && new Date(transaction.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
+      (timeFilter === 'today' && new Date(transaction.time).toDateString() === new Date().toDateString()) ||
+      (timeFilter === 'week' && new Date(transaction.time) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
     
-    return matchesSearch && matchesAmount && matchesTime;
+    return matchesTab && matchesSearch && matchesAmount && matchesTime;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'success':
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
@@ -151,23 +90,24 @@ const EnhancedTransactions: React.FC = () => {
     const transaction = filteredTransactions.find(t => t.id === transactionId);
     if (!transaction) return;
 
+    // Generate PDF receipt using the same function as portfolio
     const receiptData = {
-      transactionId: transaction.tx_code,
-      date: transaction.created_at,
-      userName: transaction.from_account,
-      userPhone: '+254712345678', // Mock phone
+      transactionId: transaction.txCode,
+      date: transaction.time,
+      userName: transaction.from,
+      userPhone: transaction.msisdn || '+254712345678',
       amount: transaction.amount,
       type: `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Transaction`,
       status: transaction.status,
-      from: transaction.from_account,
-      to: transaction.to_account,
+      from: transaction.from,
+      to: transaction.to,
       fees: transaction.fees ? `KES ${transaction.fees}` : undefined
     };
 
     generateReceipt(receiptData);
   };
 
-  const renderTransactionTable = () => (
+  const renderInwalletTable = () => (
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead className="bg-gray-50 dark:bg-gray-700">
@@ -178,6 +118,58 @@ const EnhancedTransactions: React.FC = () => {
             <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
             <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Fees</th>
             <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Download</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          {filteredTransactions.map((transaction, index) => (
+            <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-[#f9fafb] dark:bg-gray-750'}>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                {transaction.txCode}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                {transaction.from}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                {transaction.to}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                {showAmounts ? `KES ${transaction.fees}` : '****'}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                {new Date(transaction.time).toLocaleString()}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                <button
+                  onClick={() => handleDownload(transaction.id)}
+                  className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
+                  title="Download PDF Receipt"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderOutwalletTable = () => (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead className="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tx Code</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">From</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recipient</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">MSISDN</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tx Cost</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
             <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
             <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Download</th>
           </tr>
@@ -186,22 +178,82 @@ const EnhancedTransactions: React.FC = () => {
           {filteredTransactions.map((transaction, index) => (
             <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-[#f9fafb] dark:bg-gray-750'}>
               <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                {transaction.tx_code}
+                {transaction.txCode}
               </td>
               <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                {transaction.from_account}
+                {transaction.from}
               </td>
               <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                {transaction.to_account}
+                {transaction.recipient}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                {showAmounts ? transaction.msisdn : '****'}
               </td>
               <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
                 {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
               </td>
               <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                {showAmounts ? `KES ${transaction.fees || 0}` : '****'}
+                {showAmounts ? `KES ${transaction.txCost}` : '****'}
               </td>
               <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                {new Date(transaction.created_at).toLocaleString()}
+                {new Date(transaction.time).toLocaleString()}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}>
+                  {transaction.status}
+                </span>
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
+                <button
+                  onClick={() => handleDownload(transaction.id)}
+                  className="text-[#2d8e41] hover:text-[#246b35] transition-colors duration-200"
+                  title="Download PDF Receipt"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const renderWithdrawalsTable = () => (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead className="bg-gray-50 dark:bg-gray-700">
+          <tr>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tx Code</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">From</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tx Cost</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Mpesa Receipt</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+            <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Download</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          {filteredTransactions.map((transaction, index) => (
+            <tr key={transaction.id} className={index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-[#f9fafb] dark:bg-gray-750'}>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                {transaction.txCode}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                {transaction.from}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
+                {showAmounts ? `KES ${transaction.amount.toLocaleString()}` : '****'}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                {showAmounts ? `KES ${transaction.txCost}` : '****'}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                {transaction.mpesaReceipt}
+              </td>
+              <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                {new Date(transaction.time).toLocaleString()}
               </td>
               <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                 <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(transaction.status)}`}>
@@ -305,53 +357,55 @@ const EnhancedTransactions: React.FC = () => {
       {/* Tabbed Interface */}
       {!loading && !error && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="flex space-x-4 lg:space-x-8 px-4 lg:px-6 overflow-x-auto">
-              <button
-                onClick={() => setActiveTab('inwallet')}
-                className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap ${
-                  activeTab === 'inwallet'
-                    ? 'border-[#2d8e41] text-[#2d8e41]'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                }`}
-              >
-                <ArrowDownLeft className="w-4 h-4" />
-                <span>Inwallet</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('outwallet')}
-                className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap ${
-                  activeTab === 'outwallet'
-                    ? 'border-[#2d8e41] text-[#2d8e41]'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                }`}
-              >
-                <ArrowUpRight className="w-4 h-4" />
-                <span>Outwallet</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('withdrawals')}
-                className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap ${
-                  activeTab === 'withdrawals'
-                    ? 'border-[#2d8e41] text-[#2d8e41]'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                }`}
-              >
-                <Download className="w-4 h-4" />
-                <span>Withdrawals</span>
-              </button>
-            </nav>
-          </div>
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="flex space-x-4 lg:space-x-8 px-4 lg:px-6 overflow-x-auto">
+            <button
+              onClick={() => setActiveTab('inwallet')}
+              className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap ${
+                activeTab === 'inwallet'
+                  ? 'border-[#2d8e41] text-[#2d8e41]'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              <ArrowDownLeft className="w-4 h-4" />
+              <span>Inwallet</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('outwallet')}
+              className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap ${
+                activeTab === 'outwallet'
+                  ? 'border-[#2d8e41] text-[#2d8e41]'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              <ArrowUpRight className="w-4 h-4" />
+              <span>Outwallet</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('withdrawals')}
+              className={`py-3 lg:py-4 px-2 lg:px-1 border-b-2 font-medium text-sm lg:text-base transition-colors duration-200 flex items-center space-x-2 whitespace-nowrap ${
+                activeTab === 'withdrawals'
+                  ? 'border-[#2d8e41] text-[#2d8e41]'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+              }`}
+            >
+              <Download className="w-4 h-4" />
+              <span>Withdrawals</span>
+            </button>
+          </nav>
+        </div>
 
-          <div className="p-4 lg:p-6">
-            {renderTransactionTable()}
+        <div className="p-4 lg:p-6">
+          {activeTab === 'inwallet' && renderInwalletTable()}
+          {activeTab === 'outwallet' && renderOutwalletTable()}
+          {activeTab === 'withdrawals' && renderWithdrawalsTable()}
 
-            {filteredTransactions.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 dark:text-gray-400">No transactions found matching your criteria</p>
-              </div>
-            )}
-          </div>
+          {filteredTransactions.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400">No transactions found matching your criteria</p>
+            </div>
+          )}
+        </div>
         </div>
       )}
     </div>
