@@ -39,7 +39,7 @@ const AdminDashboard: React.FC = () => {
         return <Statements />;
       case 'portfolio':
         return <Portfolio />;
-      case 'msaidizi-insurance': // <-- Add this case
+      case 'msaidizi-insurance':
         return <MsaidiziInsurance />;
       default:
         return <Dashboard />;
