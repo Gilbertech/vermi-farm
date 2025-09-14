@@ -150,7 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           
           console.log(`Mock login completed for ${pendingLogin.user.name} (${pendingLogin.user.role})`);
         } else {
-          throw new Error('Invalid OTP format. Please enter a 6-digit code.');
+          throw new Error('Please enter a valid 6-digit code.');
         }
       }
     } catch (err) {

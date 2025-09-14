@@ -210,7 +210,7 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
           </div>
 
           {/* Demo OTP Display */}
-          {(import.meta.env.DEV || true) && showOTPDisplay && (
+          {showOTPDisplay && (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-lg mb-6 text-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -231,17 +231,15 @@ const OTPVerificationPage: React.FC<OTPVerificationPageProps> = ({ phone, onBack
           )}
 
           {/* Demo Notice */}
-          {(import.meta.env.DEV || true) && (
-            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
-              <div className="flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <div>
-                  <p className="font-medium">🧪 Demo Mode Active</p>
-                  <p className="text-xs">The OTP will appear above when generated</p>
-                </div>
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <div>
+                <p className="font-medium">🧪 Demo Mode Active</p>
+                <p className="text-xs">Enter any 6-digit number (e.g., 123456) or use the generated OTP above</p>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Error Message */}
           {error && (
