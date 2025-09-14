@@ -240,6 +240,6 @@ export class UserService {
   }>> {
     return apiClient.get<PaginatedResponse<any>>(`/users/${id}/activity`, filters);
   }
-}
+
 
 export { UserService };
