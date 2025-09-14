@@ -1,4 +1,4 @@
-// Base API configuration and utilities
+// Enhanced API configuration and utilities for Linode server integration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.vermi-farm.org/v1';
 
 interface ApiResponse<T> {
@@ -18,6 +18,8 @@ interface PaginatedResponse<T> {
     total_pages: number;
     total_items: number;
     per_page: number;
+    has_next: boolean;
+    has_prev: boolean;
   };
 }
 
@@ -25,7 +27,8 @@ class ApiError extends Error {
   constructor(
     message: string,
     public code: string,
-    public details?: any
+    public details?: any,
+    public status?: number
   ) {
     super(message);
     this.name = 'ApiError';
@@ -35,6 +38,7 @@ class ApiError extends Error {
 class ApiClient {
   private baseURL: string;
   private token: string | null = null;
+  private refreshPromise: Promise<boolean> | null = null;
 
   constructor(baseURL: string) {
     this.baseURL = baseURL;
@@ -55,6 +59,9 @@ class ApiClient {
   private getHeaders(): HeadersInit {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'X-Client-Version': '1.0.0',
+      'X-Platform': 'web'
     };
 
     if (this.token) {
@@ -68,20 +75,35 @@ class ApiClient {
     if (!response.ok) {
       if (response.status === 401) {
         // Token expired, try to refresh
-        const refreshed = await this.refreshToken();
+        if (!this.refreshPromise) {
+          this.refreshPromise = this.refreshToken();
+        }
+        
+        const refreshed = await this.refreshPromise;
+        this.refreshPromise = null;
+        
         if (!refreshed) {
           this.clearToken();
           window.location.reload();
-          throw new ApiError('Session expired', 'AUTHENTICATION_ERROR');
+          throw new ApiError('Session expired', 'AUTHENTICATION_ERROR', null, 401);
         }
-        // Retry the original request would happen here
+        
+        // Retry the original request would happen here in a real implementation
+        throw new ApiError('Please retry your request', 'TOKEN_REFRESHED', null, 401);
       }
 
-      const errorData = await response.json().catch(() => ({}));
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch {
+        errorData = { error: { message: 'Request failed', code: 'NETWORK_ERROR' } };
+      }
+
       throw new ApiError(
-        errorData.error?.message || 'Request failed',
-        errorData.error?.code || 'UNKNOWN_ERROR',
-        errorData.error?.details
+        errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`,
+        errorData.error?.code || 'HTTP_ERROR',
+        errorData.error?.details,
+        response.status
       );
     }
 
@@ -90,7 +112,7 @@ class ApiClient {
     if (!data.success) {
       throw new ApiError(
         data.error?.message || 'Request failed',
-        data.error?.code || 'UNKNOWN_ERROR',
+        data.error?.code || 'API_ERROR',
         data.error?.details
       );
     }
@@ -111,8 +133,13 @@ class ApiClient {
 
       if (response.ok) {
         const data = await response.json();
-        this.setToken(data.data.access_token);
-        return true;
+        if (data.success && data.data.access_token) {
+          this.setToken(data.data.access_token);
+          if (data.data.refresh_token) {
+            localStorage.setItem('refresh_token', data.data.refresh_token);
+          }
+          return true;
+        }
       }
     } catch (error) {
       console.error('Token refresh failed:', error);
@@ -125,7 +152,7 @@ class ApiClient {
     const url = new URL(`${this.baseURL}${endpoint}`);
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
+        if (value !== undefined && value !== null && value !== '') {
           url.searchParams.append(key, value.toString());
         }
       });
@@ -159,6 +186,16 @@ class ApiClient {
     return this.handleResponse<T>(response);
   }
 
+  async patch<T>(endpoint: string, data?: any): Promise<T> {
+    const response = await fetch(`${this.baseURL}${endpoint}`, {
+      method: 'PATCH',
+      headers: this.getHeaders(),
+      body: data ? JSON.stringify(data) : undefined,
+    });
+
+    return this.handleResponse<T>(response);
+  }
+
   async delete<T>(endpoint: string): Promise<T> {
     const response = await fetch(`${this.baseURL}${endpoint}`, {
       method: 'DELETE',
@@ -178,6 +215,27 @@ class ApiClient {
     });
 
     return this.handleResponse<T>(response);
+  }
+
+  // Batch operations for bulk data handling
+  async batch<T>(requests: Array<{ method: string; endpoint: string; data?: any }>): Promise<T[]> {
+    const response = await fetch(`${this.baseURL}/batch`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify({ requests }),
+    });
+
+    return this.handleResponse<T[]>(response);
+  }
+
+  // Health check for server status
+  async healthCheck(): Promise<{ status: string; timestamp: string; version: string }> {
+    const response = await fetch(`${this.baseURL}/health`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    return this.handleResponse<{ status: string; timestamp: string; version: string }>(response);
   }
 }
 

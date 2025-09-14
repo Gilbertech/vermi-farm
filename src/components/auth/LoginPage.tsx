@@ -58,7 +58,7 @@ const LoginPage: React.FC = () => {
           </div>
 
           {/* Demo Credentials Info */}
-          {import.meta.env.DEV && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400 px-4 py-3 rounded-lg mb-6 text-sm">
               <div className="flex items-start space-x-2">
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -69,10 +69,11 @@ const LoginPage: React.FC = () => {
                     <p><strong>Initiator:</strong> 0712345679 / admin123</p>
                     <p><strong>Initiator:</strong> 0712345680 / admin123</p>
                   </div>
+                  <p className="text-blue-600 dark:text-blue-300 mt-2"><strong>OTP:</strong> Any 6-digit number (e.g., 123456)</p>
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Error Message */}
           {error && (
