@@ -242,4 +242,3 @@ export class UserService {
   }
 }
 
-export { UserService };
